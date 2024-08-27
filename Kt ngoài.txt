@@ -1,0 +1,229 @@
+# Progressive enhancement
+Là pp bắt đầu cơ bản trước, sau đó nâng cấp và cải tiến cho những người sử dụng trình duyệt và thiết bị hiện đại hơn. 
+Phải dùng HTML và CSS thuần để đảm bảo sự tương thích. JS dược dùng để thêm tính năng nâng cao, nhưng nếu JS k khả dụng or bị tắt thì vẫn k gián đoạn trải nghiệm cơ bản.
+=> Các thư viện có tính chất progressive enhancement phải có các tính chất đó. Nếu không nó có thể không tương thích với một số trình duyệt cũ hoặc khi k hỗ trợ JS.
+
+
+
+# File package.json
+-> npx có ở phiên bản mới của NodeJS chạy nhanh và tốt hơn npm.
+yarn là 1 phiên bản cải tiến của npm sử dụng file yarn.lock khắc phục lỗi version của npm khi cài cùng 1 module trên 2 máy khác nhau lại có phiên bản khác nhau gây bug.
+
+Cài version xác định: yarn add [package]@[version-or-tag]
+Upgrade lên mới nhất: yarn upgrade <package>
+
+3 cái --dev / --peer / -optional thêm vào cuối nếu specific với 3 loại dev dependencies, peer dependencies and optional dependencies.
+--save sẽ lưu vào dependencies chính
+option --save-dev vào command thì luôn lưu package đó vào devDependencies, viết tắt là -D. VD chạy npm install --production thì các package trong devDependencies sẽ k đc install
+
+Nhiều thư viện npm tạo ra kp để dùng cho React mà HTML JS thuần, nhưng vẫn ép dùng trong React được 1 số TH với useEffect như ThreeJS
+
+-> Sửa package có sẵn
+C1: Ta có thể fork repo về git của mình và sửa, sau đó sửa đổi file package.json thay số phiên bản bằng "git+<url repo>". 
+Trang https://gitpkg.vercel.app/ cho phép nhận link github ra câu lệnh npm.
+
+C2: sửa đổi trực tiếp trong node_modules r chạy: npx patch-package <package name> thì nó sẽ yêu cầu cài package patch và tạo ra thư mục patches chứa package ta đã sửa r dùng bth
+=> nếu ta xóa node_modules và cài lại thì có thể phải làm lại nên thêm lệnh: "postinstall": "npx patch-package" vào script để tự render theo thay đổi của ta khi install lại
+
+-> Config của package.json: name, description, keywords
+- author là tên tác giả, có 2 cách viết:
+{
+  "author": "John Doe <john.doe@whatever.com> (https://whatever.com)"
+}
+or:
+{
+  "author": {
+    "name": "John Doe",
+    "email": "john.doe@whatever.com",
+    "url": "https://whatever.com"
+  }
+}
+=> Tên tổ chức chung chung cũng được kiểu "author": "trava.finance"
+- contributors: có thể có nhiều người đóng góp nhưng chỉ 1 tác giả. 2 cú pháp giống author nhưng dạng mảng:
+"contributors": [
+  {"name":"Johan","url":"https://github.com/johanjordaan"},
+  {"name":"Christopher John Ryan","email":"chrisjohnryan@live.com","url":"https://github.com/ChrisJohnRyan"}
+]
+=> Cả contributors và author đều chỉ dùng khi publish package trên npm thôi
+
+private: để là true nếu kbh muốn ứng dụng bị public tại npm
+
+bugs: đường dẫn đến trang issues của package, thường sẽ là trang issues trên github. Vd: "bugs": "https://github.com/whatever/package/issues"
+
+homepage: đường dẫn xác định relative để load file static, k set nó bị lỗi trang trắng tinh khi mở index.html sau khi build đó
+
+repository chứa type, url về kho lưu trữ. VD:
+"repository": {
+  "type": "git",
+  "url": "https://github.com/bnb/metaverse.git"
+}
+or "repository": "bitbucket:whatever/testing"
+
+engines: định nghĩa phiên bản nodejs mà ứng dụng đang hoạt động. Vd:
+"engines": {
+  "node": ">= 6.0.0",
+  "npm": ">= 3.0.0",
+  "yarn": "^0.13.0"
+}
+
+browserslist: các phiên bản trình duyệt hỗ trợ, rồi nó sẽ được tham chiếu bởi babel, autoprefixer và các tool khác để thêm polyfills và các thứ cần thiết để chạy:
+VD: "browserslist": ["> 1%", "last 2 versions", "not ie <= 8"] là hỗ trợ 2 phiên bản chính cuối cùng của tất cả các trình duyệt với ít nhất 1% mức sử dụng ngoại trừ IE8 trở xuống
+
+main: entry point của package. Khi import package này vào 1 ứng dụng khác thì url trong main sẽ là nơi ứng dụng tìm kiếm các mô đun đã được export
+
+--> version: x.x.x với số đầu là phiên bản chính, số hai là phiên bản phụ và thứ ba là phiên bản vá lỗi.
+release chỉ sửa lỗi là một bản vá, release giới thiệu những thay đổi backward-compatible là một bản phát hành nhỏ, 1 bản phát hành lớn sẽ khiến API cũ k còn hoạt động.
+Đôi khi nó có thể đi kèm nhiều thứ như ^1.0.0-beta.52 => chưa tính phiên bản rc hay test alpha beta
+
+~ là cập nhật mọi bản vá lỗi luôn. VD: ~0.13.0 sẽ update các bản vá 0.13.1 nếu có nhưng k có 0.14.0
+^ sẽ cập nhật mọi bản vá lỗi và cập nhập phụ như 0.14.0, 0.13.2 ok hết => phổ biến nhất
+* cập nhật tất cả phiên bản
+> cập nhập phiên bản cao hơn ta chỉ định or >= là cao hơn or bằng. Tương tự < và <=
+x.x.x cập nhập duy nhất phiên bản này
+lastest luôn dùng phiên bản newest -> k nên vì cú pháp code cũ có thể break
+Có thể kết hợp toán tử như 1.0.0 || > = 1.1.0 < 1.2.0 để sử dụng 1.0.0 hoặc 1 bản phát hành từ 1.1.0 trở lên nhưng nhỏ hơn 1.2.0
+=> Họ thường dùng tốt nhất là ^ với version phù hợp nhất để các phiên bản mới ra lò thì api cũ k bị hỏng nhưng các bản vá lỗi vẫn được cập nhật
+
+-> package-lock.json: nên được commit vào repo cùng với package.json để đảm bảo tương thích, package.json sẽ override version trong package-lock.json
+VD package A dùng package B ^2.3.0, nhưng về sau họ ra bản 2.3.1 thì do có ^ nên gói tự động tải 2.3.1 nhưng 2.3.1 lại hoạt động k đúng với ứng dụng nx. Để đảm bảo khi người ta pull cái repo package đó về thì phiên bản chuẩn y hệt như lúc ta tạo ra package đó thì phải nhét vào package-lock.json
+Trong package-lock.json nó sẽ hiển thị ra module trong package.json kèm theo 1 list các package khác được đi kèm với nó được fix version để đảm bảo với version đó của package đó thì các dependencies con phải luôn đúng phiên bản này. package-lock tạo ra 1 khối thống nhất rằng ở phiên bản này của package này, buộc các con của nó phải là phiên bản nào.
+VD package A dùng C và B, trong package B lại dùng C và 2 cái C có phiên bản khác nhau là bth. Nó sẽ tải cả 2 phiên bản về nhưng nếu trùng nhau thì nó tự chỉ tải 1 lần 
+
+
+
+# Cách clone code frontend của các trang web
+Compiler optimize source code FE thành file chunk, chạy lên browser rất khó debug nên cần file source map để browser tái tạo lại code gốc. Có thể config webpack để ẩn source map nhưng sẽ khó debug, nên nó được bật theo mặc định. Đa phần các trang web dùng các js framework bundle file nếu vẫn giữ source map có thể lấy được phần frontend static file
+
+Vào browser devtool -> Sources -> tìm mở các file chunk rồi click chuột phải vào file đang mở -> Add source map: <tên file>.map -> làm với mọi file js thì sẽ thấy được source code frontend đầy đủ -> Dùng extension resources saver -> click mọi option trừ cái XHR để tránh quá lớn -> Ấn tải về
+Tạo 1 dự án mới với công nghệ tương ứng và add các file vào src, config tùy chỉnh -> Thêm các thư viện đầy đủ đúng phiên bản, nếu phiên bản k chạy được thì phải tự downgrade xuống, khá khó nhất là với web k dùng react -> Thêm các file css vào dự án vẫn có trong mục tải về -> 1 số resources assets không hoạt động phải tự vào trang web gốc tải về
+=> Ở bước add source map là ta đang thêm source map của file js đó để browser tái tạo lại code gốc. Tool tìm file source map nếu có: https://sourcemaps.io/
+
+
+
+# SSR và CSR
+Thực chất React có riêng ReactDOMServer chuyên dùng cho SSR. VD: ReactDOMServer.renderToString(<codeJSX>); sẽ biến tất cả component react thành thẻ html dưới dạng string, từ đó ta có thể nhét vào res.write("") gửi cho client => k dùng
+
+-> SSR: Khi có request, server xử lý html thuần gửi cho browser sau khi qua 1 loạt các script -> browser chỉ cần render trang html đó và ngầm tải tiếp JS về. User thấy web tĩnh và k thể tương tác, chỉ khi tải hết các file js liên quan về mới được.
+SSR có tốc độ tải trang web gần như tức thời, ấn phát có luôn. Nhưng trang web phải xử lý lại hoàn toàn, gửi request đến server để lấy file html mới nếu có 1 thay đổi nhỏ trong trang. Mọi thứ được xử lý ở server cũng tốn tài nguyên và gây chậm trễ khi xử lý các request khác.
+
+-> CSR: Browser gửi request thì 1 con CDN (or server kiểu nginx, apache) có thể gửi lại html chứa link tới file js -> browser tải cả html và JS -> browser execute JS, gửi request API lấy data -> server xử lý và gửi data cho client -> browser sửa DOM hiển thị data cho người dùng
+Đặc điểm CSR: lượng dữ liệu load về lần đầu khá nặng nhưng bù lại các lần sau sẽ xử lý cực nhanh do nó đã có hết trên client, k cần reload trang lại với mọi hành động.
+
+-> So sánh:
+- Ở lần load đầu tiên, server xử lý sẵn html nên SSR render trang tĩnh ngay khi browser nhận nên cảm tưởng tốc độ nhanh hơn còn CSR trong cả quá trình, người dùng chỉ nhìn thấy thanh loading cho đến khi browser xử lý DOM xong để page có thể nhìn thấy và tương tác được. Bù lại tốc độ các lần tương tác sau thì CSR nhanh hơn do script được load hết r.
+Để khắc phục, các web CSR đều chơi lazy loading tức chỉ tải các thứ cần thiết cho trang đó nên khi chuyển trang mà trang đó được visit lần đầu tiên thì vẫn có 1 khoảng load tiếp data từ server nhưng rất ngắn (nhanh hơn 1 chu kỳ của SSR vì nó có sẵn html rồi, chỉ request lấy data) => thực tế tốc độ như nhau.
+- CSR có SEO kém vì crawl vào web chả có gì, khi chuyển trang thì các thẻ metadata lại k thay đổi. Google đã giải quyết vấn đề này của search engine bằng cách cho phép crawler chạy code JS.
+- SSR giúp trang web được chia sẻ qua mạng XH thông qua src của thẻ iframe, nếu dùng CRS thì k nhúng được như v. Dùng CSR khi share qua mxh, trang nào cũng ra cùng 1 thứ.
+=> Đa phần các website sử dụng CSR để giảm tải phía server. Còn các trang thương mại cần SEO, load nhanh để giữ chân người dùng thì nên dùng SSR.
+
+
+
+# Virtual DOM in React
+React là chỉ render lại các phần cần thiết. Trong actual DOM của html thuần, k có cách nào xđ được element nào thực sự thay đổi để render lại mà phải load cả cây DOM.
+Do đó React dùng virtual dom là 1 bản giống hệt DOM thật nhưng nó rẻ hơn vì k phải render ra màn hình. Dùng virtual dom có thể xác định các phần thay đổi để chỉ render lại component đó thôi. Khi ta log thẻ jsx ra type Symbol react.element lồng các con liên tiếp thì chính là virtual DOM đó. 
+
+Cơ chế: khi chạy, virtual dom sẽ được tạo và lưu trong memory, nếu có update thì React sẽ tự tạo 1 cây virtual dom mới, virtual dom k render lên screen nên tạo rất dễ. Sau đó React compare 2 cây DOM xem khác nhau chỗ nào và tiến hành update phần node đó trên actual dom.
+Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snapshot của root element, giống nhau thì tiếp tục so sánh dần xuống con để xác định node cần.
+
+
+
+# SSR và hydration
+Quy trình SSR: server gửi html tĩnh cho client -> client tải tiếp file JS -> client hydrate html tĩnh với JS event và state render ra -> user tương tác được.
+Trong React có 2 hàm render và hydrate: render biến component React thành html in ra màn hình, hydrate để dùng trong TH server gửi lại html tĩnh cho client React.
+
+-> Hydration: server gửi về html tĩnh phải được thêm event và state bởi quá trình hydration ở client thì user mới tương tác được.
+Khi hydrate, nó phải tải code JS và thực thi để biết có event nào gắn vào component nào. Việc này là thừa thãi khi server đã làm rồi nhưng k gửi cho client được mà chỉ gửi được html tĩnh rồi client phải hydrate lại.
+
+-> Resumability là giải pháp thay thế hydration: 
+- Server serialize thông tin "event nào gắn với component nào" gửi cho client k cần tính toán lại.
+- Sử dụng lazy load, để khi user tương tác mới cần load thông tin event đó thôi. Khi trigger event, client biết sẵn nó cần event handler nào thì load về thực hiện luôn.
+- Sử dụng 1 global event handler bắt mọi event, k cần chờ event gắn vào element mới chạy được nữa. Vì hydration lưu hết event handler vào bộ nhớ rất tốn, cách này chỉ cần 1 global handler, user tương tác event nào mới load event đó.
+
+-> React hiện tại dùng hydration, Qwik* là framework thực hiện resumability.
+Về tốc độ, Qwik SSR nhanh hơn cả nextjs khi load page lần đầu và tương tác. Khi client nhận response từ server, nó gắn được luôn global event vào component mà k cần tải thêm JS thực hiện lại bước hydration nữa. Quy trình được tích hợp sẵn bởi framework nên chỉ cần dùng là có tốc độ nhanh.
+Qwik hỗ trợ code React => nên dùng thay thế React
+
+
+
+# SEO trong SSR
+SEO và performance của web là code FE, vẫn cần 1 team chuyên SEO chạy traffic hút người dùng vào web. Để check 1 website dùng CSR hay SSR chỉ cần CTRL+U.
+React chỉ có thẻ body trống, dù crawler của gg có thể thực thi code JS nhưng khi fetch API async lâu, VD ta set timeout chờ 10s mới set data thì crawler có thể vẫn k thấy. Framework CSR chưa giải quyết triệt để.
+
+-> Cơ chế: Google bot có 1 queue chứa mọi url cần đánh chỉ mục, lần lượt lấy ra và parse HTML. R phân tích xem có cần exec JS k, nếu có thì nó lại thêm cái URL của JS vào render queue. Cái render queue này chứa url của JS, khác với crawl queue ban đầu chứa url của html. Trình renderer lại exec JS để hiển thị trang. Nó gửi HTML được render ra từ JS trở lại crawl queue. Cứ thế lấy mọi thẻ a xử lý và cho vào crawl queue html. Khi mọi html được xử lý, bot dựa vào các thông tin trích xuất ra để đánh chỉ mục cho nội dung.
+Do exec JS tốn kém nên google bot ưu tiên parse html ngay và chạy JS sau. Nếu web lớn và dùng nhiều JS để hiển thị thì bot có thể đọc ít nội dung hơn từ trang đó. Do đó CSR khó SEO, bot luôn thấy trang trống đầu tiên làm trì hoãn việc lập chỉ mục. CSR cần request API xong mới có nội dung hiển thị, bot đánh giá thời gian tải lâu sẽ xếp hạng thấp hơn.
+
+-> Google Tag Manager: phổ biến với những người làm quảng cáo google, giúp quản lý website như chỉnh sửa các thẻ meta, theo dõi các sự kiện trên trang như click chuột, tải tệp mà k cần viết thêm JS, tích hợp Google Analytics đo lường, Google Ads.
+Chỉ cần tạo tài khoản rồi nhận được 1 url thì cắm vào index.html, r mở tool của nó để theo dõi thôi.
+
+
+
+# Authorization và authentication
+Authen để biết ai đó hợp lệ và authorization để phân quyền tài nguyên họ được truy cập. Các kiểu login:
+Dùng bên thứ 3 như google, facebook, github nhận về 1 credential và dùng nó này để login các website liên quan.
+Login bằng tk mk jsonwebtoken cho 1 app đơn lẻ
+Single sign-on (SSO) login vào portal của hệ thống là vào được mọi ứng dụng bên trong.
+
+-> SSO dùng cho hệ thống lớn nhiều ứng dụng con, chỉ cần quản lý authen của user trong 1 single database chứ kp mỗi web 1 database, phân quyền để vào được hệ thống con.
+3 protocol hỗ trợ SSO phổ biến nhất:
+1) OpenId Connect: Là chuẩn để authentication. VD Google là 1 OpenID identity provider, cung cho 1 người thì người này có thể login bất cứ website nào chấp nhận xác thực bằng OpenID như Youtube, Okta,.. Còn Facebook trước đây dùng OpenID nhưng nay đã chuyển qua Facebook Connect. 
+VD có thể dùng firebase tạo OpenID connect với google cho website được rất tiện lợi. 
+Có thể tuỳ biến. VD xác thực với google có thể gửi url authen tới email. Có thể chia người bình thường dùng đăng nhập với google, nhân viên thì đăng nhập riêng bằng tk mk.
+Phiên bản mới nhất của OpenID là OpenID Connect, nó kết hợp OpenID authentication và OAuth2 authorization để vừa xác thực vừa ủy quyền.
+
+2) Oauth 2.0: là chuẩn để authorization. OAuth2 cũng là 1 nền tảng OpenID Connect, có cung cấp OpenID để xác thực.
+Vd: Alice đk tk NewsApp và có tính năng tùy chọn xem ai là bạn bè của cô ấy cũng dùng NewsApp để kết nối với họ. Alice chọn login bằng facebook và được hỏi có muốn chia sẻ list bạn bè trên Facebook với NewsApp không. Nếu chọn có, Alice sẽ điều hướng trở lại NewsApp với 1 token, NewsApp dùng token này để lấy list friends.
+=> Do đó OAuth2 có 1 lớp OpenID ở bên trên bởi vì chính vc ủy quyền authorization cũng là 1 hình thức xác thực r. Mỗi token được chia quyền riêng dùng các data nào.
+
+3) SAML: Security Assertion Markup Language là chuẩn cũ cung cả authentication và authorization, có SAML 2.0 => k dùng
+
+
+
+# OAuth2
+Cơ chế: 
+- Đk cho App trên trang của Google Auth 1 ClientID và SecretCode và xác định luôn các chức năng Google API mà App muốn dùng. VD xem được thông tin cá nhân, hay chỉ cần login
+- User vào App và ấn GoogleSignIn button để chuyển đến trang của google, nhập username password để đăng nhập. 
+OAuth2 chuẩn url có dạng: https://accounts.google.com/....&client_id=<ClientId>&redirect_uri=<RedirectURL>. Để ý đúng tên miền accounts.google.com tránh giả mạo
+- User click "Allow" để đồng ý dùng OAuth2 truy cập đến tài nguyên cụ thể, GoogleAuth sẽ sinh 1 mã code và gửi cho App thông qua cái RedirectURL. Tức App cần setup sẵn sàng tại RedirectURL để nhận giá trị mã code kèm các thông tin xác thực khác. VD OAuth2 chuẩn url sẽ gửi dạng: http://localhost/?code=..<mã code dài>...
+Để đảm bảo cái url kia đúng là App thì cần có bước xác thực App với Google thông qua SecretCode được gửi ở dạng public trên url.
+- App nhận về mã code sẽ cung lại cho Google Auth server để nhận AccessToken, phải xác thực cả ClientID và SecretCode của App là hợp lệ. Gửi kèm AccessToken ở mỗi request.
+VD OAuth2 chuẩn request là: POST với body code=<Code>&redirect_uri=<RedirectURL>&client_id=<ClientId>&client_secret=<SecretCode>
+
+SecretCode thì private chứ mã code gửi có thể k an toàn, nên google mới bảo mật thêm là mã code chỉ được dùng 1 lần, sau khi sinh accesstoken thì code cũng hết giá trị. 
+Nếu lộ mã code -> k sao vì hacker kb SecretCode nên k sinh được accesstoken. 
+Nếu lộ SecretCode -> nó phải nghe lén được mã code hoặc biết tk mk để lấy được mã code để sinh accesstoken
+Nếu lộ accesstoken -> k sao vì có hạn sử dụng. 
+
+VD: Google là 1 SSO. Login vào gg xong là có accesstoken vào các server con, vì mỗi app có 1 resource server riêng như Google Resource Server của gmail, calendar. Luồng:
+Client -> Google: Đăng nhập và cấp quyền
+Google -> Client: Mã ủy quyền
+Client -> Server: Gửi mã ủy quyền
+Server -> Google Auth Server: Gửi mã ủy quyền + client_id + client_secret
+Google Auth Server -> Server: Trả về access token (và refresh token)
+Server -> Client: Trả access token
+Client -> Server: Gửi yêu cầu API kèm access token
+Server -> Google Resource Server: Truy vấn dữ liệu kèm access token
+Google Resource Server -> Server -> Client: Trả dữ liệu
+
+
+
+Other:
+-> Lệnh: npm bin -g => hiển thị các package global đã cài đặt
+npm run --prefix <path> <script> => run npm ở directory khác từ cmd ở thư mục hiện đại
+
+-> Lỗi npm node-gyp trong window: Khi cài 1 package sẽ biên dịch package đó. VD cài truffle thì máy phải có python và C mới npm i được và phải cài đúng phiên bản. Điều này rất khó nếu như ta cài thủ công python và C++ không rõ phiên bản nào hỗ trợ chuẩn, xong còn phải thêm environment var.
+=> Fix với powershell quyền admin: npm i -g --production windows-build-tools => Tự cài các tool hỗ trợ mặc định trong window là python và C++ và -g để thêm environment var luôn
+VD windows-build-tools bị lỗi stuck k tải được. Dùng cách khác: Tải python 2.7 -> npm config set python python2.7 -> Tải VS2017 -> mở installer chọn cài desktop development C++ => nếu có VSC rồi thì khả năng là chưa update thôi, cứ update mới nhất là được -> npm config set msvs_version 2017 -> khởi động lại VSC và cài các package bình thường
+
+-> npx create-react-app a => đang chạy thì ngắt vì lỗi mạng xong gõ lại thì lỗi => xóa npm-cache trong AppData/Local là xong
+
+-> Khi build dự án sẽ load ra file html, trong đó download các file JS và các file helper mà files js đó cần để chạy. Để tiện cho người dùng, các file JS khi build sẽ bị break thành nhiều file chunk được fetched dynamically bởi file js chính để chỉ tải khi cần gọi đến.
+Nếu bị lỗi load file chunk thì phải restart và xoá cache. 
+
+-> Version Release Candidate là phiên bản rc dùng thử trước bản chính thức
+
+-> Lỗi: This site can’t provide a secure connection. Localhost sent an invalid response.
+=> Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
+=> Fix trên edge tương tự vào: edge://net-internals/#hsts
+Lỗi này do HSTS (HTTP Strict Transport Security) - giao thức yêu cầu tất cả kết nối tới một website phải được mã hóa bằng giao thức HTTPS.
+
+-> Dùng color-scheme của css để tạo darkmode cho case đơn giản. @media(prefers-color-scheme: dark) để custom 2 mode

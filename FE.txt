@@ -1,0 +1,85 @@
+## FE
+-> Setup dùng font chữ
+
+-> Xây web component
+
+-> Thao tác với form, lấy các kiểu API type data, prenvent default, ấn Enter, validate input
+
+-> Dùng Wrapper class thao tác với thẻ con (HOC)
+
+-> Dùng global state như ReactContext
+Dùng localStorage, cookie
+
+-> Tính reactivity trong framework
+
+-> React hook có vô số tính năng đặc biệt
+
+-> Debounce throttle trong FE
+
+-> Tạo browser extension qua FE framework được
+
+-> Fetch API các kiểu khác nhau
+Fetch định kỳ liên tục
+Xử lý loading state
+
+-> CSS reset
+
+-> Responsive 
+
+-> Debug từng dòng
+
+-> Tái sử dụng component xuyên dự án
+
+-> Tạo component lạ như text editor, google map, lịch, Flip Clock, file pdf
+
+-> Tuỳ biến thanh scrollbar và scroll tới vị trí nào
+
+-> Dùng biến môi trường
+
+-> Tuỳ biến style cho bất cứ thẻ nào
+Tạo component mới từ việc style thẻ cũ
+
+-> Xử lý ảnh người dùng input quá to
+Input không phải là ảnh
+Input ảnh nặng load chậm
+
+-> Tạo animation
+
+-> Viết docs, test cô lập, kiểm tra size các thư viện cài vào
+
+-> Dùng lib, custom style của lib
+
+-> Self sign
+
+-> Web worker
+
+-> Lazy loading component
+
+-> Virtualize long list
+
+-> Tool format code
+
+-> Kiểm soát SSR CSR, hydration và resumability
+
+-> lazy loading image
+
+-> Tối ưu SEO
+
+-> Tạo number input
+
+-> Tạo authentication component
+
+-> Router chuyển trang
+
+-> Tạo global store (redux)
+
+-> Dùng idle time của event loop
+
+
+# Tối ưu render list lớn
+-> Dùng pagination
+- Mỗi action search, filter, phân trang gọi 1 API mới. FE dùng react query để tránh query lại, kiểm soát data stale
+=> Thường dùng khi fetch data từ server tập trung, khi ta kiểm soát hoàn toàn mọi thứ
+- Lấy tất cả dữ liệu về lưu vào redux, phân trang, filter, search làm thủ công ở FE. VD khi fetch data từ SM trực tiếp ta k kiểm soát được filter, search các thứ.
+
+
