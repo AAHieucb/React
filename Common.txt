@@ -57,3 +57,70 @@ static async fetchWithRetry(url, errorCount = 0) => {
   }
 }
 
+
+
+# Chia cấu trúc dự án lớn
+Quan trọng là nhìn vào giao diện biết tìm ở file nào, nhìn vào file nào biết nằm ở đâu trên giao diện. 1 người mới toanh nhìn vào là hiểu luôn.
+VD ta cần tìm trong trang finance, trong 1 mục X, có cái dropdown => Phải tìm trong pages/finance/X/index.js. Dropdown là 1 component chung nhưng chỉ dùng ở finance thì nên chia kiểu src/common/finance/dropdown/index.js hoặc src/apps/finance/common/dropdown/index.js
+VD chia theo chức năng, mỗi chức năng sẽ chia theo cấu trúc từng module UI, vừa tìm dễ trên UI, vừa tìm dễ trong code:
+src (folder)
+  api (folder)
+    calling (folder) => call API cho calling
+    powerplatform (folder) => call API cho powerplatform
+    helpers (folder) => enum, utility liên quan tới API
+  app (folder)
+    common (folder) => common component
+    structure (folder) => component kiểu loading, error, headers, router
+    pages (folder)
+      calling (folder)
+        common (folder) => common components của calling
+        callingpolicy => component trong calling policy. Chia theo cấu trúc UI
+        callqueues => component trong callqueues
+      powerplatform (folder)
+    index.js
+    index.css
+  redux (folder)
+    actions (folder)
+      calling
+      powerplatforms 
+    reducers (folder)
+      calling
+      powerplatforms
+    store (folder)
+  hookes (folder)
+    react-query (folder)
+    contracts (folder)
+    common (folders)
+  util (folder) => chứa các utility chung
+  model (folder) => chứa interface, type, struct
+  context (folder)
+  index.html
+  index.js
+=> Nếu vì ít file mà k chia folder của module thì nên đặt prefix trong tên file là tên module để có 2 chiều: 1 là nhìn file biết module nào luôn và 2 là nhìn module có chức năng nào thì biết tìm file ở đâu luôn. Còn TH lớn mới chia module ở bên trong chức năng như trên.
+
+Trong 1 file component: propsType  defaultProps  utilities  Component
+
+Còn có kiểu chia là: 1 phát viết toàn module theo UI, bên trong từng module sẽ chia ra assets, common, utils, hooks, context, views, api. Chung thì để ngoài cùng luôn 
+=> K nên, sẽ ra sao nếu 1 pages lớn có 10 pages lớn khác bên trong. Lại chia phân cấp nữa thì rất mệt
+
+
+
+# Dựng server nodejs serve react app
+Giả sử công ty lớn cần thêm các header bảo mật khi người dùng vào web react, có thể dựng 1 server nodejs custom để serve.
+Đầu tiên build app react set outDir ra 1 thư mục có file index.html -> dựng 1 server expressjs config route để serve file index.html đó -> Tuỳ ý tạo middleware thêm các header bảo mật. Có thể tạo các biến số trong file index.html để thế vào từ server, VD các url phân tách môi trường, SSL key, login SSO -> thay lệnh chạy react bằng lệnh chạy nodejs.
+Server này thế cho nginx cũng được, thực tế việc set header có thể làm ở nginx.
+Chú ý họ chỉ cần thêm header bảo mật của request lấy file index.html, VD k cho web khác nhúng web của ta vào iframe. Còn các API query data thì k cần, API đó có access token bảo mật riêng klq. Khi ta set header cho query GET index.html, browser lấy xong index.html này sẽ lấy các file js, css liên quan thì sẽ tự thêm các header cũ
+
+Các công ty lớn bảo mật cao thường k phụ thuộc vào bên thứ 3. Header họ set rất chi tiết chứ k dùng thư viện helmet đâu. VD: 
+res.setHeader('Content-Security-Policy', "frame-ancestors 'self'; frame-src 'self' https://*.youtube.com; base-uri 'none'; object-src 'none'; img-src data: 'self' https://* *.aptrinsic.com  *.segment.com *.segment.io *.avepointonlineservices.com *.avepoint.com storage.googleapis.com; form-action 'self' *.sharepointguild.com *.avepointonlineservices.com *.sharepointonline.com *.online15.net *.avepointonlineservices.apps.mil; script-src 'self'" + ' \'nonce-' + req.nonce + '\'' + " *.sharepointguild.com *.avepointonlineservices.com *.sharepointonline.com *.online15.net *.aptrinsic.com *.segment.com *.segment.io *.avepointonlineservices.apps.mil; connect-src  *.sharepointguild.com *.avepointonlineservices.com *.online15.net *.aptrinsic.com *.segment.com *.segment.io *.avepointonlineservices.apps.mil 'self'");
+Giải thích CSP:
+frame-ancestors 'self': Chỉ cho phép trang này được nhúng trong iframe từ cùng một nguồn (origin). Điều này ngăn chặn việc nhúng trang vào các trang web độc hại.
+frame-src 'self' https://.youtube.com: Cho phép nhúng các iframe từ cùng một nguồn và từ các miền con của youtube.com.
+base-uri 'none': Ngăn chặn việc sử dụng thẻ <base> trong tài liệu, giúp giảm thiểu rủi ro từ các cuộc tấn công.
+object-src 'none': Ngăn chặn việc sử dụng thẻ <object>, <embed>, và <applet>, giúp bảo vệ khỏi các lỗ hổng liên quan đến các đối tượng nhúng.
+img-src data: 'self' https:// .aptrinsic.com .segment.com .segment.io: Cho phép tải hình ảnh từ cùng một nguồn, từ các miền cụ thể.
+form-action 'self' .online15.net: Chỉ định các nguồn mà biểu mẫu có thể gửi dữ liệu đến.
+script-src 'self' 'nonce-{req.nonce}' .online15.net .aptrinsic.com: Cho phép chạy script từ cùng một nguồn và từ các miền cụ thể, với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. Thẻ script trong dự án phải có thêm trường nonce
+connect-src .sharepointguild.com .online15.net .aptrinsic.com .segment.com .segment.io 'self': Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
+
+

@@ -269,22 +269,25 @@ Có thể dùng kết hợp với ReactContext tạo ra kiểu gần giống v�
 Tương tự, const Con = React.memo(props => { return <>; }, x); chỉ khi props hay x đổi mới chạy lại hàm render lại Con => Thg dùng khi Cha có Con phức tạp mà k muốn Con rerender
 => useMemo có thể thay thế memo
 
--> useTransition:
-Hàm startTransition sẽ có ưu tiên thực hiện thấp hơn và nếu có 1 lệnh tương tự thì câu lệnh cũ sẽ bị dừng luôn và ưu tiên chạy câu lệnh mới. Nó tự chỉnh đảm bảo k bị lag => Dùng khi 1 hàm nặng phụ thuộc vào 1 giá trị 
-useDeferredValue tương tự useTransition nhưng là gán 1 value vào 1 biến số khác, nó k ưu tiên việc gán value và rerender để tránh lag => Dùng khi 1 component nặng phụ thuộc vào 1 biến, ta useMemo component và useDeferredValue biến đó
-
 -> useId sinh số Id. Trong redux toolkit cũng có nanoid sinh id ngẫu nhiên. VD 1 component có trường id mà render nhiều nơi, dùng useId cho nó sẽ đảm bảo duy nhất.
 useSyncExternalStore read và subscribe vào external data source => VD ta subscribe vào localStorage được
 useInsertionEffect* được gọi đồng bộ với mục đích thêm style cho DOM trước khi nó đọc layout với useLayoutEffect. Nó k access vào ref và k update state được => nên dùng khi cần sửa style DOM bằng JS code
 
 -> URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
-useDebugValue; useEffectEvent** fix dependency error của useEffect; useFormStatus**; useOptimistic**
+useDebugValue; useEffectEvent** fix dependency error của useEffect; useFormStatus**;
 use** k cần dùng nếu dùng react-query, gọi hàm lien tục khi chạy qua nên cần nhét hàm vào useMemo: https://www.youtube.com/watch?v=oMvW3A_IRsY
 
 Case lỗi: function (url) {
   function onConnected(url) { console.log(url); }
   useEffect(() => onConnected(url), [url]);
 } => nếu k truyền url vào onConnected, nó sẽ luôn dùng url mới nhất. useEffect chạy async k kiểm soát được. VD gọi hàm trong useEffect 2 lần thật nhanh bằng cách đổi url, sẽ có lúc onConnected chạy lần 1 với data của lần 2 là sai nên phải truyền. Tức url đổi ngay giữa lúc trigger useEffect và bên trong onConnected được gọi.
+
+-> useTransition:
+Hàm startTransition sẽ có ưu tiên thực hiện thấp hơn và nếu có 1 lệnh tương tự thì câu lệnh cũ sẽ bị dừng luôn và ưu tiên chạy câu lệnh mới. Nó tự chỉnh đảm bảo k bị lag => Dùng khi 1 hàm nặng phụ thuộc vào 1 giá trị. Chạy nhiều lệnh như nhau sẽ được gom thành 1, nhưng k có đk thời gian cụ thể như useDebounce.
+useDeferredValue tương tự useTransition nhưng là gán 1 value vào 1 biến số khác, nó k ưu tiên việc gán value và rerender để tránh lag => Dùng khi 1 component nặng phụ thuộc vào 1 biến, ta useMemo component và useDeferredValue biến đó
+
+-> useOptimistic thường dùng khi biết khá chắc lệnh call sẽ success. 
+VD: người dùng update xong API chưa thành công đã tắt page => Có thể cản lại với window.addEventListener("beforeunload"); URL: https://www.youtube.com/watch?v=VBlSe8tvg4U
 
 
 

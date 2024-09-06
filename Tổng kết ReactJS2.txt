@@ -135,8 +135,9 @@ body::-webkit-scrollbar {
 # Dùng web worker
 Dùng với lib @shopify/react-web-worker
 Vd: sort 500000 phần tử bằng bubble sort trong react sẽ làm ui block. Mở tab performance của browser sẽ thấy ui bị block vài giây, nếu chạy nó trên 1 worker riêng, thời gian vẫn thế nhưng main thread sẽ k bị block. 
-Web worker tận dụng chip đa nhân trên máy client luôn. K nên lạm dụng mà thêm khoảng 2-3 workers là ok
-=> Nên dùng khi xử lý ảnh, process data set lớn, canvas drawing, export CSV or excel file lớn, các task gây nặng CPU
+Web worker tận dụng chip đa nhân trên máy client luôn. K nên lạm dụng mà thêm khoảng 2-3 workers là ok => Nên dùng khi xử lý ảnh, canvas drawing, export CSV or excel file lớn
+
+Tab performance monitor browser có CPU usage. Khi dùng web worker sẽ thấy CPU usage giảm mạnh
 
 
 
