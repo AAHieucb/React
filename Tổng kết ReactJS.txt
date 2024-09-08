@@ -94,8 +94,7 @@ Refine giúp cho việc xây ứng dụng CRUD dễ dàng hơn react thuần. N�
 
 -> @xyflow/react (bản mới chuẩn của reactflow): thư viện rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
 
--> react-dnd*: thư viện drag drop của React cực mạnh.
-react-beautiful-dnd: thư viện giúp tạo draggable item trong 1 list, move item giữa các column, move giữa các column, custom mọi thứ. 
+-> react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
 react-grid-layout: tạo grid draggable items
 
 -> recharts*: Vẽ đồ thị kiểu học thuật.
