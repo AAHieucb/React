@@ -75,7 +75,8 @@ Dynamic import
 
 -> Tạo authentication component
 
--> Router chuyển trang
+-> Router chuyển trang, dynamic route, nested route, style active navlink
+Listen sự thay đổi của url
 
 -> Tạo global store (redux)
 

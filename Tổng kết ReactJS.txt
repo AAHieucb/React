@@ -61,7 +61,7 @@ Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông
 
 -> @tinymce/tinymce-react*: thư viện giúp tạo TinyMCE text editor cực mạnh cho các kiểu input text như gg docs
 
--> Thư viện UI: Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Chakra UI, Grommet, react-foundation, Bootstrap, Senmatic UI, Primereact, Bulma, materialize-css@next, https://rsuitejs.com/, Kendo react => component lạ, radix-ui khó dùng
+-> Thư viện UI: Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Chakra UI, Grommet, react-foundation, Bootstrap, Senmatic UI, Primereact, Bulma, materialize-css@next, https://rsuitejs.com/, mui* v6, Kendo react => component lạ, radix-ui khó dùng
 
 -> ReactAdmin*: Thư viện giúp tạo trang admin cho các ứng dụng React dễ dàng.
 ra-data-json-server dùng riêng cho ReactAdmin cung vào data json

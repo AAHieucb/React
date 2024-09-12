@@ -37,6 +37,96 @@ abc: { },
 
 
 
+# Dùng lib MUI v5
+Google's Material Design, là 1 hình thức của Flat Design (thiết kế phẳng), chỉ dựa vào thay đổi màu mà mang tới cảm giác 3D như có hiệu ứng nổi lên trên giao diện.
+-> Packages đi kèm: notistack, react-material-ui-carousel, @mui/x-date-pickers và date-fns => tạo input date picker
+
+-> Custom override với provider
+const theme = createTheme();
+theme.typography.h3 = {
+  fontSize: '1.2rem',
+  '@media (min-width:600px)': {
+    fontSize: '1.5rem',
+  },
+  [theme.breakpoints.up('md')]: {
+    fontSize: '2.4rem',
+  },
+}; => Custom thẻ h3 dùng typography mới dùng 1.2 rem và nhỏ hơn 600px sẽ dùng 1.5rem và lớn hơn md dùng 2.4rem
+
+Có thể custom nhiều type khác của Typography:
+typography: {
+  subtitle1: {
+    fontSize: 12,
+  },
+  body1: {
+    fontWeight: 500,
+  },
+  button: {
+    fontStyle: 'italic',
+  },
+} => Custom được mọi loại variant
+
+-> Dùng styled
+VD truyền props vào styled: 
+const CustomClass = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "fontWeight" && prop !== "myProp",
+})(({theme, myProp, fontWeight}) => ({
+  ".background": {
+    fontWeight,
+  }
+}));
+và dùng: <CustomClass fontWeight="lighter" myProp>...</CustomClass> 
+
+-> Customize thẻ có sẵn với css selector
+VD customize TextField:
+".test": {
+  "& div.MuiFormControl-root": {
+    "& div.MuiOutlinedInput-root": {
+      "& fieldset": {
+        borderColor: "red"
+      }
+    }
+  }
+}
+Mẹo: khi cần lấy màu dùng color: "background.primary.main" mà éo cần useTheme => chỉ được khi dùng sx
+
+-> Dùng css selector trong styled
+".A": {
+  "&:hover":{}
+} => hover vào A thì thẻ A hiện ra cái gì
+".A": {
+  "&:hover .B": {}
+} => hover vào A thì class B mang css gì
+".A": {
+  "& .B": {
+    "&:hover": {}
+  }
+} => B là con của A thì hover vào sẽ mang css gì
+".A": {
+  "& $B": {}
+} => thẻ có id là B và là con mọi cấp của A mang css gì
+".A": {
+  "& th:last-child, & td:last-child": {
+  }
+} => 1 list th td là con cuối cùng của thẻ có class A sẽ có css gì
+".A": {
+  "&:before": {} => before selector của A có css gì
+  "&:hover": {
+    "&:before": {} => hover vào A thì before selector của A sẽ có css gì
+  },
+  "&:hover img": {}, => hover vào A thì img trong nó mang css gì
+} 
+-> Customize lại 1 thẻ đặt thành tên khác:
+const MainLayoutContainer = styled(Box)((theme) => ({
+  backgroundColor: theme.theme.palette.background.body.main,
+})); 
+
+-> Dùng TextField: Dùng textfield select hơn là dùng component Select. Thay vì dùng input type number, nên dùng type text và tự check
+Xử lý invalid input: có thể dùng formik or xử lý như html, css thuần là thêm pattern:"[a-z]{1,50}" và className:"input" và input:invalid:{<css>}
+VD check if e.target.value = Number(e.target.value) để tránh ký tự lạ
+
+
+
 # Dùng react-router-dom v5
 -> Switch Route BrowserRouter 
 <Switch> kiểm tra từ trên xuống path nào trùng thì render 1 cái đó
