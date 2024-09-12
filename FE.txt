@@ -49,11 +49,17 @@ Input ảnh nặng load chậm
 
 -> Dùng lib, custom style của lib
 
--> Self sign
+-> Self sign SSL (Certbot)
+
+-> Build CSR,
+Custom nodejs hosted server
+
+-> Progressive web app (PWA)
 
 -> Web worker
 
 -> Lazy loading component
+Dynamic import
 
 -> Virtualize long list
 
@@ -61,7 +67,7 @@ Input ảnh nặng load chậm
 
 -> Kiểm soát SSR CSR, hydration và resumability
 
--> lazy loading image
+-> Lazy loading image
 
 -> Tối ưu SEO
 
@@ -74,12 +80,5 @@ Input ảnh nặng load chậm
 -> Tạo global store (redux)
 
 -> Dùng idle time của event loop
-
-
-# Tối ưu render list lớn
--> Dùng pagination
-- Mỗi action search, filter, phân trang gọi 1 API mới. FE dùng react query để tránh query lại, kiểm soát data stale
-=> Thường dùng khi fetch data từ server tập trung, khi ta kiểm soát hoàn toàn mọi thứ
-- Lấy tất cả dữ liệu về lưu vào redux, phân trang, filter, search làm thủ công ở FE. VD khi fetch data từ SM trực tiếp ta k kiểm soát được filter, search các thứ.
 
 

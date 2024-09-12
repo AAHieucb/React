@@ -1,10 +1,8 @@
-Setup React
-
+Setup React Tool
 
 
 # Tool có sẵn của VSC
 VSC có sẵn tool để format: mở file type mà VSC hỗ trợ -> CTRL+SHIFT+P -> Format Document With -> Chọn formatter mặc định
-
 Như v mỗi lần chọn sẽ format file hiện tại. Còn để mở tự động format bằng formatter mặc định khi save file: CTRL+SHIFT+P
 - Nếu chỉ mở để save ở file hiện tại: open workspace setting -> chỉnh editor formatting -> format on save
 - Nếu mở để save mọi lúc: open user setting -> chỉnh editor formatting -> format on save
@@ -241,7 +239,6 @@ VD: Hook commit-msg tương tự tool commitlint
 
 
 
-
 # Commitlint
 Tool đảm bảo commit message phải chuẩn
 -> Setup: npm install --save-dev @commitlint/config-conventional @commitlint/cli -> config-conventional là cấu hình commit dựa theo chuẩn commit của Angular 
@@ -418,12 +415,11 @@ yarn-debug.log*
 yarn-error.log*
 /.vscode
 
--> Tool khác:
-- stylelint + stylelint-config-recommended => tool này k cần thiết trong các dự án mà k chú trọng cho style file css
+-> Tool khác: stylelint + stylelint-config-recommended => tool này k cần thiết trong các dự án mà k chú trọng cho style file css
 Cách dùng: npm i styleint stylelint-config-recommended -> thêm vào package.json: "stylelint:check": "stylelint \"src/**/*.css\"" -> tạo .stylelintrc.json và thêm style -> mỗi khi dùng thì npm run stylelint:check -> nếu muốn tự động với pre-commit thì thêm vào package.json:
 "husky": {
     "hooks": {
       "pre-commit": "stylelint:check"
     }
 }
-- Tương tự có tslint format typescript
+Tương tự có tslint format typescript

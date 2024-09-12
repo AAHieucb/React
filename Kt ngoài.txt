@@ -1,5 +1,5 @@
 # Progressive enhancement
-Là pp bắt đầu cơ bản trước, sau đó nâng cấp và cải tiến cho những người sử dụng trình duyệt và thiết bị hiện đại hơn. 
+Là 1 pp phát triển website bắt đầu cơ bản trước với content thiết yếu. Rồi nâng cấp dần như thêm css, js cho những người sử dụng trình duyệt hiện đại hơn dùng được (nếu hỗ trợ các tính năng đó). Còn những người dùng trình duyệt cũ vẫn đầy đủ tính năng basic.
 Phải dùng HTML và CSS thuần để đảm bảo sự tương thích. JS dược dùng để thêm tính năng nâng cao, nhưng nếu JS k khả dụng or bị tắt thì vẫn k gián đoạn trải nghiệm cơ bản.
 => Các thư viện có tính chất progressive enhancement phải có các tính chất đó. Nếu không nó có thể không tương thích với một số trình duyệt cũ hoặc khi k hỗ trợ JS.
 
@@ -145,18 +145,6 @@ Qwik hỗ trợ code React => nên dùng thay thế React
 
 
 
-# SEO trong SSR
-SEO và performance của web là code FE, vẫn cần 1 team chuyên SEO chạy traffic hút người dùng vào web. Để check 1 website dùng CSR hay SSR chỉ cần CTRL+U.
-React chỉ có thẻ body trống, dù crawler của gg có thể thực thi code JS nhưng khi fetch API async lâu, VD ta set timeout chờ 10s mới set data thì crawler có thể vẫn k thấy. Framework CSR chưa giải quyết triệt để.
-
--> Cơ chế: Google bot có 1 queue chứa mọi url cần đánh chỉ mục, lần lượt lấy ra và parse HTML. R phân tích xem có cần exec JS k, nếu có thì nó lại thêm cái URL của JS vào render queue. Cái render queue này chứa url của JS, khác với crawl queue ban đầu chứa url của html. Trình renderer lại exec JS để hiển thị trang. Nó gửi HTML được render ra từ JS trở lại crawl queue. Cứ thế lấy mọi thẻ a xử lý và cho vào crawl queue html. Khi mọi html được xử lý, bot dựa vào các thông tin trích xuất ra để đánh chỉ mục cho nội dung.
-Do exec JS tốn kém nên google bot ưu tiên parse html ngay và chạy JS sau. Nếu web lớn và dùng nhiều JS để hiển thị thì bot có thể đọc ít nội dung hơn từ trang đó. Do đó CSR khó SEO, bot luôn thấy trang trống đầu tiên làm trì hoãn việc lập chỉ mục. CSR cần request API xong mới có nội dung hiển thị, bot đánh giá thời gian tải lâu sẽ xếp hạng thấp hơn.
-
--> Google Tag Manager: phổ biến với những người làm quảng cáo google, giúp quản lý website như chỉnh sửa các thẻ meta, theo dõi các sự kiện trên trang như click chuột, tải tệp mà k cần viết thêm JS, tích hợp Google Analytics đo lường, Google Ads.
-Chỉ cần tạo tài khoản rồi nhận được 1 url thì cắm vào index.html, r mở tool của nó để theo dõi thôi.
-
-
-
 # Authorization và authentication
 Authen để biết ai đó hợp lệ và authorization để phân quyền tài nguyên họ được truy cập. Các kiểu login:
 Dùng bên thứ 3 như google, facebook, github nhận về 1 credential và dùng nó này để login các website liên quan.
@@ -214,16 +202,13 @@ npm run --prefix <path> <script> => run npm ở directory khác từ cmd ở th�
 => Fix với powershell quyền admin: npm i -g --production windows-build-tools => Tự cài các tool hỗ trợ mặc định trong window là python và C++ và -g để thêm environment var luôn
 VD windows-build-tools bị lỗi stuck k tải được. Dùng cách khác: Tải python 2.7 -> npm config set python python2.7 -> Tải VS2017 -> mở installer chọn cài desktop development C++ => nếu có VSC rồi thì khả năng là chưa update thôi, cứ update mới nhất là được -> npm config set msvs_version 2017 -> khởi động lại VSC và cài các package bình thường
 
--> npx create-react-app a => đang chạy thì ngắt vì lỗi mạng xong gõ lại thì lỗi => xóa npm-cache trong AppData/Local là xong
-
 -> Khi build dự án sẽ load ra file html, trong đó download các file JS và các file helper mà files js đó cần để chạy. Để tiện cho người dùng, các file JS khi build sẽ bị break thành nhiều file chunk được fetched dynamically bởi file js chính để chỉ tải khi cần gọi đến.
-Nếu bị lỗi load file chunk thì phải restart và xoá cache. 
-
--> Version Release Candidate là phiên bản rc dùng thử trước bản chính thức
 
 -> Lỗi: This site can’t provide a secure connection. Localhost sent an invalid response.
 => Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
 => Fix trên edge tương tự vào: edge://net-internals/#hsts
 Lỗi này do HSTS (HTTP Strict Transport Security) - giao thức yêu cầu tất cả kết nối tới một website phải được mã hóa bằng giao thức HTTPS.
 
--> Dùng color-scheme của css để tạo darkmode cho case đơn giản. @media(prefers-color-scheme: dark) để custom 2 mode
+-> CRA tự động cài cho ta 1 vài plugin hữu dụng như
+@babel/plugin-proposal-class-properties: là plugin giúp dùng đc các class property(hay props), dùng arrow function
+@babel/runtime và @babel/plugin-transform-runtime: tự động thay thế các tính năng k đc hỗ trợ của phiên bản ES khi dùng, cung cấp polyfill.

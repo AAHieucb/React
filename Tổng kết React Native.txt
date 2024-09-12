@@ -1,8 +1,6 @@
 React Native
-Viết 1 lần là cross-platform cho cả Android và iOS.
-Ngày trc lập trình android phải học java, kotlin, bộ android sdk. iOS thì phải học Swift và Objective-C. Bh học React-Native là xong là xong
-
-Native App là các ứng dụng được phát triển và build trên những công cụ mà nhà phát triển iOS, Android cung cấp như XCode, Android Studio. Do sử dụng những tính năng sẵn có của hệ điều hành mà k phải thông qua bên thứ 3 nào khác nên tốc độ là nhanh nhất
+Ngày trc lập trình android phải học java, kotlin, bộ android sdk code trên Android Studio. iOS thì phải học Swift và Objective-C code trên XCode. Bh học React-Native là xong.
+Native App chỉ ứng dụng được phát triển đặc biệt cho 1 nền tảng hđh cụ thể (Android, iOS)
 
 
 
@@ -13,3 +11,5 @@ Tạo folder dự án: expo init <link đến folder chứa dự án> => chọn 
 yarn start -> vô trang web -> expo go trên điện thoại scan QR Code -> chọn mode Tunnel để chạy trên điện thoại thực -> có thể chọn run in webbrowser để dùng TT luôn trên mạng
 
 Có thể code và chạy online với snack.expo.dev
+
+

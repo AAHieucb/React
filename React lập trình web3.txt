@@ -26,12 +26,6 @@ eth_signTypedData_v4 -> Dùng Sign Typed Data v4
 
 
 
-# Dùng list rpc dự phòng
-Ta có 1 list rpc url dự phòng vì url có thể nghẽn. Nếu đang dùng mà 1 rpc bị hỏng thì refresh lại page sẽ chọn rpc khác
-Mỗi khi user vào trang web, sẽ query thử 1 lệnh getBlockNumber với list rpc Promise.any xem cái nào trả nhanh nhất thì lấy
-
-
-
 # Xây page thống kê
 Khi thống kê data của 1 user nào đó thì cần dùng Sign Message để xác thực.
 Khi cần thống kê thì làm API từ server riêng, server này sẽ tự fetch API từ blockchain về và ta query vào đó, server có thể xử lý bằng nhiều cách: 

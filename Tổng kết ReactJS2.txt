@@ -1,15 +1,22 @@
-# Hiển thị ảnh
-Mấy cái hình tĩnh phức tạp hay hiệu ứng thay vì code hãy tạo bằng design chuẩn kích thước r đưa vào sẽ ok hơn. Ít khi ảnh gif thôi.
+# Xử lý ảnh
+Import ảnh nên dùng svg có thể custom style thay vì ảnh tĩnh bth. Ít dùng ảnh gif thôi.
+Mấy cái hình hay hiệu ứng phức tạp nếu có thể hãy tạo bằng design thay vì code.
 
--> Khi user input ảnh, ta kb được, có thể kích thước cực to
-- Chủ động cho họ cut ảnh kiểu avatar
-- Chủ động kéo dãn or cut và lấy center theo tỉ lệ khung fix sẵn sao cho cả khung luôn có ảnh
+-> User input ảnh có thể kích thước cực to: có thể cho họ cut ảnh kiểu avatar, hoặc chủ động cut và lấy center theo tỉ lệ khung hiển thị.
+Ảnh nặng có thể lag khi render thì nên nén nhỏ lại, nén ở server or dùng web worker xử lý canvas ở FE.
+User post quá nhiều ảnh nặng lên server thì server nên xoá ảnh cũ để tránh quá tải. Có thể xoá luôn hoặc mark needDeleted và dùng cronjob xoá.
 
-Set kích thước ảnh thì nên set cho thẻ div bao ngoài
-<Box style={{width: "300px", height: "300px"}}>
-  <img width="100%" />
-</Box>
-=> K sợ bị méo ảnh và luôn là 300px dọc và ngang dù ta có chỉnh bất cứ phần tử bao ngoài hay co màn hình như nào
+-> 3 vấn đề: loading lazy image, placeholder khi loading và error, custom hiệu ứng 
+Khi ảnh nặng, browser mặc định load từ trên xuống từ từ, có thể custom hiệu ứng cho đẹp hơn. 
+
+Khoảng trắng lúc chưa tải ảnh nặng xong phải dùng placeholder mà che lại. Có thể dùng onError và onLoad để bắt.
+VD dựng placeholder cho ảnh bằng cách set kích thước cho thẻ div bao ngoài: <Box style={{width: "300px", height: "300px"}}> <img width="100%"/> </Box>
+
+--> requestIdleCallback: hàm JS giúp thực hiện điều gì khi event loop rảnh k có task.
+react-idle-timer*: lib giúp dùng requestIdleCallback trong React. VD có thể load ảnh nặng, tải data nặng chưa cần dùng ngay nếu rảnh.
+
+--> react-progressive-graceful-image*: loading lazy, placeholder, custom hiệu ứng
+react-lazy-load-image-component: thêm loading='lazy' cho tag image và custom hiệu ứng khi hiện ảnh. 
 
 
 
@@ -20,50 +27,6 @@ Thêm google font API CDN trong public/index.html, phải link cả các font-si
 VD: <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;300;400;600&display=swap" rel="stylesheet"> => Set được font-weight: 200, 300, 400, 600. Các size khác sẽ k có tác dụng
 
 Import font file trực tiép vào rồi định nghĩa trong file css với @font-face
-
-
-
-# Synthetic Event
-URL: https://reactjs.org/docs/events.html
-React bắt event user tạo sẽ wrap native browser events vào 1 cái wrapper có interface, bên trong cung các method như preventDefault() để sử dụng 
-NN dùng wrapper chung bởi vì cùng 1 event với browser khác nhau sẽ có tên khác nhau. Wrapper sẽ gom thành 1 thứ duy nhất và trigger event thực của real dom tùy theo browser. Tức các sự kiện ta trigger như onClick, onBlur, onChange là ReactJS custom event (Synthetic Event) chứ kp real dom event . Cái wrapper kia gọi là SyntheticEvent object.
-
-Nhờ đó dễ dàng tạo ra cross browser app. Nó giúp tăng performance vì Synthetic Event được pooled và resused accross multiple native events. Khi 1 event xảy ra, React sẽ lấy 1 đối tượng sự kiện từ pool, set các thuộc tính dựa trên sự kiện gốc, xử lý xong sẽ đưa lại về pool để tái sử dụng cho các sự kiện tiếp theo.
-Event pool chứa system events và events tự định nghĩa. Mỗi action tương tác sẽ thêm vào pool này. Khi đó nó lấy từ pool ra dần dần thực hiện xử lý các thứ. 
-
--> event.stopPropagation() sẽ cản trở event tiếp tục bubble up và thực hiện tiếp các hàm khác
-event.persist() => cản event được pool bằng cách set null luôn => Bỏ vì phiên bản mới, SyntheticEvent k còn được pooled nữa
-
-
-
-# Import export trong React
-ES6 (FE): có export theo tên và default export
-CommonJS (NodeJS): exports là viết tắt của module.exports
-
--> Hàm require chỉ chạy trên server. Dùng require sẽ thêm toàn bộ code dự án vào theo thứ tự file js. Còn import của front end là thêm 1 module bất đồng bộ.
-Trong React, ngoài folder src dùng CommonJS, files trong src dùng ES6. Tuỳ biến package Browsify có thể cấu hình FE dùng CommonJS, package Babel giúp NodeJS dùng ES6 được.
-Trong HTML CSS thuần ta dùng được export và import như v thì file export phải được script vào file html dưới dạng module nhưng trong React config hết r nên k cần.
-
-
-
-# Lazy loading 
-Code splitting: Vào web thì browser tải từng file html css js về. Với React thì bundle lại thành bundle.js mới gửi tới trình duyệt. Nếu dự án lớn sẽ khiến file bundle to ra mà mỗi lần vào tải cả cục rất lâu. Code splitting là kỹ thuật tách ứng dụng 2 phần: chỉ load phần bundle cần thiết để khởi động, các phần khác sẽ load sau khi ứng dụng chạy.
-1) Dynamic import: import là 1 promise, khi nào dùng mới tải về. Vd khi render thực sự 1 component ra mới load file bundle chứa component về.
-Bth React optimize mọi module thành các file bundle.js, nhưng khi dùng dynamic import, các phần đó sẽ được React tách riêng ra k cho vào file bundle chung. Hđ với cả CSR SSR
-Browser tự tối ưu n lần dynamic import sẽ chỉ tải 1 lần file js đó. Nếu vừa import bth, vừa dynamic import thì nó import bth xong sẽ k import lại gì nữa.
-2) Lazy loading: y hệt, dùng để load cả 1 file component trong React.
-=> Code spliting chỉ hiệu quả nếu split được các file lớn nên lazy loading được dùng nhiều. Còn dynamic import ít dùng hơn, VD khi cần import cả 1 thư viện lớn chẳng hạn.
-
-Nơi nào cần dùng thì import bằng React.lazy -> Hiển thị component như bth nhưng bao ngoài bằng React.Suspense
-
-
-
-# Dùng responsive
-VD cần ẩn 1 nút bấm nếu là mobile, màn hình to thì hiển thị bth => có thể dùng css thuần cho display none thẻ đó or dùng code JSX check if else có render ra hay không
-
--> Dùng @media hoặc cách riêng của thư viện UI
--> Dùng lib react-device-detect 
--> Tự tạo 1 hook useDevice trả ra các biến phục vụ lấy kích thước màn hình hiện tại => best practice
 
 
 
@@ -89,8 +52,7 @@ body{
 :root{
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  // => Font-family default của OS, nếu có 1 font dùng global chắc chắn tồn tại thì viết thêm vào đầu là được.
+    sans-serif; // => Font-family default của OS, nếu có 1 font dùng global chắc chắn tồn tại thì viết thêm vào đầu là được.
   text-rendering: optimizeLegibility;
 }
 #root{
@@ -132,74 +94,57 @@ body::-webkit-scrollbar {
 
 
 
+# Lazy loading 
+Code splitting: Vào web thì browser tải từng file html css js về. Với React thì bundle lại thành bundle.js mới gửi tới trình duyệt. Nếu dự án lớn sẽ khiến file bundle to ra mà mỗi lần vào tải cả cục rất lâu. Code splitting là kỹ thuật tách ứng dụng 2 phần: chỉ load phần bundle cần thiết để khởi động, các phần khác sẽ load sau khi ứng dụng chạy.
+
+1) Dynamic import: import là 1 promise, khi nào dùng mới tải về. Vd khi render thực sự 1 component ra mới load file bundle chứa component về.
+Bth React optimize mọi module thành các file bundle.js, nhưng khi dùng dynamic import, các phần đó sẽ được React tách riêng ra k cho vào file bundle chung. Hđ với cả CSR SSR
+Browser tự tối ưu n lần dynamic import sẽ chỉ tải 1 lần file js đó. Nếu vừa import bth, vừa dynamic import thì nó import bth xong sẽ k import lại gì nữa.
+2) Lazy loading: y hệt, dùng để load cả 1 file component trong React. Kết hợp Suspense
+=> Code spliting chỉ hiệu quả nếu split được các file lớn nên lazy loading được dùng nhiều. Còn dynamic import ít dùng hơn, VD khi cần import cả 1 thư viện lớn chẳng hạn.
+
+
+
 # Dùng web worker
-Dùng với lib @shopify/react-web-worker
-Vd: sort 500000 phần tử bằng bubble sort trong react sẽ làm ui block. Mở tab performance của browser sẽ thấy ui bị block vài giây, nếu chạy nó trên 1 worker riêng, thời gian vẫn thế nhưng main thread sẽ k bị block. 
 Web worker tận dụng chip đa nhân trên máy client luôn. K nên lạm dụng mà thêm khoảng 2-3 workers là ok => Nên dùng khi xử lý ảnh, canvas drawing, export CSV or excel file lớn
+Dùng lib @shopify/react-web-worker => bỏ lib cũ @koale/useworker 
+Vd: sort 500000 phần tử bằng bubble sort trong react sẽ block ui. Mở tab performance của browser sẽ thấy CPU 100%, nếu chạy nó trên 1 thread riêng, thời gian vẫn thế nhưng CPU thấp và k bị block
 
-Tab performance monitor browser có CPU usage. Khi dùng web worker sẽ thấy CPU usage giảm mạnh
 
 
-
-# React 18 Feature
-Cho phép render undefined, bỏ các older browser, cải thiện bộ nhớ
-
--> Dùng createRoot là hàm enable concurrent feature của React18, nếu k dùng thì ứng dụng sẽ làm vc y như React17. Tương tự hàm hydrateRoot thay thế cho hydrate dùng cho SSR
-
--> Automatic Batching: 
-VD state của 1 component đổi 2 lần thì render lại 2 lần, với React18 tối ưu hơn, gom 2 cái thay đổi lại và render theo cái cuối thôi. 
-VD: setTimeout(() => {
-  setSize((oldSize) => oldSize + 1); setOpen((oldOpen) => !oldOpen);
-  // React will only re-render once at the end (that is batching)
-}, 1000);
-=> Đề phòng người dùng k muốn batching, nó sinh ra hàm flushSync để xem có update DOM hay k
-function handleSubmit() {
-  flushSync(() => { setSize((oldSize) => oldSize + 1); }); // React has updated the DOM by now
-  flushSync(() => { setOpen((oldOpen) => !oldOpen); }); // React has updated the DOM by now
-}
+# Tối ưu render list lớn
+C1: Virtualize long list: Dùng react-window* or react-virtualized chỉ show phần DOM visible. Kết hợp scroll down to load more
+C2: Dùng phân trang kiểu bấm số chuyển pages
 
 
 
 # Dùng React portal
 Giúp render UI nằm ngoài component tree. VD modal, tooltip. Các thư viện toàn dùng ReactPortal cho các tính năng đó.
--> react-reverse-portal giúp tạo các cổng chuyển component tới đủ mọi nơi trong dự án trong component tree.
+-> react-reverse-portal* giúp tạo các cổng chuyển component tới đủ mọi nơi trong dự án trong component tree.
 
 
 
-# Virtualize long list
-Render list lớn trong React bị lag. K nên load tất cả, chỉ nên load và render phần nhìn thấy được.
-- Phân trang
-- Dùng react-window or react-virtualized chỉ show phần DOM visible. Kết hợp scroll down to load more
+# SEO trong React
+Để check 1 website dùng CSR hay SSR chỉ cần CTRL+U. 
+Cơ chế: Google bot có 1 crawl queue chứa mọi url cần đánh chỉ mục, lần lượt lấy ra và parse HTML. R phân tích xem có cần exec JS k, nếu có thì nó lại thêm cái URL của JS vào render queue (render queue chưa url js, crawl queue chứa url html). Trình renderer lại exec JS để hiển thị trang. Nó gửi HTML được render ra từ JS trở lại crawl queue. Cứ thế lấy mọi thẻ a xử lý và cho vào crawl queue html. Khi mọi html được xử lý, bot dựa vào các thông tin trích xuất ra để đánh chỉ mục cho nội dung.
+Do exec JS tốn kém nên google bot ưu tiên parse html ngay và chạy JS sau, nếu request lâu thì có thể crawler sẽ k thấy. Tức web lớn và dùng nhiều JS để hiển thị thì bot có thể đọc ít nội dung hơn từ trang đó. Vì CSR cần request API xong mới có nội dung hiển thị, bot đánh giá thời gian tải lâu cũng sẽ xếp hạng thấp hơn
 
+Google Tag Manager: quản lý website, chỉnh thẻ meta, theo dõi các sự kiện trên trang như click chuột, tích hợp Google Analytics đo lường, Google Ads.
+Chỉ cần tạo tài khoản rồi nhận được 1 url thì cắm vào index.html, r mở tool của nó để theo dõi thôi.
 
-
-# Lazy loading image
-3 vđ: loading lazy, placeholder khi loading và error, custom hiệu ứng khi hiện ảnh. 
-Browser mặc định load ảnh nặng từ trên xuống từ từ, khi custom hiệu ứng sẽ làm nó đẹp hơn, còn khoảng trắng lúc chưa load xong phải chịu thôi, dùng placeholder mà che lại.
-
--> requestIdleCallback: hàm JS giúp thực hiện điều gì khi event loop k có task.
-react-idle-timer*: lib giúp dùng requestIdleCallback trong React. Có thể load ảnh nặng, tải data nặng chưa cần dùng ngay nếu rảnh.
-
--> react-progressive-graceful-image*: loading lazy, placeholder, custom hiệu ứng
-react-lazy-load-image-component: thêm loading='lazy' cho tag image và custom hiệu ứng khi hiện ảnh. 
-
-
-
-# Tối ưu SEO React
--> Dùng React Helmet update thẻ metadata ở từng router, viết các thẻ metadata có giá trị mặc định ở mọi route trong index.html. 
+-> Dùng React Helmet update thẻ metadata ở từng router, viết các thẻ metadata có giá trị mặc định ở mọi route trong index.html. Or làm thủ công set meta tag cho document
 Crawler exec code JS có thể thấy metadata đổi được set bởi React Helmet. 
-Vd share web cho messager thì nó fetch lấy title và ảnh trong html chứ k exec JS nên sẽ giống nhau ở mọi route.
-Thay vì dùng helmet, có thể update head tag thông qua global var document ok
+Vd share web cho telegram thì nó fetch lấy title và ảnh trong html chứ k exec JS nên sẽ thấy giống nhau ở mọi route.
 
 -> Thêm descriptive text với mọi thẻ nếu có thể. Dùng cấu trúc url ngắn và descriptive
 Nên dùng CDN để cung css, js, font chữ để giảm thời gian tải
 Hạn chế lỗi để nội dung ẩn sau form login, kể cả chưa login cũng phải thấy gì đó. 
 
 -> File robots.txt: xác định phần nào nên và k nên thu thập dữ liệu, nằm cùng cấp thư mục gốc của dữ liệu => thường để default
-Googlebot k tìm thấy robots.txt vẫn thu thập dữ liệu bth. robots.txt có thể cản các crawler thu thập thông tin trang nhưng k cản được crawler của các công cụ tìm kiếm.
+Nếu googlebot k tìm thấy robots.txt vẫn sẽ thu thập dữ liệu bth. robots.txt có thể setup cản crawler
 
 -> Giải pháp khác
-1) Prerendering
+1) Prerendering cho SEO
 Ta có thể dùng proxy kiểu nginx để check:
 $http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|whatsapp"
 or
@@ -221,17 +166,16 @@ location / {
 => Tức nếu request đến từ client bth thì show web react. Nếu đến từ bot crawler thì ta redirect đến 1 cache server trả ra data SSR tối ưu SEO => ít dùng
 Prerendering có nhiều kiểu như sử dụng các dịch vụ SaaS, or thư viện Prerender.io, Prerender.cloud, SEO.js, BromBone
 
-2) Dùng isomorphic với React
-Isomorphic là dùng kiểu component render bởi cả server và client. Đó là kiểu server render component, gửi cho client hydrate lại. Đó là kiểu bth mà React có hàm hydrate
-VD: React Redux Universal, AfterJS, Goldpage là các framework hỗ trợ, thế thà dùng mẹ nextjs gatsby.
+2) Dùng isomorphic (hay universal) với React
+Là dùng component render bởi cả server và client. React có hỗ trợ SSR, ta để server render component, gửi cho client hydrate lại. React có sẵn hàm createServer và hydrate
+VD: React Redux Universal, AfterJS, Goldpage là các framework hỗ trợ, thế thà dùng mẹ nextjs gatsby cho xong.
 
 
 
 # Dùng webpack
 refer tới "Projects / Setup / setup react thủ công với webpack"
-Có các package giúp cấu hình lại webpack như dotenv-webpack
 
--> npm run eject => Lệnh 1 chiều, làm cho bundler không còn tự động hóa mọi vấn đề nữa mà sẽ bung toàn bộ config để những dev có thể config lại tuỳ ý. K dùng nếu k rành webpack.
+-> npm run eject => Lệnh 1 chiều k dùng tuỳ tiện, làm cho bundler không còn tự động hóa mọi vấn đề nữa mà sẽ bung toàn bộ config để những dev có thể config lại tuỳ ý. 
 
 -> Lỗi: npm run build dự án react ra file index.html nhưng khi vào chỉ có 1 trang trắng. NN vì webpack config bản production thì build vào path "/" tức absolute tìm trong application chứ kp trong application/build. 
 => Fix bằng cách thêm vào package json "homepage":"." để chỉ định tải các file static của dự án với url là relative trong thư mục hiện tại là application/build
@@ -239,6 +183,7 @@ VD: custom "homepage": "./test", thì nhét thư mục static vào folder test c
 
 
 
+//!!!!!!!!!!
 # Dùng lib MUI v5
 Tạo Google's Material Design, là 1 hình thức của Flat Design (thiết kế phẳng). Chỉ dựa vào thay đổi màu mà mang tới cảm giác 3D như có hiệu ứng nổi lên trên giao diện.
 
@@ -424,3 +369,17 @@ TH5: các hàm fetch dữ liệu
  slice: export const fetchData = createAsyncThunk("<tên>", async(data, thunkAPI) => { await <gọi hàm bất đồng bộ>; return res; }) -> trong extraReducers xử lý [fetchData.fulfilled/pending/rejected](state,action) {state.data = action.payload.data;}
  component: import fetchData from "..";
 => TH5 có thể kết hợp Axios và Promise.all([thunkAPI.dispatch(function1(A)), thunkAPI.dispatch(function2(B))]);
+
+
+
+# Dùng responsive
+VD cần ẩn 1 nút bấm nếu là mobile, màn hình to thì hiển thị bth => có thể dùng css thuần cho display none thẻ đó or dùng code JSX check if else có render ra hay không
+
+-> Dùng @media hoặc cách riêng của thư viện UI
+-> Dùng lib react-device-detect 
+-> Tự tạo 1 hook useDevice trả ra các biến phục vụ lấy kích thước màn hình hiện tại => best practice
+
+??? Thiếu container query và video trong youtube
+
+
+
