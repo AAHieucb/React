@@ -280,9 +280,8 @@ VD cần ẩn 1 nút bấm nếu là mobile, màn hình to thì show bth => có 
 -> Dùng @media hoặc cách riêng của thư viện UI
 -> Dùng lib react-device-detect
 -> Tự tạo 1 hook useDevice trả ra các biến phục vụ lấy kích thước màn hình hiện tại => best practice
--> 
+-> Dùng container query tốt hơn với @container
+-> Dùng grid-templates-columns và các pp css thay thế container query
 
-//!!!!!!!!!
-??? Thiếu container query và video trong youtube
 
 

@@ -91,7 +91,7 @@ react-markdown: thư viện giúp render từ kiểu markdown ra văn bản đ�
 react-color*: color picker
 react-datepicker: date picker
 react-pdf
-sweetalert*: hộp thoại alert
+sweetalert*: hộp thoại alert đẹp
 react-qr-reader: quay camera QR
 @pqina/flip*: tạo Flip Clock chuẩn
 google-map-react: hiển thị gg map tương tác. Nó có điểm lợi là dùng google map API và dù k load được google map api nó vẫn có thể hiện map bth
