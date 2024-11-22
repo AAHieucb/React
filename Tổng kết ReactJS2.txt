@@ -12,6 +12,11 @@ Khi ảnh nặng, browser mặc định load từ trên xuống từ từ, có t
 Khoảng trắng lúc chưa tải ảnh nặng xong phải dùng placeholder mà che lại. Có thể dùng onError và onLoad để bắt.
 VD dựng placeholder cho ảnh bằng cách set kích thước cho thẻ div bao ngoài: <Box style={{width: "300px", height: "300px"}}> <img width="100%"/> </Box>
 
+Custom ảnh failed bằng cách dùng onError check hiển ảnh lỗi theo ý ta
+Chú ý khi thuộc tính src không tồn tại thì k hiện gì mà cũng k báo lỗi. Khi đó cần check src={url||<default image url>}
+
+--> Thư viện react-image giúp xử lý fallback, list image để 1 cái fail tự động load image sau đó
+
 --> requestIdleCallback: hàm JS giúp thực hiện điều gì khi event loop rảnh k có task.
 react-idle-timer*: lib giúp dùng requestIdleCallback trong React. VD có thể load ảnh nặng, tải data nặng chưa cần dùng ngay nếu rảnh.
 
@@ -102,6 +107,18 @@ Bth React optimize mọi module thành các file bundle.js, nhưng khi dùng dyn
 Browser tự tối ưu n lần dynamic import sẽ chỉ tải 1 lần file js đó. Nếu vừa import bth, vừa dynamic import thì nó import bth xong sẽ k import lại gì nữa.
 2) Lazy loading: y hệt, dùng để load cả 1 file component trong React. Kết hợp Suspense
 => Code spliting chỉ hiệu quả nếu split được các file lớn nên lazy loading được dùng nhiều. Còn dynamic import ít dùng hơn, VD khi cần import cả 1 thư viện lớn chẳng hạn.
+VD: const Events = React.lazy(() => import('./Events'));
+<Suspense fallback={<div>Loading...</div>}><Events /></Suspense>
+
+-> Prefetching: 
+- Trong NextJS luôn tự prefetch khi dùng tag Link của nó.
+- Trong React có react-router-dom có thể tìm cách prefetch
+- Trong html thuần: 
+Thẻ a k hỗ trợ prefetch mà chỉ navigation. Mỗi khi navigate sẽ sang 1 trang mới hoàn toàn và tải lại mọi thứ. Do đó các file css, js chung phải link vào mọi page html. 
+
+Nếu muốn k fetch lại mà prefetch từ trước. C1 là dùng SPA tự cache. C2 là fetch nó từ trang trước cho browser cache lại, nếu người dùng k disable cache trong browser thì sẽ ok.
+Dùng <link rel="prefetch" href="./page2.html"> sẽ prefetch page2 vào lúc rảnh, cache trong browser, chỉ dùng được với same site.
+Khác với rel="preload" để ưu tiên tải 1 data trong page trước mọi tài nguyên khác. Vd ảnh hay thumbnail SEO dùng khi share trên tele, twitter.
 
 
 
@@ -113,8 +130,43 @@ Vd: sort 500000 phần tử bằng bubble sort trong react sẽ block ui. Mở t
 
 
 # Tối ưu render list lớn
-C1: Virtualize long list: Dùng react-window* or react-virtualized chỉ show phần DOM visible. Kết hợp scroll down to load more
-C2: Dùng phân trang kiểu bấm số chuyển pages
+Lag vì render quá nhiều DOM nodes
+C1: Virtualize long list: Dùng react-window* or react-virtualized or react-viewport-list chỉ show phần DOM visible. Kết hợp scroll down to load more với react-infinite-scroller
+C2: Dùng phân trang kiểu bấm số chuyển pages: react-paginate
+
+-> Vd logic frontend lấy hết data về rồi tự phân trang:
+const dataList;
+const [page, setPage] = useState(1);
+const { itemPerPage, numberOfPage } = useMemo(() => {
+  if(dataList) {
+    let itemPerPage = 10;
+    if(isMobile) itemPerPage = 6;
+    const numberOfPages = Math.ceil(dataList.length / itemPerPage);
+  }
+  return { itemPerPage: 0, numberOfPage: 0 };
+}, [dataList, isMobile]);
+useEffect(() => {
+  if(dataList && page*itemPerPage > dataList.length) setPage(1);
+}, [dataList, itemPerPage]);
+if(!dataList || dataList.length <= 0) return <Empty/>
+dataList.slice((page - 1)*itemPerPage, page*itemPerPage).map((item, idx) => (
+  <ItemList key={idx}/>
+))
+=> Filter search để trên URL params
+
+-> Vd logic server xử lý phân trang db:
+Request: filter, currentPage, pageSize
+Response: datalist, error, totalitem
+=> Mất 2 query để lấy count và data 1 page.
+
+Dùng load more thay vì phân trang thường sẽ tối ưu hơn:
+Request: filter, offset, limit
+Response: data (có thể kèm nextlink)
+=> frontend check data.length mà nhỏ hơn limit thì k query nữa
+
+-> Usecase: Server cần lấy lượng data lớn từ 1 db, và toàn bộ data từ 1 API, filter search cần check trên cả db và API. Tức là k thể phân trang trực tiếp trong 1 query tới 1 database.
+=> Tức cần query tới database đúng tại vị trí lần trước đó query. Server có thể gửi cho client indexitem là vị trí item cuối cùng mà nó lấy từ database, request sau lại gửi kèm cái đó để server lấy từ vị trí đó đổ lên là được. 
+=> Nếu frontend không làm được thì có cách khác là frontend sẽ gửi kèm id của phần tử cuối cùng mà nó nhận được từ request trước đó, server sẽ tự động orderby id (được đánh index) và check nếu id lớn hơn cái đó thì lấy.
 
 
 
@@ -124,7 +176,7 @@ Giúp render UI nằm ngoài component tree. VD modal, tooltip. Các thư viện
 
 
 
-# SEO trong React
+# SEO trong React => ref tới "NextJS"
 Để check 1 website dùng CSR hay SSR chỉ cần CTRL+U. 
 Cơ chế: Google bot có 1 crawl queue chứa mọi url cần đánh chỉ mục, lần lượt lấy ra và parse HTML. R phân tích xem có cần exec JS k, nếu có thì nó lại thêm cái URL của JS vào render queue (render queue chưa url js, crawl queue chứa url html). Trình renderer lại exec JS để hiển thị trang. Nó gửi HTML được render ra từ JS trở lại crawl queue. Cứ thế lấy mọi thẻ a xử lý và cho vào crawl queue html. Khi mọi html được xử lý, bot dựa vào các thông tin trích xuất ra để đánh chỉ mục cho nội dung.
 Do exec JS tốn kém nên google bot ưu tiên parse html ngay và chạy JS sau, nếu request lâu thì có thể crawler sẽ k thấy. Tức web lớn và dùng nhiều JS để hiển thị thì bot có thể đọc ít nội dung hơn từ trang đó. Vì CSR cần request API xong mới có nội dung hiển thị, bot đánh giá thời gian tải lâu cũng sẽ xếp hạng thấp hơn
@@ -222,6 +274,18 @@ Luồng: view -> dispatch actions -> middleware -> reducer -> state mới -> qua
 Dispatcher dispatch action sẽ được xử lý đồng thời, 1 phần đưa action vào reducers xử lý loading và show ra, 1 phần được saga ở middleware xử lý call api lâu hơn. Saga xử lý xong thì dispatch 1 action đến reducers xử lý kết quả thành công hay thất bại.
 Kiểm soát dispatch action tùy biến: takeLastest, takeLeading, takeEvery, call, put, all, delay, put, take, select, putResolve, race, fork, spawn
 
+--> Dùng redux saga dự án lớn:
+Ở từng file xử lý từng module:
+yield takeLatest/takeEvery
+index.ts import hết r gom lại:
+yield all([fork(<hàm import từng file>), fork(...)])
+store.ts:
+import index.ts sagas làm middleware của stores
+
+Xử lý loading state:
+onSuccess và onFailed là hàm của action truyền vào dispatch mỗi khi gọi: loading là state lưu ở component ban đầu set true, hàm onSuccess và onFail set lại false ok.
+Có thể gọi yield cancelled(); tuỳ ý
+
 -> redux-toolkit: có sẵn nanoid sinh số random
 Cách chuẩn nhất là dùng createSlice với createAsyncThunk (unwrap và rejectWithValue), extraReducer, createDraftSelector
 
@@ -282,6 +346,80 @@ VD cần ẩn 1 nút bấm nếu là mobile, màn hình to thì show bth => có 
 -> Tự tạo 1 hook useDevice trả ra các biến phục vụ lấy kích thước màn hình hiện tại => best practice
 -> Dùng container query tốt hơn với @container
 -> Dùng grid-templates-columns và các pp css thay thế container query
+=> ref tới "HTML_CSS_JS"
 
+
+
+#***Bản chất cách viết chuẩn React 18
+Cả dự án chỉ dùng toàn custom hook cũng được, luôn dùng useCallback, useMemo đảm bảo mọi thứ phụ thuộc.
+
+Bản chất state của React giải thích case đồng hồ đếm ngược:
+Khi dùng useEffect và định nghĩa 1 hàm bên trong (kể cả là hàm const hay hàm trong setInterval), hàm đó là cố định giống useCallback, các tham số cũng là cố định và chỉ khởi tạo lại khi useEffect chạy lại tức dependencies đổi.
+
+1) useEffect gọi hàm side effect, hàm đó phải nằm trong useCallback và là phụ thuộc của useEffect, vì khai báo const sẽ khởi tạo lại ở mỗi lần render.
+Chú ý useCallback k đủ dependency sẽ dùng với data cũ có thể sai. 1 số ít TH buộc phải thêm // eslint-disable-line => Có cách ép chuẩn rule với useRef. VD:
+const initRef = React.useRef(null);
+const fetchAttempted = React.useRef(false);
+React.useEffect(() => {
+  initRef.current = async () => {
+    if (!fetchAttempted.current) {
+      if (auctionFetchingStatus !== FS.SUCCESS) {
+        fetchAttempted.current = true;
+        await Promise.all([dispatch(fetchAllAuction())]);
+      }
+    } else {
+      await Promise.all([dispatch(fetchAllAuction())]);
+    }
+  };
+}, [auctionFetchingStatus, dispatch]);
+React.useEffect(() => {
+  initRef.current();
+}, [needRefetch]);
+=> auctionFetchingStatus đổi sẽ k gọi lại hàm fetch nhưng vẫn update hàm
+
+Nếu gọi nhiều hàm lồng nhau từ base, cứ viết custom hook lồng nhau liên tục cho đến hook base. Liên tục return các hàm useCallback => ref tới "Projects / Combinator"
+Tương tự useMemo với data cấu thành từ state, nếu tái sử dụng nhiều nơi có thể cùng custom hook ở file riêng. Còn không thì khai báo const trực tiếp trong file như bth ok.
+
+2) 1 pages fetch lại data, cách trigger 1 pages khác ở xa cũng fetch lại data:
+Dùng ReactContext hoặc redux cung ra hàm refetchData. Nên viết 1 file riêng gọi hàm fetchData với type, type nào thì component pages nào cần rerender. Nên tạo thêm 1 custom hook bên trong gọi hàm fetchData kèm dependency và cung ra hàm đó 
+
+VD: Component A update data cần component B rerender -> component A gọi hàm refetch của react context truyền vào type X -> react context check map type X thì B cần refetch nên đổi refetchB -> component B dùng custom hook gọi hàm initB có dependency là refetchB sẽ rerender. Cần viết sao cho componentB luôn refetch nếu refetchB lật bit.
+
+Bản chất React ta nghĩ là phụ thuộc vào nhau, ví dụ component A đổi data thì component B refetch thì component B nên có data dependency là A. Nhưng trong blockchain nó éo như v, 1 component xa lắc xa lơ có thể call refetch của nhau nên k được trừ khi tất cả lưu vào redux
+
+3) ***Bản chất***Giả sử ta click 1 button gọi 1 API độc lập, API này k phụ thuộc vào state gì cả thì liệu hàm đó có cần useCallback không? => K cần, có thể tạo file riêng or định nghĩa ngay hàm const trong component 
+- Ta có thể khai báo bất cứ loại hàm gì export ở 1 file riêng và sử dụng ở mọi component khác nhau nếu nó k phụ thuộc vào state props 
+- 1 hàm số được khai báo trong component nếu cần dùng state props của component đó. Khi hàm đơn giản và k phụ thuộc vào hook khác thì khai báo const. Hàm phức tạp k muốn khởi tạo lại nhiều hoặc dùng kết hợp nhiều hook khác thì dùng useCallback sẽ memoize. Hàm mà tái sử dụng ở nhiều nơi thì tách ra custom hook (or dùng các pp khác như hàm fetchReduxThunk).
+
+TH1 hàm phụ thuộc vào hook khác, được gọi trong 1 hook khác thì hook đó phải có hàm là dependency. Hàm đó phải dùng useCallback liệt kê mọi dependency, nếu ta muốn làm kiểu setCounter(counter + 1) thì phải liệt kê counter vào dependency, môi lần gọi thì useCallback sẽ render hàm mới, useEffect có hàm là dependency sẽ chạy tiếp vì đổi counter nên sẽ gọi vô tận hàm => fix với setCounter(val => val + 1); Tức là cứ viết như vậy thì mọi hàm cần gọi hoặc là sẽ gọi đến cuối cùng là 1 hàm không còn dependency nó đổi, hoặc là hàm external klq tới state nữa
+=> Custom hook chỉ là 1 cách chia tái sử dụng, k giúp được gì.
+
+4) Các case khác:
+const [test, setTest] = useState(false); => phụ thuộc vào test thì cần dependency nhưng setTest thì không
+Hàm async hay không async ta đều xử lý như nhau
+
+Với các hàm logic bình thường:
+VD1:   
+const debounceCallRefetchData = useCallback(
+  debounce(() => { setRefetchData(false); }, 11000),
+  []
+);
+VD2:   
+const debounceCallRefetchData = debounce(() => {
+  setRefetchData(false);
+}, 11000);
+=> Nên dùng C2 vì C1 có hàm đơn giản và k có phụ thuộc gì vào state props, chỉ dùng useCallback khi phụ thuộc vào state props hoặc là dependency của chỗ khác.
+
+-> Dấu hiệu tách riêng component: khi cần tái sử dụng; khi 1 component mà query 2 api hiển thị 2 nơi
+
+
+
+# Error boundary
+React component ta thường k viết try catch nên có error sẽ hỏng chương trình. Thay vì thế ta muốn hỏng đúng component đó và hiển thị lỗi thôi:
+C1: Mọi functional component đều bao với try catch hiện component Error
+C2: Wrap cả ứng dụng trong 1 component ErrorBoundary bắt lỗi thì React chỉ hỗ trợ làm với class Component.
+C3: Muốn wrap bằng ErrorBoundary trong functional component, phải dùng thư viện react-error-boundary bao ngoài => ref tới "Đồ án"
+URL: https://dev.to/edemagbenyo/handle-errors-in-react-components-like-a-pro-l7l
+C3: Trong react-router-dom cũng có <Route errorElement={}/> giúp hiển thị error element nếu path bên trong throw mà k bắt
 
 

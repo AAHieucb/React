@@ -125,6 +125,8 @@ React Email cung components cho việc gửi email
 @replexica/react hỗ trợ i18n bằng AI
 Refine giúp cho việc xây ứng dụng CRUD dễ dàng hơn react thuần. Nó cung copmonents, state management, hook.
 
+-> @welldone-software/why-did-you-render*** thư viện utility mạnh
+
 
 
 # Pattern style component
@@ -282,18 +284,38 @@ Case lỗi: function (url) {
   useEffect(() => onConnected(url), [url]);
 } => nếu k truyền url vào onConnected, nó sẽ luôn dùng url mới nhất. useEffect chạy async k kiểm soát được. VD gọi hàm trong useEffect 2 lần thật nhanh bằng cách đổi url, sẽ có lúc onConnected chạy lần 1 với data của lần 2 là sai nên phải truyền. Tức url đổi ngay giữa lúc trigger useEffect và bên trong onConnected được gọi.
 
--> useTransition:
-Hàm startTransition sẽ có ưu tiên thực hiện thấp hơn và nếu có 1 lệnh tương tự thì câu lệnh cũ sẽ bị dừng luôn và ưu tiên chạy câu lệnh mới. Nó tự chỉnh đảm bảo k bị lag => Dùng khi 1 hàm nặng phụ thuộc vào 1 giá trị. Chạy nhiều lệnh như nhau sẽ được gom thành 1, nhưng k có đk thời gian cụ thể như useDebounce.
-useDeferredValue tương tự useTransition nhưng là gán 1 value vào 1 biến số khác, nó k ưu tiên việc gán value và rerender để tránh lag => Dùng khi 1 component nặng phụ thuộc vào 1 biến, ta useMemo component và useDeferredValue biến đó
+-> useFormStatus: Tương tự cung status của last form submission: https://react.dev/reference/react-dom/hooks/useFormStatus
+const { pending, data, method, action } = useFormStatus();
 
--> useOptimistic thường dùng khi biết khá chắc lệnh call sẽ success. 
-VD: người dùng update xong API chưa thành công đã tắt page => Có thể cản lại với window.addEventListener("beforeunload"); URL: https://www.youtube.com/watch?v=VBlSe8tvg4U
+-> useTransition:
+Hàm startTransition sẽ có ưu tiên thực hiện thấp hơn để k ảnh hưởng performance và nếu có 1 lệnh tương tự thì câu lệnh cũ sẽ bị dừng luôn và ưu tiên chạy câu lệnh mới. Nó tự chỉnh đảm bảo k bị lag => Dùng khi 1 hàm nặng phụ thuộc vào 1 giá trị. Chạy nhiều lệnh như nhau sẽ được gom thành 1, nhưng k có đk thời gian cụ thể như useDebounce.
+Khi code cần xác định phần task nào gây lag cho browser đưa vào startTransition. VD fetch API thực tế k gây lag cho browser thì k cần. VD search 1 chữ và thực hiện filter trên 1000 phần tử, hành động filter sẽ cho vào startTransition, kp hành động đổi text, cũng kp hành động set data, mà cả hành động filter và setdata cần cho vào.
+
+useDeferredValue: tương tự nhưng delay việc update giá trị cho 1 biến vào 1 biến khác. Vd ta gõ input thay đổi biến a và dùng biến a để search list 1000 phần tử. Rõ ràng gõ nhanh sẽ gây lag vì task tuần tự. Khi đó ta dùng useDeferredValue để biến a vẫn update realtime nhưng biến aDeferred cho vào hàm search sẽ update delay 1 tí tránh lag. 
+Việc aDeferred update như nào phụ thuộc vào mức độ bận của main thread, nếu rất bận thì nó càng skip intermediate value nhiều hơn. Tương tự nó k dùng cho callapi mà dùng do lag vì update tuần tự. Chứ call api k lag nhưng ta cần giảm thiểu số lần call tới mức tối thiểu thì dùng debounce tốt hơn.
+
+=> 2 ví dụ đó là 2 usecase tối ưu nhất. useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance. useDeferredValue dùng khi chạy 1 hàm nặng phụ thuộc vào 1 giá trị, nhưng giá trị đó có thể thay đổi liên tục nên cần defer chứ k thực hiện lại liên tục hàm nặng.
+
+-> useOptimistic thường dùng khi biết khá chắc lệnh call sẽ success, fail tự undo => ít dùng mà thường dùng useDebounce hơn, nên implement failed tự undo cho useDebounce
+VD: nếu người dùng update xong API chưa thành công đã tắt page => Có thể cản lại với window.addEventListener("beforeunload"); URL: https://www.youtube.com/watch?v=VBlSe8tvg4U
+
+-> use(Promise): TH1 là dùng với 1 promise trong 1 component, sẽ có thể dùng nó trong conditional được. Wrap với ErrorBoundary và Suspense để hiện fallback, component dùng use(Promise) sẽ hiện fallback nếu promise chưa thực hiện xong, k cần dùng await cho nó.
+Th2 là dùng với use(ReactContext) thì như useContext nhưng dùng được trong câu điều kiện
+
+-> useFormState => dùng cho server actions
+const [formState, formAction] = useFormState(addToCart, { itemID: "" });
+async function addToCart(prevState, queryData) { const itemID = queryData.get('itemID'); return { itemID }; }
+<form action={formAction}>
+Khi form thực hiện submit sẽ chạy hàm addToCard, hàm này trả ra giá trị lấy với formState. Lúc chưa thực hiện mang giá trị mặc định là {itemID:""}
+Ở lần gọi sau thì prevState mang giá trị formState trả ra ở lần gọi trước đó
+Có thể custom xử lý lỗi trả ra formState.pending, formState.error, formState.itemID.
 
 
 
 # Custom hook
 Custom hook là 1 function có mục đích nhận đầu vào và cho đầu ra tự động biến đối theo đầu vào. Nó chỉ là gom logic trong 1 FC vào 1 hàm để tái sử dụng thôi
 Mỗi lần function chạy đến custom hook sẽ thực hiện lại mọi thứ bên trong. Cần đảm bảo các biến bên trong cũng là hook để không khởi tạo lại mỗi lần chạy
+Custom hook dùng như 1 component bình thường nhưng trả ra giá trị or hàm, chứ không trả ra component. Có thể return useCallback, useMemo để không chạy lại nếu cần.
 
 useMousePosition
 -> URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
@@ -400,3 +422,7 @@ https://github.com/kusti8/proton-native: Tool code React nhưng sinh ra ứng d�
 
 -> Ngoài folder src dùng CommonJS require, files trong src dùng ES6 import. Tuỳ biến package Browsify có thể cấu hình FE dùng CommonJS, còn Babel giúp NodeJS dùng ES6 được.
 Trong HTML thuần ta dùng được export và import như v thì file export phải được script vào file html dưới dạng module nhưng trong React config hết r nên k cần.
+
+-> React19 hỗ trợ SSR dễ dàng hơn, giống như NextJS.
+
+

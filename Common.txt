@@ -19,12 +19,39 @@ Nhưng hacker lại gửi: http://example.com/register.php?message=<label>Gender
 # Dùng debounce throttle
 Có thể tự implement hoặc dùng lib như lodash
 
--> throttle: Giới hạn số lần gọi hàm trong 1 ktg. VD ta có thể set là "Bất cứ 10s liên tiếp nào cũng k có quá 100 lần gọi hàm này"
+-> throttle: Giới hạn số lần gọi hàm trong 1 ktg. VD ta có thể set là "Bất cứ 10s liên tiếp nào cũng k có quá 1 lần gọi hàm này"
 VD: khi đổi kích thước màn hình or scroll thì chạy hàm gì đó nhưng các sự kiện đó thg được tự trigger quá nhiều, dùng throttle giảm số lần xử lý sẽ đỡ lag.
 VD: thg dung trong game khi người dùng ấn bắn chiêu nhanh đến mấy thì vẫn bắn 1s 1 phát đạn chẳng hạn
+function throttle(func, delay) {
+  let lastCallTime = 0;
+  return function (...args) {
+    const currentTime = Date.now();
+    if (currentTime - lastCallTime >= delay) {
+      lastCallTime = currentTime;
+      func.apply(this, args);
+    }
+  };
+}
+const throttledFunction = throttle(() => {
+  console.log('Function throttled!');
+}, 500);
+throttledFunction();
 
--> debounce: Event chỉ được gọi 1 lần sau 1 ktg cố định kể từ khi lần trigger mới nhất. Tức trigger liên tục 1 event quá nhanh sẽ chỉ gọi 1 lần ở cuối
+-> debounce: Delay trigger event sau một khoảng thời gian xác định kể từ lần cuối cùng hàm được gọi.
 VD: tính năng search gõ liên tục sẽ chỉ tự thực hiện search sau khi gõ xong
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
+const debouncedFunction = debounce(() => {
+  console.log('Function debounced!');
+}, 500);
+debouncedFunction();
 
 
 
@@ -101,8 +128,7 @@ src (folder)
 
 Trong 1 file component: propsType  defaultProps  utilities  Component
 
-Còn có kiểu chia là: 1 phát viết toàn module theo UI, bên trong từng module sẽ chia ra assets, common, utils, hooks, context, views, api. Chung thì để ngoài cùng luôn 
-=> K nên, sẽ ra sao nếu 1 pages lớn có 10 pages lớn khác bên trong. Lại chia phân cấp nữa thì rất mệt
+Còn có kiểu chia là: 1 phát viết toàn module theo UI, bên trong từng module sẽ chia ra assets, common, utils, hooks, context, views, api. Chung thì để ngoài cùng luôn => K nên, sẽ ra sao nếu 1 pages lớn có 10 pages lớn khác bên trong. Lại chia phân cấp nữa thì rất mệt
 
 
 
