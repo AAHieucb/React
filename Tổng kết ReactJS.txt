@@ -66,7 +66,6 @@ Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông
 -> ReactAdmin*: Thư viện giúp tạo trang admin cho các ứng dụng React dễ dàng.
 ra-data-json-server dùng riêng cho ReactAdmin cung vào data json
 
--> react-icons*
 -> intl / react-intl*: thư viện giúp format số và chữ theo i18n
 -> clsx*: tạo string với điều kiện, thg dùng cho className.
 -> prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi
@@ -127,6 +126,23 @@ Refine giúp cho việc xây ứng dụng CRUD dễ dàng hơn react thuần. N�
 
 -> @welldone-software/why-did-you-render*** thư viện utility mạnh
 
+-> Icon lib: react-icons*
+https://ionic.io/ionicons => đơn giản mà đẹp
+--> Lib cho icon svg tuỳ ý chỉnh sửa màu sắc, kích thước, stroke width
+https://tablericons.com/category/Arrows => đủ loại định dạng
+https://lucide.dev/icons/archive => nhiều icon lạ
+https://icon-sets.iconify.design/ => có cả icon hình như cờ các nước cũng có
+https://www.streamlinehq.com/icons => nhiều icon dị
+https://iconoir.com/ => nhiều hình khối lạ
+https://www.orioniconlibrary.com/all-icons => nhiều icon dị 
+--> Or dùng đồng bộ 1 loại icon như 1 theme:
+https://icons.getbootstrap.com/ => nên dùng nếu dùng bootstraps
+https://heroicons.com/ 
+https://feathericons.com/ 
+https://boxicons.com/
+https://www.uicons.com/icons-round?weight=medium&fill=outline&round-plans=free
+https://iconmonstr.com/page/80/ => monochrome
+
 
 
 # Pattern style component
@@ -168,6 +184,16 @@ react-parallax-mouse => thư viện hiệu ứng parallax bằng cách di chuy�
 
 react-awesome-slider: chuyên tạo chuyển full page đẹp dạng slider
 Có thể custom ghi đè css: Các thuộc tính css ta xem trong https://caferati.me/demo/react-awesome-slider/fall và thêm vào class tên là awssld. Tự custom F12
+
+-> Lib component animation***: bộ combo React + Tailwind CSS + Framer Motion không bao giờ lo về animation nữa.
+https://magicui.design/
+https://ui.aceternity.com/components
+https://www.ui-layout.com/components
+https://www.cult-ui.com/docs/components/
+https://www.eldoraui.site/components
+https://syntaxui.com/components
+https://www.hover.dev/components/
+https://animata.design/docs
 
 
 
