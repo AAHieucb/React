@@ -423,3 +423,4 @@ Cách dùng: npm i styleint stylelint-config-recommended -> thêm vào package.j
     }
 }
 Tương tự có tslint format typescript
+

