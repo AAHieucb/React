@@ -127,23 +127,46 @@ Trong 1 file component có: propsType  defaultProps  utilities  Component
 
 
 
-//!!!!!!!
 # Dựng server nodejs serve react app
 Giả sử công ty lớn cần thêm các header bảo mật khi người dùng vào web react, có thể dựng 1 server nodejs custom để serve.
 Đầu tiên build app react set outDir ra 1 thư mục có file index.html -> dựng 1 server expressjs config route để serve file index.html đó -> Tuỳ ý tạo middleware thêm các header bảo mật. Có thể tạo các biến số trong file index.html để thế vào từ server, VD các url phân tách môi trường, SSL key, login SSO -> thay lệnh chạy react bằng lệnh chạy nodejs.
-Server này thế cho nginx cũng được, thực tế việc set header có thể làm ở nginx.
-Chú ý họ chỉ cần thêm header bảo mật của request lấy file index.html, VD k cho web khác nhúng web của ta vào iframe. Còn các API query data thì k cần, API đó có access token bảo mật riêng klq. Khi ta set header cho query GET index.html, browser lấy xong index.html này sẽ lấy các file js, css liên quan thì sẽ tự thêm các header cũ
+Có thể dựng nginx để set header.
+Chú ý họ chỉ cần thêm header bảo mật của request lấy file index.html. Còn các API query data thì k cần, API đó có access token bảo mật riêng klq. Khi ta set header cho query GET index.html, browser lấy xong index.html này sẽ lấy các file js, css liên quan thì sẽ tự thêm các header cũ
 
-Các công ty lớn bảo mật cao thường k phụ thuộc vào bên thứ 3. Header họ set rất chi tiết chứ k dùng thư viện helmet đâu. VD: 
-res.setHeader('Content-Security-Policy', "frame-ancestors 'self'; frame-src 'self' https://*.youtube.com; base-uri 'none'; object-src 'none'; img-src data: 'self' https://* *.aptrinsic.com  *.segment.com *.segment.io *.avepointonlineservices.com *.avepoint.com storage.googleapis.com; form-action 'self' *.sharepointguild.com *.avepointonlineservices.com *.sharepointonline.com *.online15.net *.avepointonlineservices.apps.mil; script-src 'self'" + ' \'nonce-' + req.nonce + '\'' + " *.sharepointguild.com *.avepointonlineservices.com *.sharepointonline.com *.online15.net *.aptrinsic.com *.segment.com *.segment.io *.avepointonlineservices.apps.mil; connect-src  *.sharepointguild.com *.avepointonlineservices.com *.online15.net *.aptrinsic.com *.segment.com *.segment.io *.avepointonlineservices.apps.mil 'self'");
-Giải thích CSP:
-frame-ancestors 'self': Chỉ cho phép trang này được nhúng trong iframe từ cùng một nguồn (origin). Điều này ngăn chặn việc nhúng trang vào các trang web độc hại.
-frame-src 'self' https://.youtube.com: Cho phép nhúng các iframe từ cùng một nguồn và từ các miền con của youtube.com.
-base-uri 'none': Ngăn chặn việc sử dụng thẻ <base> trong tài liệu, giúp giảm thiểu rủi ro từ các cuộc tấn công.
-object-src 'none': Ngăn chặn việc sử dụng thẻ <object>, <embed>, và <applet>, giúp bảo vệ khỏi các lỗ hổng liên quan đến các đối tượng nhúng.
-img-src data: 'self' https:// .aptrinsic.com .segment.com .segment.io: Cho phép tải hình ảnh từ cùng một nguồn, từ các miền cụ thể.
-form-action 'self' .online15.net: Chỉ định các nguồn mà biểu mẫu có thể gửi dữ liệu đến.
-script-src 'self' 'nonce-{req.nonce}' .online15.net .aptrinsic.com: Cho phép chạy script từ cùng một nguồn và từ các miền cụ thể, với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. Thẻ script trong dự án phải có thêm trường nonce
-connect-src .sharepointguild.com .online15.net .aptrinsic.com .segment.com .segment.io 'self': Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
+Thêm từ BE: res.setHeader trong middleware, package helmet, nginx
+Thêm từ FE: <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
 
-upgrade-insecure-requests
+
+
+# Progressive enhancement
+Là 1 pp phát triển website bắt đầu cơ bản trước với content thiết yếu. Rồi nâng cấp dần như thêm css, js cho những người sử dụng trình duyệt hiện đại hơn dùng được (nếu hỗ trợ các tính năng đó). Còn những người dùng trình duyệt cũ vẫn đầy đủ tính năng basic.
+Phải ưu tiên dùng HTML và CSS thuần để đảm bảo sự tương thích. JS dược dùng để thêm tính năng nâng cao, nhưng nếu JS k khả dụng or bị tắt thì vẫn k gián đoạn trải nghiệm cơ bản.
+=> Các thư viện có tính chất progressive enhancement phải có các tính chất đó. Nếu không nó có thể không tương thích với một số trình duyệt cũ hoặc khi k hỗ trợ JS.
+
+
+
+# package.json
+npx khi cần dùng package mà k cài vào máy
+npm cài package vào máy và dùng
+pnpm như npm nhưng tiết kiệm mem hơn
+yarn như npm nhưng cache tốt hơn
+
+-> yarn add [package]@[version-or-tag] => Cài version xác định
+yarn upgrade <package> => Upgrade lên mới nhất
+
+-> 3 cái --dev / --peer / -optional thêm vào cuối nếu specific với 3 loại dev dependencies, peer dependencies and optional dependencies.
+--save sẽ lưu vào dependencies chính
+--save-dev lưu package vào devDependencies, viết tắt là -D. 
+Khi chạy npm install --production thì các package trong devDependencies sẽ k đc install
+
+-> Sửa package có sẵn
+C1: Ta có thể fork repo package về git của mình và sửa, sau đó sửa đổi file package.json thay số phiên bản bằng "git+<url repo>". 
+Trang https://gitpkg.vercel.app/ cho phép nhận link github ra câu lệnh npm.
+C2: sửa đổi trực tiếp trong node_modules r chạy: npx patch-package <package name> thì nó sẽ yêu cầu cài package patch và tạo ra thư mục patches chứa package ta đã sửa r dùng bth
+=> nếu ta xóa node_modules và cài lại thì có thể phải làm lại nên thêm lệnh: "postinstall": "npx patch-package" vào script để tự render theo thay đổi của ta khi install lại
+
+-> package.json sẽ override version trong package-lock.json
+VD package A dùng package B ^2.3.0, nhưng về sau họ ra bản 2.3.1 thì do có ^ nên gói tự động tải 2.3.1 nhưng 2.3.1 lại hoạt động k đúng với ứng dụng nx. Để đảm bảo khi người ta pull cái repo package đó về thì phiên bản chuẩn y hệt như lúc ta tạo ra package đó thì nó lưu vào package-lock.json
+Trong package-lock.json sẽ hiển thị ra module trong package.json kèm theo 1 list các child package đi kèm với nó được fix version để đảm bảo với version đó của package đó thì các dependencies con phải luôn đúng phiên bản này.
+VD package A dùng C và B, trong package B lại dùng C và 2 cái C có phiên bản khác nhau là bth. Nó sẽ tải cả 2 phiên bản về nhưng nếu trùng nhau thì nó tự chỉ tải 1 lần 
+

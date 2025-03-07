@@ -286,6 +286,7 @@ Trong hàm useEffect ta mặc định setState là vẫn như giá trị cũ, nh
 
 VD: Component A chứa component B, cả 2 cùng useEffect dependencies đến biến x, nếu biến x đổi thì useEffect của cha sẽ thực hiện trước r đến dần các useEffect của con.
 Nếu component A useEffect mà thực hiện chuyển trang khác nên component con k hiện ra nữa thì k chạy useEffect của con nữa. 
+Nhiều thư viện npm tạo ra kp để dùng cho React mà HTML JS thuần, nhưng vẫn ép dùng trong React được 1 số TH với useEffect như ThreeJS
 
 -> useLayoutEffect: giống useEffect nhưng thực hiện trc useEffect ngay sau khi render lên DOM (hình như ngay trước mới đúng). Nó k thực hiện async như useEffect.
 Nên dùng useLayoutEffect khi cần thao tác với DOM mới cập nhập, thay đổi style trên DOM, nếu dùng useEffect sẽ bị giật do async song song với render.

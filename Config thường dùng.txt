@@ -1,0 +1,71 @@
+-> Server tự set header bảo mật k dùng helmet:
+  req.nonce = crypto.randomBytes(64).toString("base64");
+  res.setHeader('X-UA-Compatible', 'IE=edge,chrome=1'); //* Buộc browser dùng chế độ hiển thị mới nhất, nếu có engine của chrome sẽ ưu tiên dùng hơn IE.
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload'); //*
+  res.setHeader('X-XSS-Protection', '1; mode=block'); //*
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN'); 
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin'); //*
+  res.setHeader('X-CONTENT-TYPE-OPTIONS', 'nosniff'); //*
+  res.setHeader('Permissions-Policy', " midi 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; usb 'none'; wake-lock 'none'; encrypted-media 'none'; display-capture 'none'; battery 'none'; accelerometer 'none'; ambient-light-sensor 'none'");
+  res.setHeader('P3P', 'CP=NOI DSP COR NID ADM DEV PSA OUR IND UNI PUR COM NAV INT STA'); // Chuẩn bảo mật cũ hiện k còn được dùng
+  res.setHeader("X-Download-Options", "noopen"); //* đi kèm với header Content-Disposition: attachment thì khi user tải file về sẽ thiết lập là k mở file luôn
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+  res.setHeader( 'Content-Security-Policy', //*
+    "upgrade-insecure-requests; " +
+    "default-src 'none'; " +
+    "frame-ancestors 'self'; " + 
+    "frame-src 'self' https://www.youtube.com; " + 
+    "base-uri 'none'; " + // Ngăn việc sử dụng thẻ <base> trong tài liệu, giảm thiểu rủi ro từ các cuộc tấn công.
+    "object-src 'none'; " + // Ngăn việc sử dụng thẻ <object>, <embed>, và <applet>, giúp bảo vệ khỏi các lỗ hổng liên quan đến các đối tượng nhúng.
+    "img-src data: 'self' https://* *.aptrinsic.com storage.googleapis.com; " + // Cho phép tải hình ảnh từ cùng một nguồn, từ các miền cụ thể.
+    "form-action 'self' *.online15.net " + // Chỉ định các nguồn mà biểu mẫu có thể gửi dữ liệu đến.
+    "script-src 'self'" + ' \'nonce-' + req.nonce + '\'' + " *.online15.net *.aptrinsic.com; " +
+    "style-src 'self' 'unsafe-inline' fonts.googleapis.com *.aptrinsic.com; " +
+    "font-src data: 'self' *.cdn.office.net fonts.gstatic.com; " +
+    "connect-src *.online15.net *.aptrinsic.com 'self'" // Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
+  );
+
+--> Content-Security-Policy(CSP) thay thế rất nhiều header cũ như X-Frame-Options, X-XSS-Protection là 2 cấu hình không được bật theo mặc định. Nó chặn hàng loạt cuộc tấn công bao bằng cách kiểm soát các nguồn tài nguyên mà trang web có thể tải và chạy.
+URL: https://csp-evaluator.withgoogle.com/ => web test website có CSP an toàn không
+
+---> upgrade-insecure-requests: Khi browser gửi request, trong response trả về trang html chính thì thêm header CSP với giá trị này thì mọi request sau lấy tài nguyên thì browser sẽ tự đổi http thành https. Mọi trang html mà server gửi cho client đều phải thêm header này
+
+---> script-src: chỉ định các trang cho phép chạy script với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. VD Thẻ script trong dự án muốn dùng thì phải có thêm trường nonce và giá trị phải có 'self'.
+'unsafe-inline' 'unsafe-eval'; => sẽ cản hàm eval và cản inline script
+VD1: Content-Security-Policy: script-src 'self' https://viblo.asia => Mã JS ở trang của ta và trang viblo.asia có thể tải và chạy trong web của ta. Bất kỳ script nào không đến từ 2 nguồn đó sẽ bị chặn k cho thực thi.
+
+---> frame-ancestors: Chỉ định các nguồn mà trang ngày có thể được nhúng vào iframe.
+frame-src: Chỉ định các nguồn mà trang này có thể nhúng các trang nào khác vào.
+Còn có worker-src để kiểm soát nguồn của các loại worker, child-src là cả worker và iframe tức hợp của tất cả.
+
+--> Strict-Transport-Security: 'max-age=31536000; includeSubDomains; preload'
+max-age=31536000: Chỉ dùng HTTPS với các domain chỉ định trong vòng 31536000s tiếp theo. Cần set lớn hơn thời hạn 1 năm (31,536,000 giây). Khi đã set thì phía server không thể xóa được thông tin setting đã được lưu 1 lần trên trình duyệt nên cần check kỹ rằng server k cần HTTP response mới dùng. 
+includeSubDomains: là mọi domain con đều dùng HTTPS. 
+preload: cho phép yêu cầu trang web được bao gồm trong danh sách preload HSTS của trình duyệt. Với list này, trình duyệt sẽ biết để chỉ sử dụng HTTPS cho trang web đó, ngay cả khi đó là lần đầu tiên người dùng truy cập trang web.
+=> Cũng có thể xử lý khi request người dùng là http thì tự redirect tới https thay vì để browser báo lỗi
+
+--> X-Frame-Options: Cho biết liệu 1 trang web khác có được nhúng trang web của ta để hiển thị trong <frame> <iframe> <object> hay không. 
+res.setHeader("X-Frame-Options", "DENY");
+res.setHeader("X-Frame-Options", "SAMEORIGIN");
+res.setHeader("X-Frame-Options", "ALLOW-FROM https://example.com/");
+Nếu người dùng truy cập 1 website độc hại và 1 iframe nhúng web khác vô hình được cài sẵn. Thông tin của người dùng ở web đó có thể bị gửi tới server của hacker. Còn khi dùng 1 API với X-Frame-Options DENY, api này kbh được gọi từ 1 iframe
+
+--> X-Content-Type-Options: nosniff => Lấy data từ server về và check đúng type response mới cho dùng ấy. 
+Mặc định trình duyệt đọc các loại MIME chỉ định trong tiêu đề và nếu header này trống thì sẽ tự hiển thị theo cách phù hợp nhất. VD: người dùng tải lên 1 ảnh và xác nhận phân mở rộng là jpg và png nhưng tệp này lại chứa mã html độc hại. Nếu k đi kèm type thì trình duyệt tự động xác định type là html và thực thi là toang. 
+nosniff thì browser sẽ k tự xác định mà xử lý type theo đúng header X-Content-Type
+Người dùng gửi .exe trình duyệt -> server nhận lưu vào db -> người dùng request get lại -> server gửi lại type là png -> trình duyệt đọc exe như png nên k exec nên k sao
+
+--> X-XSS-Protection: "1; mode=block" => Header kích hoạt bộ lọc XSS tích hợp trong các trình duyệt hiện đại. 
+"0" bộ lọc XSS vô hiệu hóa 
+"1" kích hoạt và bảo vệ trang nếu phát hiện tấn công
+"1;modeblock" kích hoạt và ngăn chặn hiển thị trang nếu phát hiện tấn công
+"1;report="https://<url>" kích hoạt và báo cáo vi phạm vào url nào khi phát hiện tấn công => có thể kết hợp 1;mode-block;report="<url>"
+Nó dùng trong header của response, không phải request. Nếu server bị XSS, header này k ngăn được mà sẽ bảo vệ người dùng cuối cùng đang sử dụng trình duyệt. Nếu trình duyệt hỗ trợ header này, nó sẽ chặn thực thi XSS trên trình duyệt của ngừoi dùng sau khi lấy data về từ server.
+=> X-XSS-Protection vẫn dùng dù có thể thay thế bằng CSP
+
+--> X-Permitted-Cross-Domain-Policies: none => Các header dùng cho cross domain request sẽ bị cấm. Tức là trình duyệt sẽ không thực hiện bất kỳ loại truy cập nào từ các tên miền khác, ngay cả khi chính sách cross-domain policy khác được thiết lập. Điều này cũng ảnh hưởng đến tính tương thích web của ta với các web khác.
+
+--> Referrer-Policy: khi trình duyệt gửi thông tin điều hướng giữa các trang
+same-origin => Khi gửi request đến miền khác, thông tin về nguồn gốc của yêu cầu (referer) sẽ k được gửi kèm để miền khác kb yêu cầu đến từ web của ta.
+strict-origin-when-cross-origin => cùng origin thì gửi đầy đủ url trong referer, khác origin thì chỉ gửi origin moethod + domain + port mà k có đường dẫn chi tiét
+
