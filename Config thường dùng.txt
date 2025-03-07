@@ -69,3 +69,7 @@ Nó dùng trong header của response, không phải request. Nếu server bị 
 same-origin => Khi gửi request đến miền khác, thông tin về nguồn gốc của yêu cầu (referer) sẽ k được gửi kèm để miền khác kb yêu cầu đến từ web của ta.
 strict-origin-when-cross-origin => cùng origin thì gửi đầy đủ url trong referer, khác origin thì chỉ gửi origin moethod + domain + port mà k có đường dẫn chi tiét
 
+
+
+-> 
+
