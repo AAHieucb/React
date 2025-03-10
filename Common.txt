@@ -184,41 +184,11 @@ Tạo 1 dự án mới với công nghệ tương ứng và add các file vào s
 
 
 
-# SSR và CSR và hydrate
-React có ReactDOMServer dùng cho SSR. VD: ReactDOMServer.renderToString(<codeJSX>); sẽ biến tất cả component react thành thẻ html dưới dạng string r nhét vào res.write("") gửi cho client, còn có hàm hydrate để dùng trong TH server gửi lại html tĩnh cho client React. => k dùng
-
--> Khi hydrate, client tải code JS và thực thi để biết có event nào gắn vào component nào. Việc này server đã làm rồi nhưng k gửi cho client được nên client phải hydrate lại.
-Resumability là giải pháp thay thế hydration
-- Server serialize thông tin "event nào gắn với component nào" gửi cho client k cần tính toán lại.
-- Sử dụng lazy load, để khi user tương tác mới cần load thông tin event đó thôi. Khi trigger event, client biết sẵn nó cần event handler nào thì load về thực hiện luôn.
-- Sử dụng 1 global event handler bắt mọi event, k cần chờ event gắn vào element mới chạy được nữa. Vì hydration lưu hết event handler vào bộ nhớ rất tốn, cách này chỉ cần 1 global handler, user tương tác event nào mới load event đó.
-
-React k có resumability, Qwik* là framework thực hiện resumability => k dùng
-Về tốc độ, Qwik SSR nhanh hơn cả nextjs khi load page lần đầu và tương tác. Khi client nhận response từ server, nó gắn được luôn global event vào component mà k cần tải thêm JS thực hiện lại bước hydration nữa. Quy trình được tích hợp sẵn bởi framework nên chỉ cần dùng là có tốc độ nhanh.
-Qwik hỗ trợ code React => có thể dùng thay thế React
-
--> SS:
-- Ở lần load đầu tiên, SSR nhanh hơn do server xử lý html gửi lại client nhìn được ngay. Còn CSR thì người dùng nhìn thấy thanh loading cho đến khi browser xử lý DOM xong.
-- SSR thì mọi thao tác phải gửi tới server xử lý, render ra html mới. CSR thì lượng data load lần đầu khá nặng nhưng bù lại các lần sau sẽ xử lý cực nhanh do nó đã có hết trên client, k cần reload trang lại với mọi hành động.
-- CSR có SEO kém vì crawl vào web chả có gì, khi chuyển trang thì các thẻ metadata lại k thay đổi. Google đã giải quyết vấn đề này của search engine bằng cách cho phép crawler chạy code JS nhưng k hoàn hảo.
-- SSR giúp trang web được chia sẻ qua mạng XH thông qua src của thẻ iframe, nếu dùng CRS thì k nhúng được như v mà luôn ra cùng 1 metadata.
-
-
-
 # Virtual DOM in React
 React là chỉ render lại các phần cần thiết. Trong actual DOM của html thuần, k có cách nào xđ được element nào thực sự thay đổi để render lại mà phải load cả cây DOM. 
 Do đó React dùng virtual dom là 1 bản giống hệt DOM thật nhưng nó rẻ hơn vì k phải render ra màn hình. Dùng virtual dom có thể xác định các phần thay đổi để chỉ render lại component đó thôi. Khi ta log thẻ jsx ra type Symbol react.element lồng các con liên tiếp thì chính là virtual DOM đó. 
 Cơ chế: khi chạy, virtual dom sẽ được tạo và lưu trong memory, nếu có update thì React sẽ tự tạo 1 cây virtual dom mới, virtual dom k render lên screen nên tạo rất dễ. Sau đó React compare 2 cây DOM xem khác nhau chỗ nào và tiến hành update phần node đó trên actual dom.
 Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snapshot của root element, giống nhau thì tiếp tục so sánh dần xuống con để xác định node cần.
-
-
-
-# Dockerize react app
-URL: https://www.docker.com/blog/how-to-dockerize-react-app/
-Dùng Dockerfile, multi-stage Dockerfile, .dockerignore, docker-compose, publish to docker hub, xử lý env var.
-docker-compose dùng "build: ." tức chạy với Dockerfile mặc định có ở thư mục hiện tại.
-VD: docker build -t react-app-dev --target=development . => chạy từ đầu đến hết stage development chứ kp là chạy mỗi stage development. Nên nếu chạy npm run build khi cần chạy môi trường dev là bị thừa.
-Để dùng docker mà vẫn có live reload, thì phải mount đồng bộ thư mục src với thư mục trong docker và npm start lệnh như bth.
 
 
 
