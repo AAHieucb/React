@@ -170,6 +170,9 @@ VD package A dùng package B ^2.3.0, nhưng về sau họ ra bản 2.3.1 thì do
 Trong package-lock.json sẽ hiển thị ra module trong package.json kèm theo 1 list các child package đi kèm với nó được fix version để đảm bảo với version đó của package đó thì các dependencies con phải luôn đúng phiên bản này.
 VD package A dùng C và B, trong package B lại dùng C và 2 cái C có phiên bản khác nhau là bth. Nó sẽ tải cả 2 phiên bản về nhưng nếu trùng nhau thì nó tự chỉ tải 1 lần 
 
+-> Lệnh: npm bin -g => hiện url hiển thị các package global đã cài đặt
+npm run --prefix <path> <script> => run npm ở directory khác từ cmd ở thư mục hiện đại
+
 
 
 # Cách clone code frontend của các trang web
@@ -179,4 +182,43 @@ Vào browser devtool -> Sources -> tìm mở các file chunk rồi click chuột
 Tạo 1 dự án mới với công nghệ tương ứng và add các file vào src, config tùy chỉnh -> Thêm các thư viện đầy đủ đúng phiên bản, nếu phiên bản k chạy được thì phải tự downgrade xuống, khá khó nhất là với web k dùng react -> Thêm các file css vào dự án vẫn có trong mục tải về -> 1 số resources assets không hoạt động phải tự vào trang web gốc tải về. K tìm được thì chịu.
 => Ở bước add source map là ta đang thêm source map của file js đó để browser tái tạo lại code gốc. Tool tìm file source map nếu có: https://sourcemaps.io/
 
+
+
+# SSR và CSR và hydrate
+React có ReactDOMServer dùng cho SSR. VD: ReactDOMServer.renderToString(<codeJSX>); sẽ biến tất cả component react thành thẻ html dưới dạng string r nhét vào res.write("") gửi cho client, còn có hàm hydrate để dùng trong TH server gửi lại html tĩnh cho client React. => k dùng
+
+-> Khi hydrate, client tải code JS và thực thi để biết có event nào gắn vào component nào. Việc này server đã làm rồi nhưng k gửi cho client được nên client phải hydrate lại.
+Resumability là giải pháp thay thế hydration
+- Server serialize thông tin "event nào gắn với component nào" gửi cho client k cần tính toán lại.
+- Sử dụng lazy load, để khi user tương tác mới cần load thông tin event đó thôi. Khi trigger event, client biết sẵn nó cần event handler nào thì load về thực hiện luôn.
+- Sử dụng 1 global event handler bắt mọi event, k cần chờ event gắn vào element mới chạy được nữa. Vì hydration lưu hết event handler vào bộ nhớ rất tốn, cách này chỉ cần 1 global handler, user tương tác event nào mới load event đó.
+
+React k có resumability, Qwik* là framework thực hiện resumability => k dùng
+Về tốc độ, Qwik SSR nhanh hơn cả nextjs khi load page lần đầu và tương tác. Khi client nhận response từ server, nó gắn được luôn global event vào component mà k cần tải thêm JS thực hiện lại bước hydration nữa. Quy trình được tích hợp sẵn bởi framework nên chỉ cần dùng là có tốc độ nhanh.
+Qwik hỗ trợ code React => có thể dùng thay thế React
+
+-> SS:
+- Ở lần load đầu tiên, SSR nhanh hơn do server xử lý html gửi lại client nhìn được ngay. Còn CSR thì người dùng nhìn thấy thanh loading cho đến khi browser xử lý DOM xong.
+- SSR thì mọi thao tác phải gửi tới server xử lý, render ra html mới. CSR thì lượng data load lần đầu khá nặng nhưng bù lại các lần sau sẽ xử lý cực nhanh do nó đã có hết trên client, k cần reload trang lại với mọi hành động.
+- CSR có SEO kém vì crawl vào web chả có gì, khi chuyển trang thì các thẻ metadata lại k thay đổi. Google đã giải quyết vấn đề này của search engine bằng cách cho phép crawler chạy code JS nhưng k hoàn hảo.
+- SSR giúp trang web được chia sẻ qua mạng XH thông qua src của thẻ iframe, nếu dùng CRS thì k nhúng được như v mà luôn ra cùng 1 metadata.
+
+
+
+# Virtual DOM in React
+React là chỉ render lại các phần cần thiết. Trong actual DOM của html thuần, k có cách nào xđ được element nào thực sự thay đổi để render lại mà phải load cả cây DOM. 
+Do đó React dùng virtual dom là 1 bản giống hệt DOM thật nhưng nó rẻ hơn vì k phải render ra màn hình. Dùng virtual dom có thể xác định các phần thay đổi để chỉ render lại component đó thôi. Khi ta log thẻ jsx ra type Symbol react.element lồng các con liên tiếp thì chính là virtual DOM đó. 
+Cơ chế: khi chạy, virtual dom sẽ được tạo và lưu trong memory, nếu có update thì React sẽ tự tạo 1 cây virtual dom mới, virtual dom k render lên screen nên tạo rất dễ. Sau đó React compare 2 cây DOM xem khác nhau chỗ nào và tiến hành update phần node đó trên actual dom.
+Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snapshot của root element, giống nhau thì tiếp tục so sánh dần xuống con để xác định node cần.
+
+
+
+
+# Other:
+-> Lỗi npm node-gyp trong window: Khi cài 1 package sẽ biên dịch package đó. VD cài truffle thì máy phải có python và C mới npm i được và phải cài đúng phiên bản. Điều này rất khó nếu như ta cài thủ công python và C++ không rõ phiên bản nào hỗ trợ chuẩn, xong còn phải thêm environment var.
+=> Fix với powershell quyền admin: npm i -g --production windows-build-tools => Tự cài các tool hỗ trợ mặc định trong window là python và C++, -g để thêm env var luôn
+
+-> Lỗi: This site can’t provide a secure connection. Localhost sent an invalid response => do giao thức HSTS yêu cầu mọi kết nối tới web phải được mã hóa bằng HTTPS.
+=> Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
+=> Fix trên edge tương tự vào: edge://net-internals/#hsts
 

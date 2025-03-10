@@ -1,49 +1,4 @@
-//!!!!!!!!
-# SSR và CSR
-Thực chất React có riêng ReactDOMServer chuyên dùng cho SSR. VD: ReactDOMServer.renderToString(<codeJSX>); sẽ biến tất cả component react thành thẻ html dưới dạng string, từ đó ta có thể nhét vào res.write("") gửi cho client => k dùng
-
--> SSR: Khi có request, server xử lý html thuần gửi cho browser sau khi qua 1 loạt các script -> browser chỉ cần render trang html đó và ngầm tải tiếp JS về. User thấy web tĩnh và k thể tương tác, chỉ khi tải hết các file js liên quan về mới được.
-SSR có tốc độ tải trang web gần như tức thời, ấn phát có luôn. Nhưng trang web phải xử lý lại hoàn toàn, gửi request đến server để lấy file html mới nếu có 1 thay đổi nhỏ trong trang. Mọi thứ được xử lý ở server cũng tốn tài nguyên và gây chậm trễ khi xử lý các request khác.
-
--> CSR: Browser gửi request thì 1 con CDN (or server kiểu nginx, apache) có thể gửi lại html chứa link tới file js -> browser tải cả html và JS -> browser execute JS, gửi request API lấy data -> server xử lý và gửi data cho client -> browser sửa DOM hiển thị data cho người dùng
-Đặc điểm CSR: lượng dữ liệu load về lần đầu khá nặng nhưng bù lại các lần sau sẽ xử lý cực nhanh do nó đã có hết trên client, k cần reload trang lại với mọi hành động.
-
--> So sánh:
-- Ở lần load đầu tiên, server xử lý sẵn html nên SSR render trang tĩnh ngay khi browser nhận nên cảm tưởng tốc độ nhanh hơn còn CSR trong cả quá trình, người dùng chỉ nhìn thấy thanh loading cho đến khi browser xử lý DOM xong để page có thể nhìn thấy và tương tác được. Bù lại tốc độ các lần tương tác sau thì CSR nhanh hơn do script được load hết r.
-Để khắc phục, các web CSR đều chơi lazy loading tức chỉ tải các thứ cần thiết cho trang đó nên khi chuyển trang mà trang đó được visit lần đầu tiên thì vẫn có 1 khoảng load tiếp data từ server nhưng rất ngắn (nhanh hơn 1 chu kỳ của SSR vì nó có sẵn html rồi, chỉ request lấy data) => thực tế tốc độ như nhau.
-- CSR có SEO kém vì crawl vào web chả có gì, khi chuyển trang thì các thẻ metadata lại k thay đổi. Google đã giải quyết vấn đề này của search engine bằng cách cho phép crawler chạy code JS.
-- SSR giúp trang web được chia sẻ qua mạng XH thông qua src của thẻ iframe, nếu dùng CRS thì k nhúng được như v. Dùng CSR khi share qua mxh, trang nào cũng ra cùng 1 thứ.
-=> Đa phần các website sử dụng CSR để giảm tải phía server. Còn các trang thương mại cần SEO, load nhanh để giữ chân người dùng thì nên dùng SSR.
-
-
-
-# Virtual DOM in React
-React là chỉ render lại các phần cần thiết. Trong actual DOM của html thuần, k có cách nào xđ được element nào thực sự thay đổi để render lại mà phải load cả cây DOM.
-Do đó React dùng virtual dom là 1 bản giống hệt DOM thật nhưng nó rẻ hơn vì k phải render ra màn hình. Dùng virtual dom có thể xác định các phần thay đổi để chỉ render lại component đó thôi. Khi ta log thẻ jsx ra type Symbol react.element lồng các con liên tiếp thì chính là virtual DOM đó. 
-
-Cơ chế: khi chạy, virtual dom sẽ được tạo và lưu trong memory, nếu có update thì React sẽ tự tạo 1 cây virtual dom mới, virtual dom k render lên screen nên tạo rất dễ. Sau đó React compare 2 cây DOM xem khác nhau chỗ nào và tiến hành update phần node đó trên actual dom.
-Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snapshot của root element, giống nhau thì tiếp tục so sánh dần xuống con để xác định node cần.
-
-
-
-# SSR và hydration
-Quy trình SSR: server gửi html tĩnh cho client -> client tải tiếp file JS -> client hydrate html tĩnh với JS event và state render ra -> user tương tác được.
-Trong React có 2 hàm render và hydrate: render biến component React thành html in ra màn hình, hydrate để dùng trong TH server gửi lại html tĩnh cho client React.
-
--> Hydration: server gửi về html tĩnh phải được thêm event và state bởi quá trình hydration ở client thì user mới tương tác được.
-Khi hydrate, nó phải tải code JS và thực thi để biết có event nào gắn vào component nào. Việc này là thừa thãi khi server đã làm rồi nhưng k gửi cho client được mà chỉ gửi được html tĩnh rồi client phải hydrate lại.
-
--> Resumability là giải pháp thay thế hydration: 
-- Server serialize thông tin "event nào gắn với component nào" gửi cho client k cần tính toán lại.
-- Sử dụng lazy load, để khi user tương tác mới cần load thông tin event đó thôi. Khi trigger event, client biết sẵn nó cần event handler nào thì load về thực hiện luôn.
-- Sử dụng 1 global event handler bắt mọi event, k cần chờ event gắn vào element mới chạy được nữa. Vì hydration lưu hết event handler vào bộ nhớ rất tốn, cách này chỉ cần 1 global handler, user tương tác event nào mới load event đó.
-
--> React hiện tại dùng hydration, Qwik* là framework thực hiện resumability.
-Về tốc độ, Qwik SSR nhanh hơn cả nextjs khi load page lần đầu và tương tác. Khi client nhận response từ server, nó gắn được luôn global event vào component mà k cần tải thêm JS thực hiện lại bước hydration nữa. Quy trình được tích hợp sẵn bởi framework nên chỉ cần dùng là có tốc độ nhanh.
-Qwik hỗ trợ code React => nên dùng thay thế React
-
-
-
+//!!!!!!
 # Authorization và authentication
 Authen để biết ai đó hợp lệ và authorization để phân quyền tài nguyên họ được truy cập. Các kiểu login:
 Dùng bên thứ 3 như google, facebook, github nhận về 1 credential và dùng nó này để login các website liên quan.
@@ -91,23 +46,3 @@ Client -> Server: Gửi yêu cầu API kèm access token
 Server -> Google Resource Server: Truy vấn dữ liệu kèm access token
 Google Resource Server -> Server -> Client: Trả dữ liệu
 
-
-
-Other:
--> Lệnh: npm bin -g => hiển thị các package global đã cài đặt
-npm run --prefix <path> <script> => run npm ở directory khác từ cmd ở thư mục hiện đại
-
--> Lỗi npm node-gyp trong window: Khi cài 1 package sẽ biên dịch package đó. VD cài truffle thì máy phải có python và C mới npm i được và phải cài đúng phiên bản. Điều này rất khó nếu như ta cài thủ công python và C++ không rõ phiên bản nào hỗ trợ chuẩn, xong còn phải thêm environment var.
-=> Fix với powershell quyền admin: npm i -g --production windows-build-tools => Tự cài các tool hỗ trợ mặc định trong window là python và C++ và -g để thêm environment var luôn
-VD windows-build-tools bị lỗi stuck k tải được. Dùng cách khác: Tải python 2.7 -> npm config set python python2.7 -> Tải VS2017 -> mở installer chọn cài desktop development C++ => nếu có VSC rồi thì khả năng là chưa update thôi, cứ update mới nhất là được -> npm config set msvs_version 2017 -> khởi động lại VSC và cài các package bình thường
-
--> Khi build dự án sẽ load ra file html, trong đó download các file JS và các file helper mà files js đó cần để chạy. Để tiện cho người dùng, các file JS khi build sẽ bị break thành nhiều file chunk được fetched dynamically bởi file js chính để chỉ tải khi cần gọi đến.
-
--> Lỗi: This site can’t provide a secure connection. Localhost sent an invalid response.
-=> Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
-=> Fix trên edge tương tự vào: edge://net-internals/#hsts
-Lỗi này do HSTS (HTTP Strict Transport Security) - giao thức yêu cầu tất cả kết nối tới một website phải được mã hóa bằng giao thức HTTPS.
-
--> CRA tự động cài cho ta 1 vài plugin hữu dụng như
-@babel/plugin-proposal-class-properties: là plugin giúp dùng đc các class property(hay props), dùng arrow function
-@babel/runtime và @babel/plugin-transform-runtime: tự động thay thế các tính năng k đc hỗ trợ của phiên bản ES khi dùng, cung cấp polyfill.
