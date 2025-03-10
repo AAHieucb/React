@@ -164,7 +164,7 @@ eslint-plugin-prettier giúp tích hợp 2 loại rules, nó cũng giúp viết 
 => Thông thường k cần cồng kềnh như v mà chỉ cần cài prettier (package or extension đều được) + eslint và eslint-config-prettier phát là xong dùng như bth thôi.
 
 --> Phân biệt: eslint-config-prettier và eslint-plugin-prettier, khi dùng thường cài thêm cả 2
-eslint-config-prettier loại bỏ eslint rule config với prettier rule. Để dùng cần có:
+eslint-config-prettier loại bỏ eslint rule conflict với prettier rule. Để dùng cần có:
 "extends": [
     "...",
     "prettier"

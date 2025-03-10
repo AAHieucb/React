@@ -71,5 +71,17 @@ strict-origin-when-cross-origin => cùng origin thì gửi đầy đủ url tron
 
 
 
--> 
-
+-> vite.config.mjs:
+export default {
+  css: {
+    transformer: 'lightningcss', => transformer là qtr chuyển đổi tương thích mọi browsers
+    lightningcss: {
+      targets: browserslistToTargets(browserslist('>= 0.25%')),
+      include: Features.LightDark | Features.Colors, => chỉ dùng duy nhất 2 tính năng là hàm light-dark() và xử lý màu. K có mặc định dùng mọi tính năng
+    }
+  },
+  build: {
+    cssMinify: 'lightningcss' => qtr minify chỉ diễn ra trong production build
+  },
+  base: "/", => set base url của ứng dụng
+};

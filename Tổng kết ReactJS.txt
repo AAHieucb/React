@@ -110,8 +110,9 @@ highcharts-react-official highcharts*: tạo graph đẹp, responsive, loading
 Victory thư viện vẽ biểu đồ cho data. Tremor cũng thế nhưng đẹp hơn. React Diagrams cho user vẽ biểu đồ có thể drag customize như draw io
 D3 thư viện chuyên data visualization đủ loại phức tạp
 
--> react-moment moment: format hiển thị ngày giờ, nó cũng cung nhiều utils VD hiện ra còn bnh ngày là đến ngày nào chẳng hạn => quá nặng
+-> react-moment moment: format hiển thị ngày giờ, nó cũng cung nhiều utils VD hiện ra còn bnh ngày là đến ngày nào chẳng hạn
 Có thể dùng thêm moment-timezone nếu cần thao tác thời gian theo múi giờ khác nhau
+=> Lib quá nặng => bỏ, thay thế bằng Date-fns hoặc Luxon
 
 -> whatwg-fetch: cùng tính năng fetch cho cả trình duyệt cũ
 lodash*: https://lodash.com/docs/4.17.15 => Có thể import tree shaking đỡ nặng: npm i lodash.merge
@@ -142,6 +143,13 @@ https://feathericons.com/
 https://boxicons.com/
 https://www.uicons.com/icons-round?weight=medium&fill=outline&round-plans=free
 https://iconmonstr.com/page/80/ => monochrome
+
+-> cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
+
+-> https://cursify.vercel.app/components => thư viện animate cursor đỉnh
+
+-> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. 
+Có thể dùng cả với nextjs: https://github.com/aidenybai/react-scan/blob/main/docs/installation/next-js-app-router.md
 
 
 
@@ -186,7 +194,6 @@ react-awesome-slider: chuyên tạo chuyển full page đẹp dạng slider
 Có thể custom ghi đè css: Các thuộc tính css ta xem trong https://caferati.me/demo/react-awesome-slider/fall và thêm vào class tên là awssld. Tự custom F12
 
 -> Lib component animation***: bộ combo React + Tailwind CSS + Framer Motion không bao giờ lo về animation nữa.
-https://magicui.design/
 https://ui.aceternity.com/components
 https://www.ui-layout.com/components
 https://www.cult-ui.com/docs/components/
@@ -311,9 +318,6 @@ Case lỗi: function (url) {
   useEffect(() => onConnected(url), [url]);
 } => nếu k truyền url vào onConnected, nó sẽ luôn dùng url mới nhất. useEffect chạy async k kiểm soát được. VD gọi hàm trong useEffect 2 lần thật nhanh bằng cách đổi url, sẽ có lúc onConnected chạy lần 1 với data của lần 2 là sai nên phải truyền. Tức url đổi ngay giữa lúc trigger useEffect và bên trong onConnected được gọi.
 
--> useFormStatus: Tương tự cung status của last form submission: https://react.dev/reference/react-dom/hooks/useFormStatus
-const { pending, data, method, action } = useFormStatus();
-
 -> useTransition:
 Hàm startTransition sẽ có ưu tiên thực hiện thấp hơn để k ảnh hưởng performance và nếu có 1 lệnh tương tự thì câu lệnh cũ sẽ bị dừng luôn và ưu tiên chạy câu lệnh mới. Nó tự chỉnh đảm bảo k bị lag => Dùng khi 1 hàm nặng phụ thuộc vào 1 giá trị. Chạy nhiều lệnh như nhau sẽ được gom thành 1, nhưng k có đk thời gian cụ thể như useDebounce.
 Khi code cần xác định phần task nào gây lag cho browser đưa vào startTransition. VD fetch API thực tế k gây lag cho browser thì k cần. VD search 1 chữ và thực hiện filter trên 1000 phần tử, hành động filter sẽ cho vào startTransition, kp hành động đổi text, cũng kp hành động set data, mà cả hành động filter và setdata cần cho vào.
@@ -323,19 +327,15 @@ Việc aDeferred update như nào phụ thuộc vào mức độ bận của mai
 
 => 2 ví dụ đó là 2 usecase tối ưu nhất. useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance. useDeferredValue dùng khi chạy 1 hàm nặng phụ thuộc vào 1 giá trị, nhưng giá trị đó có thể thay đổi liên tục nên cần defer chứ k thực hiện lại liên tục hàm nặng.
 
--> useOptimistic thường dùng khi biết khá chắc lệnh call sẽ success, fail tự undo => ít dùng mà thường dùng useDebounce hơn, nên implement failed tự undo cho useDebounce
-VD: nếu người dùng update xong API chưa thành công đã tắt page => Có thể cản lại với window.addEventListener("beforeunload"); URL: https://www.youtube.com/watch?v=VBlSe8tvg4U
-
 -> use(Promise): TH1 là dùng với 1 promise trong 1 component, sẽ có thể dùng nó trong conditional được. Wrap với ErrorBoundary và Suspense để hiện fallback, component dùng use(Promise) sẽ hiện fallback nếu promise chưa thực hiện xong, k cần dùng await cho nó.
 Th2 là dùng với use(ReactContext) thì như useContext nhưng dùng được trong câu điều kiện
 
--> useFormState => dùng cho server actions
-const [formState, formAction] = useFormState(addToCart, { itemID: "" });
-async function addToCart(prevState, queryData) { const itemID = queryData.get('itemID'); return { itemID }; }
-<form action={formAction}>
-Khi form thực hiện submit sẽ chạy hàm addToCard, hàm này trả ra giá trị lấy với formState. Lúc chưa thực hiện mang giá trị mặc định là {itemID:""}
-Ở lần gọi sau thì prevState mang giá trị formState trả ra ở lần gọi trước đó
-Có thể custom xử lý lỗi trả ra formState.pending, formState.error, formState.itemID.
+-> useOptimistic thường dùng khi biết khá chắc lệnh call sẽ success, fail tự undo => ít dùng mà thường dùng useDebounce hơn, nên implement failed tự undo cho useDebounce
+VD: nếu người dùng update xong API chưa thành công đã tắt page => Có thể cản lại với window.addEventListener("beforeunload"); URL: https://www.youtube.com/watch?v=VBlSe8tvg4U
+
+--> Pb: useOptimistic thì người dùng thấy update tức thì, kết quả API ta thường biết trước và cho nó rơi vào TH đa số, nếu sai thì undo.
+Còn useDebounce hành động của người dùng cũng tức thì, nhưng data load ra ta kb trước là gì mà chỉ gom nhiều request làm 1 thôi.
+=> Kết hợp cả 2 được mà nhỉ, data update tức thì nhưng delay lại, khi call api xong nếu fail thì revert
 
 
 

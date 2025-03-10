@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  react-app:
+    build: .
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      # NN chính khiến cho live reload hoạt động là cái này
+      # Chokidar là thư viện file watching k dựa vào sự kiện tương tác file mà kiểm tra định kỳ (polling)

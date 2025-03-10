@@ -213,6 +213,14 @@ Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snap
 
 
 
+# Dockerize react app
+URL: https://www.docker.com/blog/how-to-dockerize-react-app/
+Dùng Dockerfile, multi-stage Dockerfile, .dockerignore, docker-compose, publish to docker hub, xử lý env var.
+docker-compose dùng "build: ." tức chạy với Dockerfile mặc định có ở thư mục hiện tại.
+VD: docker build -t react-app-dev --target=development . => chạy từ đầu đến hết stage development chứ kp là chạy mỗi stage development. Nên nếu chạy npm run build khi cần chạy môi trường dev là bị thừa.
+Để dùng docker mà vẫn có live reload, thì phải mount đồng bộ thư mục src với thư mục trong docker và npm start lệnh như bth.
+
+
 
 # Other:
 -> Lỗi npm node-gyp trong window: Khi cài 1 package sẽ biên dịch package đó. VD cài truffle thì máy phải có python và C mới npm i được và phải cài đúng phiên bản. Điều này rất khó nếu như ta cài thủ công python và C++ không rõ phiên bản nào hỗ trợ chuẩn, xong còn phải thêm environment var.
@@ -221,4 +229,6 @@ Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snap
 -> Lỗi: This site can’t provide a secure connection. Localhost sent an invalid response => do giao thức HSTS yêu cầu mọi kết nối tới web phải được mã hóa bằng HTTPS.
 => Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
 => Fix trên edge tương tự vào: edge://net-internals/#hsts
+
+
 
