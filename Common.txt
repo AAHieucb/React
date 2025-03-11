@@ -200,5 +200,5 @@ Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snap
 => Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
 => Fix trên edge tương tự vào: edge://net-internals/#hsts
 
-
+-> ReactDOMServer dùng cho SSR có hàm render biến tất cả component react thành thẻ html dưới dạng string r nhét vào res.write("") gửi cho client, còn có hàm hydrate để dùng trong TH server gửi lại html tĩnh thì client React sẽ hydrate => k dùng
 
