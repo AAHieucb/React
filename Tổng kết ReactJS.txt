@@ -151,6 +151,11 @@ https://iconmonstr.com/page/80/ => monochrome
 -> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. 
 Có thể dùng cả với nextjs: https://github.com/aidenybai/react-scan/blob/main/docs/installation/next-js-app-router.md
 
+-> Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
+***Có thể dùng Carbon IBM rất đẹp.
+
+->*** react-useanimations: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
+
 
 
 # Pattern style component
@@ -451,5 +456,4 @@ https://github.com/kusti8/proton-native: Tool code React nhưng sinh ra ứng d�
 Trong HTML thuần ta dùng được export và import như v thì file export phải được script vào file html dưới dạng module nhưng trong React config hết r nên k cần.
 
 -> React19 hỗ trợ SSR dễ dàng hơn, giống như NextJS.
-
 
