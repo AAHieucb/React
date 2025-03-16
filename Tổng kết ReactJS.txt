@@ -1,3 +1,4 @@
+//!!!!!!!!!
 # Basic
 Khi code 1 trang web, ta phải kiểm soát hoàn toàn bố cục từ lớn tới nhỏ, cái nào chứa cái nào, thẻ con có vị trí thế nào so với thẻ cha. Do đó cần đảm bảo thẻ bên trong bao giờ cũng nhỏ hơn và nằm trong thẻ cha, kích thước cha luôn lớn hơn con. 
 K dùng fit-content vì kích thước con to ra sẽ khiến cha to ra theo, mà nên dùng max-width hay xử lý rõ overflow để kbh cho 1 con dôi ra ngoài cha.

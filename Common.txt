@@ -202,3 +202,4 @@ Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snap
 
 -> ReactDOMServer dùng cho SSR có hàm render biến tất cả component react thành thẻ html dưới dạng string r nhét vào res.write("") gửi cho client, còn có hàm hydrate để dùng trong TH server gửi lại html tĩnh thì client React sẽ hydrate => k dùng
 
+
