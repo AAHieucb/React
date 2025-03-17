@@ -1,6 +1,8 @@
-# Final
+# Other
 -> URL xây 1 hệ thống hỗ trợ hỏi đáp AI, dựa trên tập data từ SQL: https://www.freecodecamp.org/news/talk-to-databases-using-ai-build-a-sql-query-data-extractor/ 
 Dùng GroqAI cho AI model train với data rồi tương tác qua CopilotKit, tự động xử lý NLP và mọi thứ chuyên cho chat.
 
+-> Dừng:
+- 
 
 

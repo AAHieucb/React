@@ -1,27 +1,16 @@
-//!!!!!!!!!
 # Basic
--> Setup: npx create-vite 
-npx create-react-app myapp --template typescript => cài react với typescript
-npx create-react-app myapp --template redux-typescript => cài react với typescript dùng thêm redux
+npx create-vite 
 
 -> Compiler sẽ chuyển từ JSX syntax sang JS bằng babel. JSX "label for" đổi sang "label htmlFor" => Tổng hợp: https://reactjs.org/docs/dom-elements.html
 React.isValidElement(<ele>)
 
--> Dùng Fragment lợi hơn div ở chỗ nó k tạo thẻ khi render ra nên chiếm ít bộ nhớ hơn
-
 -> Dùng list buộc phải có key unique, nếu k khi thay đổi phần tử sẽ bị sai. Nếu k đổi thì dùng index làm key cũng được.
 VD: Điểm khác biệt là ta xoá đi ptử thứ 8 trong list thì ptử 9 sẽ mang key là 8, ptu 10 sẽ mang key là 9, dẫn đến in sai.
 
--> HOC (Higher order component) là component nhận vào component khác như wrapper class. VD: props.children[1].props.children là mọi chilren của con thứ 2 của Cha
-
--> Dùng background: Nên dùng background-image của css thay vì dùng thẻ img html làm background.
-VD để có 1 background image ngay dưới header: Dưới header, dùng 1 thẻ relative bao 1 thẻ img absolute full width. 
-Tính cả TH màn hình xoay ngang, content quá ngắn hoặc ảnh quá ngắn, minHeight phải set ít nhất cũng luôn bao đủ content bên trong.
+-> HOC (Higher order component): hàm nhận component làm wrapper cho ra 1 component khác => k dùng mà nên biến thành 1 hook
 
 -> React dùng Synthetic Event: https://reactjs.org/docs/events.html
 React wrap native browser event vào 1 cái wrapper có interface, bên trong cung các method như preventDefault() để sử dụng. NN dùng wrapper chung là để đồng bộ xử lý sự kiện trên các browser khác nhau. Tức các sự kiện ta trigger như onClick, onBlur là ReactJS custom event (Synthetic Event) chứ kp real dom event. Nhờ đó dễ dàng tạo ra cross browser app
-
-event.stopPropagation() sẽ cản trở event tiếp tục bubble up và thực hiện tiếp các hàm khác
 
 -> Automatic Batching React 18
 VD: setTimeout(() => { 
@@ -33,24 +22,25 @@ function handleSubmit() {
   flushSync(() => { setOpen((oldOpen) => !oldOpen); }); // React has updated the DOM by now
 }
 
-
-
-# Dùng React.Context
-Pb: useContext giúp tạo global store chia sẻ state tới các component, còn userReducer cho phép cập nhật giá trị mới cho state ở 1 component.
-
-Context provider bao cả dự án, 1 biến trong đó đổi sẽ kéo mọi component rerender 
-=> Giải pháp: dùng useMemo cho Con; tạo cho mỗi Con 1 context riêng
+-> Dùng React.Context + useContext:
+Chú ý state trong context đổi sẽ kéo mọi component rerender. Có thể chia nhiều context khác nhau cho từng con.
 
 
 
 # Cách ref tới 1 thẻ
-Chủ động dùng hook var ref = useRef(null); rồi cho vào attribute ref của thẻ
 Nếu thẻ đó có sự kiện như onClick thì ta có thể lấy mọi thông tin của thẻ đó luôn. VD event.target.innerText
 Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông qua biến
 Đảm bảo hàm chạy sau khi render thì có thể dùng query selector để lấy thẻ
 
+-> Dùng const ref = useRef(null); rồi cho vào attribute ref của thẻ => bỏ createRef, thay thế forwardRef
+VD: khi thẻ cha có hàm đổi styles của con của thẻ con, truyền ref vào con để refer tới thẻ bên trong con được.
+
+-> Dùng useImperativeHandle: component cha gọi 10 hàm của component con ở nhiều thẻ mà chỉ truyền 1 ref được. 
+URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 
+
+//!!!!!!!!
 # Các thư viện basic
 -> effect*: thư viện hỗ trợ code Typescript cực mạnh nên dùng nếu làm dự án Typescript yêu cầu tính chặt chẽ cao. Nó làm mọi thứ dễ dàng và dễ hiểu hơn. Ít nhất phải biết dùng: Effect, Layer, Context, Predicate, Array, Cause, Option, Config, Scope, ManagedRuntime, GlobalValue, String, HttpClient, ClientRequest, ClientResponse, Schema, Data.
 
@@ -358,16 +348,6 @@ useScrollLock khóa và mở khóa thanh scrollbar
 useForm cung mọi thứ cho việc tạo form, bao gồm cả validate
 -> aHooks
 -> usehooks-ts*
-
-
-
-# Dùng ref
-Biến const tạo bởi useRef k tạo lại qua các lần render, đặc biệt là khi đổi sẽ k làm component render lại. Thường dùng khi cần đổi style thẻ ref thôi => bỏ createRef
--> Dùng forwardRef: nhận vào hàm số (props, ref) => (<jsx component>) => dùng useRef là đủ
-Tham số thứ 2 nó nhận vào là ref mà ta có thể dùng để refer tới thẻ nào bên trong, các thẻ dùng component này có thể thao tác với biến ref. 
-
--> Dùng useImperativeHandle: component cha gọi 10 hàm của component con ở nhiều thẻ mà chỉ truyền 1 ref được
-URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 
 
