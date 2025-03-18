@@ -190,6 +190,32 @@ Do đó React dùng virtual dom là 1 bản giống hệt DOM thật nhưng nó 
 Cơ chế: khi chạy, virtual dom sẽ được tạo và lưu trong memory, nếu có update thì React sẽ tự tạo 1 cây virtual dom mới, virtual dom k render lên screen nên tạo rất dễ. Sau đó React compare 2 cây DOM xem khác nhau chỗ nào và tiến hành update phần node đó trên actual dom.
 Khi thực hiện thuật toán tìm điểm khác biệt, react so sánh 2 snapshot của root element, giống nhau thì tiếp tục so sánh dần xuống con để xác định node cần.
 
+-> React dùng Synthetic Event: https://reactjs.org/docs/events.html
+React wrap native browser event vào 1 cái wrapper có interface, bên trong cung các method như preventDefault() để sử dụng. NN dùng wrapper chung là để đồng bộ xử lý sự kiện trên các browser khác nhau. Tức các sự kiện ta trigger như onClick, onBlur là ReactJS custom event (Synthetic Event) chứ kp real dom event. Nhờ đó dễ dàng tạo ra cross browser app
+
+
+
+# Lib k dùng
+effect: hỗ trợ code Typescript cực mạnh nên dùng nếu làm dự án Typescript yêu cầu tính chặt chẽ cao. Nó làm mọi thứ dễ dàng và dễ hiểu hơn. 
+shoelace: thư viện hỗ trợ tạo web components, dùng shadow DOM cách ly không conflict với bất cứ code css js nào, tích hợp vào mọi dự án đều tương thích.
+react-markdown: thư viện giúp render từ kiểu markdown ra văn bản đẹp
+google-map-react: hiển thị gg map tương tác. Nó có điểm lợi là dùng google map API và dù k load được google map api nó vẫn có thể hiện map bth
+react-autosuggest*: tạo autosuggest khi gõ input text, custom cực mạnh => nếu có thể hãy dùng autocomplete mặc định
+whatwg-fetch: cung tính năng fetch cho cả trình duyệt cũ
+immer / immutable: clone và thay đổi 1 biến const, so sánh 2 biến immutable bằng giá trị
+screenfull: khiến 1 page hay 1 component nào biến thành fullscreen
+react-infinite-scroll-component: tính năng scroll đến cuối sẽ fetch tiếp data hiển thị tiếp
+
+-> react-transition-group: giúp tạo css animation dễ hơn
+react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới
+react-awesome-slider: chuyên tạo chuyển full page đẹp dạng slider. Custom các thuộc tính css trong https://caferati.me/demo/react-awesome-slider/fall và thêm vào class tên là awssld.
+
+-> fireworks: thư viện tạo pháo hoa. Thg dùng kiểu ấn nút thành công thì bắn pháo hoa
+react-snowfall: hiển thị mưa tuyết, custom thoải mái
+
+-> react-moment moment: format hiển thị ngày giờ, nó cũng cung nhiều utils VD hiện ra còn bnh ngày là đến ngày nào chẳng hạn
+Dùng thêm moment-timezone nếu cần thao tác thời gian theo múi giờ khác nhau
+
 
 
 # Other:

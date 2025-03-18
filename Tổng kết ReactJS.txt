@@ -9,9 +9,6 @@ VD: Điểm khác biệt là ta xoá đi ptử thứ 8 trong list thì ptử 9 s
 
 -> HOC (Higher order component): hàm nhận component làm wrapper cho ra 1 component khác => k dùng mà nên biến thành 1 hook
 
--> React dùng Synthetic Event: https://reactjs.org/docs/events.html
-React wrap native browser event vào 1 cái wrapper có interface, bên trong cung các method như preventDefault() để sử dụng. NN dùng wrapper chung là để đồng bộ xử lý sự kiện trên các browser khác nhau. Tức các sự kiện ta trigger như onClick, onBlur là ReactJS custom event (Synthetic Event) chứ kp real dom event. Nhờ đó dễ dàng tạo ra cross browser app
-
 -> Automatic Batching React 18
 VD: setTimeout(() => { 
   setSize((oldSize) => oldSize + 1); setOpen((oldOpen) => !oldOpen); // state đổi liên tiếp sẽ tối ưu gom lại và render 1 lần thôi
@@ -24,6 +21,10 @@ function handleSubmit() {
 
 -> Dùng React.Context + useContext:
 Chú ý state trong context đổi sẽ kéo mọi component rerender. Có thể chia nhiều context khác nhau cho từng con.
+
+-> Dùng biến môi trường: có thể chia file .env, .env.production, .env.staging cho từng loại môi trường khác nhau
+Có sẵn như CRA (REACT_) hay Vite (VITE_), hoặc dùng cross-env, dotenv.
+Cũng có thể custom với webpack bằng lib dotenv-webpack, VD đổi k dùng tên file là .env nữa
 
 
 
@@ -40,54 +41,67 @@ URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 
 
-//!!!!!!!!
-# Các thư viện basic
--> effect*: thư viện hỗ trợ code Typescript cực mạnh nên dùng nếu làm dự án Typescript yêu cầu tính chặt chẽ cao. Nó làm mọi thứ dễ dàng và dễ hiểu hơn. Ít nhất phải biết dùng: Effect, Layer, Context, Predicate, Array, Cause, Option, Config, Scope, ManagedRuntime, GlobalValue, String, HttpClient, ClientRequest, ClientResponse, Schema, Data.
+# Tích hợp thư viện => các thư viện 1-2 năm k update cũng nên bỏ 
+-> Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Grommet, react-foundation, Primereact, Bulma, materialize-css@next, React Suite, Kendo react (component lạ), radix-ui khó dùng
+Chakra UI, Bootstrap, mui* v7, Senmatic UI
+cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
+Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon* hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
 
--> shoelace*: thư viện hỗ trợ tạo web components, dùng shadow DOM cách ly không conflict với bất cứ code css js nào, tích hợp vào mọi dự án đều tương thích.
+Lib component kèm animation rất mạnh:
+https://ui.aceternity.com/components 
+https://www.ui-layout.com/components
+https://www.cult-ui.com/docs/components/
+https://www.eldoraui.site/components
+https://syntaxui.com/components
+https://www.hover.dev/components/
+https://animata.design/docs
 
--> @tinymce/tinymce-react*: thư viện giúp tạo TinyMCE text editor cực mạnh cho các kiểu input text như gg docs
-
--> Thư viện UI: Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Chakra UI, Grommet, react-foundation, Bootstrap, Senmatic UI, Primereact, Bulma, materialize-css@next, https://rsuitejs.com/, mui* v6, Kendo react => component lạ, radix-ui khó dùng
+Bit Cloud: Là lib UI của bit.dev, cài nó thì dùng được thập cẩm component của nhiều thư viện khác nhau, tái sử dụng và chia sẻ giữa các dự án.
+Search component trên bitcloud, ấn từng mục của các thư viện UI khác nhau. Nhưng trước đó phải cài bit trong dự án, nó sẽ import dưới dạng file cả dự án component vào và ta có thể chỉnh sửa tùy ý. Sau khi lấy components về rồi copy vào src/components để dùng.
+react-rainbow-component*: Lib UI component có sẵn nhiều component lạ, nên thường dùng kết hợp bit cloud để tối ưu sức mạnh
 
 -> ReactAdmin*: Thư viện giúp tạo trang admin cho các ứng dụng React dễ dàng.
 ra-data-json-server dùng riêng cho ReactAdmin cung vào data json
 
--> intl / react-intl*: thư viện giúp format số và chữ theo i18n
+-> @replexica/react hỗ trợ i18n bằng AI
+react-intl*: thư viện giúp format số và chữ theo i18n
+
 -> clsx*: tạo string với điều kiện, thg dùng cho className.
--> prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi
--> react-hot-toast*
+prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi. 
+Date-fns hoặc Luxon => thay thế react-moment, moment-timezone
+lodash*: https://lodash.com/docs/4.17.15 thay thế underscore => Có thể import tree shaking đỡ nặng: npm i lodash.merge
+npm i rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
+
+-> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. Thay thế @welldone-software/why-did-you-render
+Có browser extension, npm package. CDN: <script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js"></script>
 
 -> react-cssfx-loading*. Bản html thuần: https://cssfx.netlify.app/
 https://loading.io/* => icon loading customize thoải mái, export ra gif hay svg đều được
 react-spinners*: thư viện component loading
 react-content-loader: thư viện tạo skeleton svg nhẹ
 
--> react-modal 
+-> @tinymce/tinymce-react*: thư viện giúp tạo TinyMCE text editor cực mạnh cho các kiểu input text như gg docs
+react-hot-toast*
+react-modal 
 react-player*: custom play video
 react-slick và slick-carousel: tạo carousel slider
 react-trend: vẽ đường line
 react-avatar-edit*: cắt ảnh làm avatar
 react-paginate: tạo component phân trang
-fireworks: thư viện tạo pháo hoa. Thg dùng kiểu ấn nút thành công thì bắn pháo hoa
-react-snowfall: hiển thị mưa tuyết, custom thoải mái
 react-perfect-scrollbar: thư viện tạo thanh scrollbar, nó cung thêm tính năng khác như bắt sự kiện scroll đến vị trí trục y nào
 react-text-transition
-react-markdown: thư viện giúp render từ kiểu markdown ra văn bản đẹp
 react-color*: color picker
 react-datepicker: date picker
 react-pdf
 sweetalert*: hộp thoại alert đẹp
 react-qr-reader: quay camera QR
 @pqina/flip*: tạo Flip Clock chuẩn
-google-map-react: hiển thị gg map tương tác. Nó có điểm lợi là dùng google map API và dù k load được google map api nó vẫn có thể hiện map bth
 cmdk: hiển thị menu dạng có thể search
+React Email cung components cho việc gửi email
+@xyflow/react*(bản mới chuẩn của reactflow): thư viện rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
 
 -> react-select*: tạo đủ loại component input
-react-autosuggest*: tạo autosuggest khi gõ input text, custom cực mạnh => nếu có thể hãy dùng autocomplete mặc định
 react-text-mask*: custom input hiển thị
-
--> @xyflow/react*(bản mới chuẩn của reactflow): thư viện rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
 
 -> react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
 react-grid-layout: tạo grid draggable items
@@ -97,22 +111,7 @@ highcharts-react-official highcharts*: tạo graph đẹp, responsive, loading
 Victory thư viện vẽ biểu đồ cho data. Tremor cũng thế nhưng đẹp hơn. React Diagrams cho user vẽ biểu đồ có thể drag customize như draw io
 D3 thư viện chuyên data visualization đủ loại phức tạp
 
--> react-moment moment: format hiển thị ngày giờ, nó cũng cung nhiều utils VD hiện ra còn bnh ngày là đến ngày nào chẳng hạn
-Có thể dùng thêm moment-timezone nếu cần thao tác thời gian theo múi giờ khác nhau
-=> Lib quá nặng => bỏ, thay thế bằng Date-fns hoặc Luxon
-
--> whatwg-fetch: cùng tính năng fetch cho cả trình duyệt cũ
-lodash*: https://lodash.com/docs/4.17.15 => Có thể import tree shaking đỡ nặng: npm i lodash.merge
-underscore
-immer / immutable: clone và thay đổi 1 biến const, so sánh 2 biến immutable bằng giá trị
-screenfull: khiến 1 page hay 1 component nào biến thành fullscreen
-npm i rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
-CopilotKit tạo chatbot AI trong ứng dụng React
-React Email cung components cho việc gửi email
-@replexica/react hỗ trợ i18n bằng AI
-Refine giúp cho việc xây ứng dụng CRUD dễ dàng hơn react thuần. Nó cung copmonents, state management, hook.
-
--> @welldone-software/why-did-you-render*** thư viện utility mạnh
+-> Refine giúp cho việc xây ứng dụng react CRUD dễ dàng hơn. Nó cung copmonents, state management, hook.
 
 -> Icon lib: react-icons*
 https://ionic.io/ionicons => đơn giản mà đẹp
@@ -131,113 +130,54 @@ https://boxicons.com/
 https://www.uicons.com/icons-round?weight=medium&fill=outline&round-plans=free
 https://iconmonstr.com/page/80/ => monochrome
 
--> cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
+-> styled-components*, @emotion/styled => style css trong js
+linaria*: tạo component từ việc style lại tag html, nó extract code ra css files khi build làm kích thước lớn hơn. Còn styled-components thì k nhưng tăng JS bundle size. 
 
--> https://cursify.vercel.app/components => thư viện animate cursor đỉnh
-
--> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. 
-Có thể dùng cả với nextjs: https://github.com/aidenybai/react-scan/blob/main/docs/installation/next-js-app-router.md
-
--> Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
-***Có thể dùng Carbon IBM rất đẹp.
-
-->*** react-useanimations: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
+-> Clerk* => tool mạnh nhất để tạo dialog authentication. Nó hỗ trợ sẵn đủ loại login, thậm chí là login bằng tiktok hay discord, metamask, 2FA,... components UI sẵn luôn
+-> Okta: lib authentication nên dùng với React thuần vì tương thích với react-router-dom
+Setup: Login Okta -> Application -> Tạo 1 ứng dụng với OpenID Connect và SPA -> Sign-in và sign-out URI là đường dẫn của ứng dụng khi redirect, set port -> Allow everyone in your organization to access -> nó cung ClientID xác định app và Okta domain (dev-xxxxxxxx.okta.com). Tạo 1 server check access token từ FE qua Okta API với OAuth 2.0
+Tạo dự án mẫu với okta-cli: tải okta cli -> okta login có org url là https://dev-xxxxxxx.okta.com, id là client id của app -> "okta create react"
+ISSUER ID là https://dev-xxxxxxx.okta.com
 
 
 
-# Pattern style component
+# Pattern tuỳ biến style component
 Khi dùng các component có sẵn từ nhiều nơi or các thư viện UI, nó thường cung API ở 1 mức độ nhất định thôi. 
 => Ta có thể ép style theo ý ta bằng CSS Selector, viết 1 thẻ bao ngoài và mang 1 class rồi cứ dùng css selector để style cho các con bên trong tùy ý. 
-
-styled-components*, @emotion/styled => style css trong js
-linaria*: tạo component từ việc styled lại tag html, lý tưởng khi dùng với html thuần. 
-=> linaria extract code ra css files khi build làm kích thước lớn hơn vì phải request css file, còn styled-components làm giảm kích thước file css nhưng tăng JS bundle size. 
 
 
 
 # React animation
--> Các kiểu animation: Dùng các thẻ HTML có sẵn animation như marquee
-Animation dùng keyframe: có thể perform các animation phức tạp hơn, infinity animation. 
+Các kiểu animation: Dùng các thẻ HTML có sẵn animation như marquee
+Animation css transition cơ bản như hover thì hiện như nào
+Animation dùng keyframe: có thể perform các animation phức tạp hơn 
 Các thư viện component dùng animation trong 1 vài case cụ thể như: react-text-transition, react-snowfall, @pqina/flip
 Animation tạo bằng JS có thể perform dựa vào sự kiện phức tạp hơn css thuần: setTimeout, onMouseEnter (thay :hover), setInterval, onMouseLeave
 Các thư viện hỗ trợ tạo custom animation js: react-spring, react-awesome-reveal, react-transition-group, MUI có các component chuyên cho animation có sẵn
 Nâng cao hơn nữa thì có threeJS là thư viện animation 3D cho react 
-Animation css transition cơ bản như hover thì hiện như nào, 1 vài attribute sẽ k hoạt động với nó.
 
-VD Tạo số chạy khi số liệu thay đổi hoặc component hiện ra lần đầu. => ref tới "Projects Leaderboard HighChart / AnimatedNumber". 
+VD Tạo số chạy khi số liệu thay đổi hoặc component hiện ra lần đầu => ref tới "Projects Leaderboard HighChart / AnimatedNumber". 
 Cơ chế: số là 1 biến state được đổi giá trị nhanh liên tục để rerender
 
 Khi tạo animation với JS, nên dùng requestAnimationFrame thay cho setInterval vì requestAnimationFrame tối ưu xử lý animation, khi tab browser bị ẩn hoặc chuyển sẽ dừng lại giúp tiết kiệm tài nguyên còn setInterval setTimeout vẫn thực hiện tiếp, nó đảm bảo JS chạy trước khi browser thực hiẹn painting.
 
 -> Animation library: 
-animate.css*: best animation lib
+animate.css*: best animation css lib
 reac-spritng*: tạo custom animation dưới dạng react hook. URL: https://www.joshwcomeau.com/react/boop
-react-awesome-reveal: tạo custom animation
-react-transition-group: giúp tạo css animation dễ hơn
 framer-motion*: animation được cho cả svg path
 react-burger-menu: tạo animation cho thanh menu dọc thg khi màn hình nhỏ
-@use-gesture: animation dựa vào tương tác của người dùng.
+@use-gesture: animation mạnh dựa vào tương tác của người dùng.
+*** react-useanimations: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
+https://cursify.vercel.app/components => thư viện animate cursor đỉnh
 
-react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới
+-> Animation với scroll: 
+react-awesome-reveal: reveal animation
 react-animated-cursor => thư viện tạo animate cursor mỗi khi rê chuột đi đâu
 react-parallax-mouse => thư viện hiệu ứng parallax bằng cách di chuyển chuột
 
-react-awesome-slider: chuyên tạo chuyển full page đẹp dạng slider
-Có thể custom ghi đè css: Các thuộc tính css ta xem trong https://caferati.me/demo/react-awesome-slider/fall và thêm vào class tên là awssld. Tự custom F12
-
--> Lib component animation***: bộ combo React + Tailwind CSS + Framer Motion không bao giờ lo về animation nữa.
-https://ui.aceternity.com/components
-https://www.ui-layout.com/components
-https://www.cult-ui.com/docs/components/
-https://www.eldoraui.site/components
-https://syntaxui.com/components
-https://www.hover.dev/components/
-https://animata.design/docs
 
 
-
-# Authentication lib React
--> Clerk* => tool mạnh nhất để tạo dialog authentication. Nó hỗ trợ sẵn đủ loại login, thậm chí là login bằng tiktok hay discord, metamask, 2FA,... components UI sẵn luôn
-
--> Okta: hỗ trợ nhiều ngôn ngữ và dự án, nên dùng với React thuần vì tương thích với react-router-dom
-Setup: Vào https://developer.okta.com/login/ và login -> Application -> Tạo 1 ứng dụng với OpenID Connect và SPA -> Sign-in và sign-out URI là đường dẫn của ứng dụng khi redirect, set port -> Allow everyone in your organization to access -> nó cung ClientID xác định app và Okta domain (dev-xxxxxxxx.okta.com)
-Cần tạo 1 server check access token từ FE qua Okta API với OAuth 2.0
-Tạo dự án mẫu với okta-cli: tải okta cli -> okta login có org url là https://dev-xxxxxxx.okta.com, id là client id của app -> "okta create react"
-ISSUER ID là https://dev-xxxxxxx.okta.com
-
-URL tut: https://developer.okta.com/blog/2022/08/29/react-typescript-redux
-
-
-
-# Lib Bit Cloud
-Là thư viện UI của Bit.dev, cài nó thì dùng được thập cẩm component của nhiều thư viện khác nhau, tái sử dụng và chia sẻ giữa các dự án.
-Có thể search mọi loại component trên bitcloud. Khi search và ấn vào từng mục của các thư viện UI khác nhau, ta có thể search in this scope từng component của thư viện đó và cài để dùng. Nhưng trước đó phải cài bit trong dự án chứ k import trực tiếp được. Kết quả nó import dưới dạng file cả dự án component vào và ta có thể chỉnh sửa tùy ý
-
-Sau khi lấy components về rồi copy vào src/components để dùng vì k thể ref ra ngoài dự án
-
--> react-rainbow-component*: Thư viện UI component có sẵn rất nhiều component, cả compoennt lạ như Google Map, Timeline vô cùng đa dạng
-Chính vì thư viện có nhiều component hay nên dùng kết hợp với bit cloud để tối ưu sức mạnh
-
-
-
-# Custom scroll
--> Ấn để nhảy page tới 1 vị trí:
-HTML: Thêm id cho thẻ muốn nhảy tới -> href đến nó từ thẻ khác
-React: Đôi khi phải thêm 1 việc là thêm thuộc tính scrollBehavior: "smooth" vào thẻ html vì các dự án có thể làm mất thuộc tính này của thẻ html
-
--> Lib react-infinite-scroll-component: tính năng scroll đến cuối sẽ fetch tiếp data hiển thị tiếp
-
-
-
-# Dùng biến môi trường
-Có thể chia file .env, .env.production, .env.staging cho từng loại môi trường khác nhau
--> Dùng cross-env
--> Có sẵn như CRA (REACT_) hay Vite (VITE_)
--> Có thể custom với webpack bằng lib dotenv-webpack như đổi k dùng tên là .env nữa
--> Còn dotenv chỉ thường dùng ở NodeJS
-
-
-
+//!!!!!!!!
 # Thao tác với form
 Gom mọi trường vào 1 biến useState object với setState({ ...state, [e.target.name]: e.target.value }); cho gọn hoặc mỗi trường 1 useState riêng cho rõ ràng.
 Khi dùng form, hãy luôn đặt thuộc tính autofocus vào ô đầu tiên mà người dùng cần nhập.
@@ -434,3 +374,5 @@ Trong HTML thuần ta dùng được export và import như v thì file export p
 
 -> React19 hỗ trợ SSR dễ dàng hơn, giống như NextJS.
 
+-> URL xây 1 hệ thống hỗ trợ hỏi đáp AI, dựa trên tập data từ SQL: https://www.freecodecamp.org/news/talk-to-databases-using-ai-build-a-sql-query-data-extractor/ 
+Dùng GroqAI cho AI model train với data rồi tương tác qua CopilotKit, tự động xử lý NLP và mọi thứ chuyên cho chat.
