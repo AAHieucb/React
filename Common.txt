@@ -205,6 +205,7 @@ whatwg-fetch: cung tính năng fetch cho cả trình duyệt cũ
 immer / immutable: clone và thay đổi 1 biến const, so sánh 2 biến immutable bằng giá trị
 screenfull: khiến 1 page hay 1 component nào biến thành fullscreen
 react-infinite-scroll-component: tính năng scroll đến cuối sẽ fetch tiếp data hiển thị tiếp
+@rjsf/core: tạo form dựa trên config json data hiển thị ra giao diện
 
 -> react-transition-group: giúp tạo css animation dễ hơn
 react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới

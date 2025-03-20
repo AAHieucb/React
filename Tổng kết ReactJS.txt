@@ -1,5 +1,5 @@
 # Basic
-npx create-vite 
+npx create-vite => thay thế hoàn toàn CRA deprecated
 
 -> Compiler sẽ chuyển từ JSX syntax sang JS bằng babel. JSX "label for" đổi sang "label htmlFor" => Tổng hợp: https://reactjs.org/docs/dom-elements.html
 React.isValidElement(<ele>)
@@ -25,6 +25,46 @@ Chú ý state trong context đổi sẽ kéo mọi component rerender. Có thể
 -> Dùng biến môi trường: có thể chia file .env, .env.production, .env.staging cho từng loại môi trường khác nhau
 Có sẵn như CRA (REACT_) hay Vite (VITE_), hoặc dùng cross-env, dotenv.
 Cũng có thể custom với webpack bằng lib dotenv-webpack, VD đổi k dùng tên file là .env nữa
+
+
+
+# Dùng react compiler:
+Full docs: https://react.dev/learn/react-compiler
+Nó k render lại con nếu cha đổi props klq tới con, mà k cần useMemo component con => bỏ hoàn toàn useCallback, useMemo, React.memo
+Biến const khai báo trong component sẽ k tạo lại sau mỗi lần render trừ khi nó phụ thuộc bién khác và biến đó bị đổi, mà k cần useMemo.
+
+npx react-compiler-healthcheck@latest => check dự án hiện tại có tương thích với react compiler không.
+
+eslint-plugin-react-compiler => package giúp eslint báo lỗi nếu dùng thư viện or code k tương thích với compiler. Chỉ cần cài và thêm vào eslint config:
+import reactCompiler from 'eslint-plugin-react-compiler'
+export default [
+  {
+    plugins: {
+      'react-compiler': reactCompiler,
+    },
+    rules: {
+      'react-compiler/react-compiler': 'error',
+    },
+  },
+]
+
+Nếu dùng vite phải thêm babel-plugin-react-compiler@beta và thêm vào vite config:
+plugins: [
+  react({
+    babel: {
+      plugins: [
+        ["babel-plugin-react-compiler", { compilationMode: "annotation" }]
+      ]
+    }
+  })
+]
+K được dùng swc version của react trong vite mà phải dùng normal version.
+--> { compilationMode: "annotation" } chỉ có tác dụng với các component sử dụng "use memo" bên trong, k có thì áp dụng mọi component
+
+Trong nextjs, cài babel-plugin-react-compiler và thêm vào next config: 
+experimental: {
+  reactCompiler: true,
+}
 
 
 
@@ -93,7 +133,7 @@ react-text-transition
 react-color*: color picker
 react-datepicker: date picker
 react-pdf
-sweetalert*: hộp thoại alert đẹp
+sweetalert: hộp thoại alert đẹp
 react-qr-reader: quay camera QR
 @pqina/flip*: tạo Flip Clock chuẩn
 cmdk: hiển thị menu dạng có thể search
@@ -148,65 +188,75 @@ Khi dùng các component có sẵn từ nhiều nơi or các thư viện UI, nó
 
 
 # React animation
-Các kiểu animation: Dùng các thẻ HTML có sẵn animation như marquee
-Animation css transition cơ bản như hover thì hiện như nào
-Animation dùng keyframe: có thể perform các animation phức tạp hơn 
-Các thư viện component dùng animation trong 1 vài case cụ thể như: react-text-transition, react-snowfall, @pqina/flip
-Animation tạo bằng JS có thể perform dựa vào sự kiện phức tạp hơn css thuần: setTimeout, onMouseEnter (thay :hover), setInterval, onMouseLeave
-Các thư viện hỗ trợ tạo custom animation js: react-spring, react-awesome-reveal, react-transition-group, MUI có các component chuyên cho animation có sẵn
+-> Các kiểu tạo animation trong react: 
+Animation css cơ bản: transition, @starting-style, dialog, details-content, interpolate-size allow-keywords, allow-discrete, :hover
+Animation css keyframe
+Lib có sẵn component animation hoặc tạo animation dễ hơn: MUI, @pqina/flip, react-text-transition, framer-motion, react-spring.
 Nâng cao hơn nữa thì có threeJS là thư viện animation 3D cho react 
 
+Kết hợp sự kiện JS: onMouseLeave onMouseOver thì đổi biến or setInterval useEffect đổi biến, r thuộc tính css gán theo biến
 VD Tạo số chạy khi số liệu thay đổi hoặc component hiện ra lần đầu => ref tới "Projects Leaderboard HighChart / AnimatedNumber". 
 Cơ chế: số là 1 biến state được đổi giá trị nhanh liên tục để rerender
 
-Khi tạo animation với JS, nên dùng requestAnimationFrame thay cho setInterval vì requestAnimationFrame tối ưu xử lý animation, khi tab browser bị ẩn hoặc chuyển sẽ dừng lại giúp tiết kiệm tài nguyên còn setInterval setTimeout vẫn thực hiện tiếp, nó đảm bảo JS chạy trước khi browser thực hiẹn painting.
+Kết hợp dùng JS sửa css như html thuần với useLayoutEffect + useRef + requestAnimationFrame
+useLayoutEffect(() => {
+  const content = contentRef.current;
+  if (isVisible) {
+    content.style.maxHeight = content.scrollHeight + "px";
+    content.style.opacity = "1";
+  } else {
+    requestAnimationFrame(() => {
+      content.style.maxHeight = "0";
+      content.style.opacity = "0";
+    });
+  }
+}, [isVisible]);
+=> useTransition chỉ khi xử lý logic nặng bằng js thôi, vd search nhanh lag. Còn đổi JS liên quan đến animation nên dùng requestAnimationFrame, nó đảm bảo frame sau sẽ gom đổi tất cả. setInterval setTimeout vẫn thực hiện tiép khi tab browser bị ẩn or k focus, nhưng requestAnimationFrame sẽ dừng lại giúp tiết kiệm tài nguyên
+
+*** Để thẻ luôn hiện ở đó, isOpen=true thì gán thêm class để hiện ra kèm transition là được => best practice phổ biến nhất, thư viện chỉ giúp code như v gọn hơn thôi.
+Nếu ta làm kiểu thẻ bth k tồn tại, khi mở mới mount vào DOM thì cần chú ý nó có thể break layout hiện có. VD gap hay grid flex bị sai. Dialog thì k tính vì dùng portal rồi.
 
 -> Animation library: 
 animate.css*: best animation css lib
-reac-spritng*: tạo custom animation dưới dạng react hook. URL: https://www.joshwcomeau.com/react/boop
+react-spring*: tạo custom animation dưới dạng react hook. URL: https://www.joshwcomeau.com/react/boop
 framer-motion*: animation được cho cả svg path
 react-burger-menu: tạo animation cho thanh menu dọc thg khi màn hình nhỏ
 @use-gesture: animation mạnh dựa vào tương tác của người dùng.
-*** react-useanimations: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
+*** reactuseanimations-: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
 https://cursify.vercel.app/components => thư viện animate cursor đỉnh
 
--> Animation với scroll: 
+--> Animation với scroll: 
 react-awesome-reveal: reveal animation
 react-animated-cursor => thư viện tạo animate cursor mỗi khi rê chuột đi đâu
 react-parallax-mouse => thư viện hiệu ứng parallax bằng cách di chuyển chuột
 
 
 
-//!!!!!!!!
 # Thao tác với form
-Gom mọi trường vào 1 biến useState object với setState({ ...state, [e.target.name]: e.target.value }); cho gọn hoặc mỗi trường 1 useState riêng cho rõ ràng.
-Khi dùng form, hãy luôn đặt thuộc tính autofocus vào ô đầu tiên mà người dùng cần nhập.
+Nên gom mọi trường vào 1 biến useState object với setState({ ...state, [e.target.name]: e.target.value }); cho gọn.
+***Khi dùng form, hãy luôn đặt thuộc tính autofocus vào ô đầu tiên mà người dùng cần nhập.
 
-return false trong hàm xử lý sự kiện sẽ ngăn chặn chuyển trang, hoặc dùng dùng e.preventDefault() trong React. 
+return false trong hàm xử lý sự kiện sẽ ngăn chặn chuyển trang, hoặc dùng e.preventDefault() tương tự.
 Nó có thể áp dụng trong form hoặc bất cứ component nào gây chuyển trang. Vd thẻ a có href có thể xử lý điều này trong onClick của nó
 
-Để submit form thông qua phím enter:
-C1: giữ onSubmit của form là xong, có button nào submit thì cho type submit là được.
-C2: custom thoải mái rồi bắt thủ công sự kiện bấm phím Enter thì submit
-
--> Tổng kết dùng lib formik*
-C1: Dùng useFormik. 
-Khởi tạo initialValues, validate, onSubmit. 
-Hàm validate được gọi mỗi khi data của formik được update, return ra biến errors, biến này có thể truy xuất với formik.errors làm error helper text. Còn có formik.touched để truy cập xem trường nào đã từng được thao tác lần đầu chưa. VD: Để làm kiểu ấn vào trường a r ấn ra ngoài, bth nó sẽ chạy vào validate và set errors cho cả 2 trường a và b vì chưa nhập gì cả, nhưng ta chỉ muốn error trường đã tương tác thôi thì check formik.touched cho b để đảm bảo 1 input chỉ báo lỗi nếu đã tương tác với nó r và giá trị bị sai.
-Có thể truy xuất giá trị bất cứ đâu với formik.values, còn formik.isValid trả ra true nếu hàm validate return ra object error rỗng, thực tế giá trị này rất hay ở chỗ nó formik.isValid ban đầu vào nó luôn trả ra true nếu ta chưa set gì cả, từ đó lợi dụng để ban đầu vào thì button submit enabled, khi ấn vào mới hiện ra các trường required cần dùng
-Để update có hàm formik.setFieldValue("<field>", <value>) hoặc trong onChange có thể dùng formik.handleChange nhận vào biến e là input, cũng nên bắt cả onBlur={formik.handleBlur}. Mọi hàm khi gọi từ formik như change với blue đều chạy vào validate kiểm tra lỗi hết. Submit form với formik.submitForm(e) và reset form với formik.resetForm()
-
-=> Formik tự xử lý tối ưu khi có thay đổi chứ k render lại cả form. setFieldValues hay handleChange có thể chủ động thêm async await để xử lý nhưng k nên vì sẽ bị lag khi nhập. 
-handleChange sẽ update bất đồng bộ nên ở phía dưới ta sẽ k thể sử dụng ngay formik.values mà chỉ có thể thao tác với e.target.value; Dù nó thực hiện bất đồng bộ nhưng nếu 1 trường được update 2 lần liên tiếp, ta sẽ k cần lo giá trị trước được update sau giá trị sau gây TH update sai mà cùng 1 trường nó sẽ tự động kết thúc cái cũ để set cái mới. Nên dùng kết hợp debounce.
-
-C2: Dùng component có sẵn Formik, FastField, Form, ErrorMessage => Cách này vẫn mang các điểm lợi của formik như render độc lập nhưng ít dùng hơn.
+Để submit form thông qua phím enter, nên giữ onSubmit của form và button có type submit là được.
+Cách khác là custom khi form được focus thì bắt sự kiện onKeyDown bấm phím Enter.
 
 -> react-hook-form*: lib tương tự formik. Nó còn có tool generate code luôn.
 
--> React JSONSchema Form tạo form dựa trên config json data hiển thị ra giao diện
+-> Lib formik*: điều đb là nó tự xử lý tối ưu khi có thay đổi chứ k render lại cả form. 
+C1: Dùng component có sẵn Formik, FastField, Form, ErrorMessage => Cách này vẫn mang các điểm lợi của formik như render độc lập nhưng ít dùng.
+C2: Cách dùng hook useFormik. 
+Khởi tạo initialValues, validate, onSubmit. 
+Hàm validate được gọi mỗi khi data của formik được update, return biến errors, biến này có thể truy xuất với formik.errors làm error helper text. Còn có formik.touched để truy cập xem trường nào đã từng được thao tác lần đầu chưa. VD: Để làm kiểu ấn vào trường a r ấn ra ngoài, bth nó sẽ chạy vào validate và set errors cho cả 2 trường a và b vì chưa có gì, nhưng ta chỉ muốn error trường đã tương tác thôi thì check formik.touched để đảm bảo 1 input chỉ báo lỗi 1 trường nếu đã tương tác và giá trị bị sai.
+Có thể truy xuất giá trị bất cứ đâu với formik.values, còn formik.isValid trả ra true nếu hàm validate return ra object error rỗng, thực tế giá trị này rất hay ở chỗ nó formik.isValid ban đầu vào nó luôn trả ra true nếu ta chưa set gì cả, từ đó lợi dụng để ban đầu vào thì button submit enabled, khi ấn vào mới hiện ra các trường required cần dùng
+Để update có hàm formik.setFieldValue("<field>", <value>) hoặc trong onChange có thể dùng formik.handleChange nhận vào biến e là input, cũng nên bắt cả onBlur={formik.handleBlur}. Mọi hàm khi gọi từ formik như change với blur đều chạy vào validate kiểm tra lỗi hết. setFieldValues hay handleChange k dùng async await vì sẽ bị lag khi nhập.
+handleChange sẽ update bất đồng bộ nên ở phía dưới ta sẽ k thể sử dụng ngay formik.values mà chỉ có thể thao tác với e.target.value. Nên kết hợp debounce.
+Submit form với formik.submitForm(e) và reset form với formik.resetForm()
 
 
 
+//!!!!!!!!
 # React hook
 1 react hook bắt đầu bằng use, chỉ dùng hook ở top level, k dùng trong câu đk, hàm con, loop, nếu ta muốn dùng điều kiện thì phải nhét logic đó vào trong hook. 
 Các state gán từ hook là immutable, k tạo lại mỗi khi rerender, biến const thì có tạo lại mỗi khi rerender.
