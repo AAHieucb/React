@@ -1,3 +1,32 @@
+-> axios.defaults.withCredentials = true // Phạm vi global
+axios.get(<url>, {
+  withCredentials: true, // axios gửi kèm credentials như cookies, sessions, phải có nếu muốn truy cập. Phạm vi 1 request
+  timeout: 5000, 
+  headers: {
+    "X-Custom-Header": "CustomValue",
+  },
+  params: { page: 1, limit: 10 },
+});
+axios.post(<url>, <body/formdata>, {
+  headers: { 
+    "X-Custom-Header": "CustomValue" 
+  }
+})
+const client = axios.create({
+  withCredentials: true, // phạm vi 1 instance
+  baseURL: "https://backend.com",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+    "X-Custom-Header": "CustomValue",
+  },
+  params: { // default query params
+    page: 1
+  },
+});
+
+
+
 -> Server tự set header bảo mật k dùng helmet:
   req.nonce = crypto.randomBytes(64).toString("base64");
   res.setHeader('X-UA-Compatible', 'IE=edge,chrome=1'); //* Buộc browser dùng chế độ hiển thị mới nhất, nếu có engine của chrome sẽ ưu tiên dùng hơn IE.

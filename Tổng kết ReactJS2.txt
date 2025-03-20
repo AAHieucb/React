@@ -235,28 +235,6 @@ VD: custom "homepage": "./test", thì nhét thư mục static vào folder test c
 
 
 
-# Dùng react-router-dom v6
-Đổi router url nhưng vẫn là SPA. Có thể làm thủ công với window.history của JS thuần
-Switch của v5 check route từ trên xuống đúng là dừng luôn, Routes v6 sẽ luôn chọn path đúng nhất nên k cần qt thứ tự nữa
-Có thể dùng url làm global store lưu data, tạo 1 hook get, set, listen thay đổi
-
--> Có thể tạo: nested route, default route, index route, dynamic route. Vd route not found:
-<Routes>
-  <Route path='/' element={<Dashboard />} />
-  <Route path='*' element={<NotFound />} />
-</Routes>
-
--> useNavigate: sẽ k hoạt động nếu component chứa nó chưa render xong
-VD: navigate('/home', {replace: true}); => Dùng replace sẽ k lưu lại vào lịch sử trình duyệt, k thể back lại page trước.
-
--> VD với component <NavLink/> sytle:
-className={({ isActive }) => (isActive ? "navLink activeLink" : "navLink")}
-style={{ isActive } => ({ color: isActive ? '#fff' : '' })}
-
--> Listen sự thay đổi của url: có thể dùng lib "history" createBrowserHistory để lấy ra 1 object có khả năng listen, nhiều pp khác
-
-
-
 # Dùng redux
 Redux là flux đơn giản dựa trên kiến trúc ELM, chính là cách dùng dispatcher, actions, controller, stores để bắt actions và xử lý
 Luồng: thực hiện hành động trên view -> tạo action -> dispatcher dispatch action tới stores -> stores có middeware và reducer, middleware sẽ dispatch actions mới hoặc báo lỗi nếu cần, reducer xử lý actions và cho state đầu ra là copy -> state lưu vào store và trả ra cho view provider -> mapStateToProps chuyển state thành props của component

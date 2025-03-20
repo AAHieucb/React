@@ -138,6 +138,25 @@ Do đó <NavLink> thường dùng cho navigation bar chuyển trực tiếp tran
 
 
 
+# Dùng react-router-dom v6
+Switch của v5 check route từ trên xuống đúng là dừng luôn, Routes v6 sẽ luôn chọn path đúng nhất nên k cần qt thứ tự nữa
+-> Có thể tạo: nested route, default route, index route, dynamic route.
+Vd route not found: <Routes>
+  <Route path='/' element={<Dashboard />} />
+  <Route path='*' element={<NotFound />} />
+</Routes>
+
+-> useNavigate: sẽ k hoạt động nếu component chứa nó chưa render xong
+VD: navigate('/home', {replace: true}); => Dùng replace sẽ k lưu lại vào lịch sử trình duyệt, k thể back lại page trước.
+
+-> VD với component <NavLink/> style:
+className={({ isActive }) => (isActive ? "navLink activeLink" : "navLink")}
+style={{ isActive } => ({ color: isActive ? '#fff' : '' })}
+
+-> Listen sự thay đổi của url: k hỗ trợ trực tiếp, có thể dùng lib "history" createBrowserHistory để lấy ra 1 object có khả năng listen.
+
+
+
 # Dùng Redux thuần
 props.dispatch, mapStateToProps, Redux.createStore, ReactRedux.connect, ReactRedux.Provider, Redux.bindActionCreators, Redux.applyMiddleware, mapDispatchToProps, store.dispatch, Redux.combineReducers, store.getState, Redux.compose, mergeProps, window.__REDUX_DEVTOOLS_EXTENSION__ (devtool browser)
 

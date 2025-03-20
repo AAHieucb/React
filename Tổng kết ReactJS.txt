@@ -108,6 +108,7 @@ prop-types*: giúp typecheking và gán default value cho props của 1 componen
 Date-fns hoặc Luxon => thay thế react-moment, moment-timezone
 lodash*: https://lodash.com/docs/4.17.15 thay thế underscore => Có thể import tree shaking đỡ nặng: npm i lodash.merge
 npm i rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
+react-router-dom v7 => bỏ tanstack router
 
 -> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. Thay thế @welldone-software/why-did-you-render
 Có browser extension, npm package. CDN: <script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js"></script>
@@ -341,45 +342,38 @@ VD có template trên git "cra-template-pwa", mở lên browser 1 lần r tắt 
 
 
 
-//!!!!!!!!
 # Request API
-Nên nhớ luôn có try catch + async await
+Luôn có try catch + async await
 
--> Setup proxy prefix: nếu chỉ connect 1 server, có thể viết trong package.json FE trường proxy là base url server. Mọi request API ở FE sẽ dùng base url đó
+-> Setup proxy prefix: nếu chỉ connect 1 server, có thể viết trong package.json FE trường proxy là base url. Mọi request API ở FE sẽ dùng base url đó
 VD bth ta dùng: axios.get('http://localhost:4000/api/new') thì bh chỉ cần axios.get('/api/new') nếu dùng "proxy": "http://localhost:4000" trong package.json
 Có thể dùng trong hàm axios.create để set baseURL.
 
 -> Dùng axios: điểm thích nhất là .get thì params là undefined sẽ tự động k cho vào param, tự động xử lý array
 
---> Dùng withCredentials với 1 request: axios.get(BASE_URL + '/todos', { withCredentials: true }); Dùng với mọi request thì có thể là axios.defaults.withCredentials = true. 
-Nó chỉ định yêu cầu HTTP từ Axios sẽ gửi kèms các credentials như cookies, sessions. VD nhiều lúc lỗi k set được cookies buộc phải dùng. Server phải có cors, nếu k sẽ lỗi.
-
---> Dùng interceptor giúp chặn trước khi gọi và sau khi nhận kết quả. VD
-Khi gửi token đi có thể dùng axios.interceptors.request.use() và gán config.headers['X-Token']=<token>
+--> Khi gửi token đi có thể dùng axios.interceptors.request.use() và gán config.headers['X-Token']=<token>
 Khi nhận về dùng axios.interceptors.response() để lấy lỗi trả về là expired thì code luôn việc request lại accessToken cho người dùng
 
 
 
 # Pattern loading fetch API
 Component bao ngoài dùng useEffect fetch API với dependencies [] và Promise.all, bên trong fetch data cơ bản chung. 
-Loading nên dùng cho cả page nếu fetch lần đầu nhiều data hoặc skeleton từng phần tử. Có các component tích hợp sẵn loading như highchart thì dùng của nó hơn.
-State có thể lưu trong redux nếu dùng nhiều nơi hoặc lưu ngay trong useState của component dùng nó. Có INITIAL, FETCHING, SUCCESS, FAIL.
-
 Dùng react-query thì mọi thứ perfect, xử lý loading đầy đủ, hiển thị giá trị hiện tại mặc định, khi nào fetch xong thì tự nhảy thành giá trị mới.
+Loading nên dùng skeleton từng phần tử. Lib như highchart có sẵn loading thì dùng của nó hơn.
 
-Khi người dùng update có data mới, ta có thể show ra bằng cách:
-- Fetch lại data => nếu k bị chậm, nếu data thường xuyên thay đổi, nếu cần realtime cao
-- Update data thủ công trong FE nếu thấy request thành công, thậm chí dùng useOptimistic luôn => dùng khi update data đơn giản
+Khi người dùng update data mới, ta update realtime bằng cách:
+- Fetch lại data, nếu data thường xuyên thay đổi, hoặc cần độ chính xác cao.
+- Update data thủ công trong FE như optimistics, dùng khi data đơn giản và thường thành công.
 
--> Update component A nhưng component B bị ảnh hưởng
-Cần đảm bảo có thực sự cần update component B không vì nhiều số liệu thống kê kqtr k cần update realtime. Nếu cần update: 
-- Ta vào page dùng data nào là fetch lại data đó luôn để đảm bảo realtime. Chỉ các data ít đổi, data lớn fetch lâu mới lưu vào store và chỉ fetch khi bị stale.
+-> Update component A ảnh hưởng component B, cần đảm bảo có qtr cần update realtime không. Nếu cần: 
+- Vào page dùng data nào thì fetch lại data đó luôn để đảm bảo realtime. Data lớn fetch lâu, ít đổi thì lưu cache.
 - Dùng react-query, ta có thể invalidate query dễ dàng
-- Nếu case đơn giản thì ta gọi hàm fetch data của B ở cuối hàm update của A luôn, làm v sẽ khó mở rộng trong tương lai.
-- Xây biến needToUpdate cho từng component lưu vào redux, update biến này thì khi cần refetch component nào, component check dependencies needToUpdate trong useEffect là xong => chẳng khác nào ta đang implement lại react-query invalidate cả. Chưa xét TH người dùng mở nhiều tab và cần fetch xuyên tab.
+- Nếu case đơn giản thì ta gọi hàm fetch data của B ở cuối hàm update của A luôn, dù làm v sẽ khó mở rộng trong tương lai.
+- Xây biến needToUpdate cho từng component lưu vào redux, update biến này khi cần refetch component nào, component refetch dựa vào dependencies needToUpdate là được => chẳng khác nào ta đang implement lại react-query invalidate cả.
 
 
 
+//!!!!!!!!
 # Other
 -> Cách debug trong React
 Mở tab components -> settings -> highlight updates => Tool này giúp tìm các components render thừa
@@ -415,7 +409,6 @@ https://github.com/kusti8/proton-native: Tool code React nhưng sinh ra ứng d�
 -> Ngoài folder src dùng CommonJS require, files trong src dùng ES6 import. Tuỳ biến package Browsify có thể cấu hình FE dùng CommonJS, còn Babel giúp NodeJS dùng ES6 được.
 Trong HTML thuần ta dùng được export và import như v thì file export phải được script vào file html dưới dạng module nhưng trong React config hết r nên k cần.
 
--> React19 hỗ trợ SSR dễ dàng hơn, giống như NextJS.
-
 -> URL xây 1 hệ thống hỗ trợ hỏi đáp AI, dựa trên tập data từ SQL: https://www.freecodecamp.org/news/talk-to-databases-using-ai-build-a-sql-query-data-extractor/ 
 Dùng GroqAI cho AI model train với data rồi tương tác qua CopilotKit, tự động xử lý NLP và mọi thứ chuyên cho chat.
+
