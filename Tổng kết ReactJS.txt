@@ -100,8 +100,10 @@ react-rainbow-component*: Lib UI component có sẵn nhiều component lạ, nê
 -> ReactAdmin*: Thư viện giúp tạo trang admin cho các ứng dụng React dễ dàng.
 ra-data-json-server dùng riêng cho ReactAdmin cung vào data json
 
--> @replexica/react hỗ trợ i18n bằng AI
-react-intl*: thư viện giúp format số và chữ theo i18n
+-> react-intl*: thư viện giúp format số và chữ theo i18n
+--> @replexica/react hỗ trợ i18n bằng AI. Có thể tích hợp vào CI/CD tự động translate, đổi tự dịch lại chỗ đó chứ k dịch lại từ đầu.
+npx lingo.dev@latest show locale targets # Lists available target languages
+Cài 1 phát r tạo i18n.json là cứ thế dùng thôi
 
 -> clsx*: tạo string với điều kiện, thg dùng cho className.
 prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi. 

@@ -1,30 +1,22 @@
 # Xử lý ảnh
-Import ảnh nên dùng svg có thể custom style thay vì ảnh tĩnh bth. Ít dùng ảnh gif thôi.
-Mấy cái hình hay hiệu ứng phức tạp nếu có thể hãy tạo bằng design thay vì code.
+Ưu tiên dùng svg có thể custom style thay vì ảnh tĩnh. Hạn chế ảnh gif.
+Nên lazy loading image khi cần thiết
+Dùng placeholder hiện đầu tiên thay vì khoảng trắng khi chưa tải ảnh xong. Placeholder có thể là 1 màu xám hoặc 1 ảnh base64 default. Chú ý khi thuộc tính src không tồn tại thì k hiện gì mà cũng k báo lỗi, thì vẫn hiện placeholder.
+Rồi ảnh blur tải trước đè lên. Rồi ảnh thật đè lên blur. Nếu error thì ảnh error đè lên hết. Xử lý với onError, onLoad.
 
--> User input ảnh có thể kích thước cực to: có thể cho họ cut ảnh kiểu avatar, hoặc chủ động cut và lấy center theo tỉ lệ khung hiển thị.
-Ảnh nặng có thể lag khi render thì nên nén nhỏ lại, nén ở server or dùng web worker xử lý canvas ở FE.
-User post quá nhiều ảnh nặng lên server thì server nên xoá ảnh cũ để tránh quá tải. Có thể xoá luôn hoặc mark needDeleted và dùng cronjob xoá.
+-> Khi cho user input ảnh, kích thước có thể cực lớn.
+- Nếu ảnh kiểu avatar có thể giới hạn kích thước cho họ cut ảnh. Ảnh lưu ở server cũng nên được nén hiển thị vừa khung.
+- Nếu FE cần render ảnh nặng thì nên dùng web worker xử lý canvas tránh lag.
+- Ảnh ở server nên có cơ chế tự xoá ảnh cũ bằng cronjob hoặc implement xoá ảnh khi post ảnh mới.
 
--> 3 vấn đề: loading lazy image, placeholder khi loading và error, custom hiệu ứng 
-Khi ảnh nặng, browser mặc định load từ trên xuống từ từ, có thể custom hiệu ứng cho đẹp hơn. 
+-> requestIdleCallback: 1 hàm JS đb giúp thực hiện điều gì khi event loop rảnh k có task.
+react-idle-timer*: lib của react giúp dùng requestIdleCallback trong React. VD có thể load ảnh nặng, defer tải data nặng chưa cần dùng ngay.
 
-Khoảng trắng lúc chưa tải ảnh nặng xong phải dùng placeholder mà che lại. Có thể dùng onError và onLoad để bắt.
-VD dựng placeholder cho ảnh bằng cách set kích thước cho thẻ div bao ngoài: <Box style={{width: "300px", height: "300px"}}> <img width="100%"/> </Box>
-
-Custom ảnh failed bằng cách dùng onError check hiển ảnh lỗi theo ý ta
-Chú ý khi thuộc tính src không tồn tại thì k hiện gì mà cũng k báo lỗi. Khi đó cần check src={url||<default image url>}
-
---> Thư viện react-image giúp xử lý fallback, list image để 1 cái fail tự động load image sau đó
-
---> requestIdleCallback: hàm JS giúp thực hiện điều gì khi event loop rảnh k có task.
-react-idle-timer*: lib giúp dùng requestIdleCallback trong React. VD có thể load ảnh nặng, tải data nặng chưa cần dùng ngay nếu rảnh.
-
---> react-progressive-graceful-image*: loading lazy, placeholder, custom hiệu ứng
-react-lazy-load-image-component: thêm loading='lazy' cho tag image và custom hiệu ứng khi hiện ảnh. 
+-> react-lazy-load-image-component: giúp lazy loading và custom hiệu ứng hiện ảnh
 
 
 
+//!!!!!!
 # Dùng font chữ
 Cài font: yarn add @fontsource/roboto; import "@fontsource/roboto"; => dùng với font-family: "Roboto"
 
