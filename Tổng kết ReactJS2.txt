@@ -16,81 +16,17 @@ react-idle-timer*: lib của react giúp dùng requestIdleCallback trong React. 
 
 
 
-//!!!!!!
 # Dùng font chữ
-Cài font: yarn add @fontsource/roboto; import "@fontsource/roboto"; => dùng với font-family: "Roboto"
+Cài font lẻ: yarn add @fontsource/roboto; import "@fontsource/roboto"; => dùng với font-family: "Roboto"
 
-Thêm google font API CDN trong public/index.html, phải link cả các font-size và font-weight mới set css được. 
-VD: <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;300;400;600&display=swap" rel="stylesheet"> => Set được font-weight: 200, 300, 400, 600. Các size khác sẽ k có tác dụng
+Thêm google font API CDN trong public/index.html, font tĩnh phải link cả các font-size và font-weight mới set css được. 
+VD: <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;300;400;600&display=swap" rel="stylesheet"> => Set được font-weight: 200, 300, 400, 600. Các size khác sẽ k có tác dụng, hoặc đổi qua variable font.
 
 Import font file trực tiép vào rồi định nghĩa trong file css với @font-face
 
 
 
-# CSS Reset cho 1 dự án React bth
--> Các thuộc tính chung:
-*{
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-html{
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-smooth: always;
-  height: 100%;
-  width: 100%;
-  overflow-y: scroll;
-}
-body{
-  height: 100%;
-  width: 100%;
-}
-:root{
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif; // => Font-family default của OS, nếu có 1 font dùng global chắc chắn tồn tại thì viết thêm vào đầu là được.
-  text-rendering: optimizeLegibility;
-}
-#root{
-  width: 100%;
-  height: 100%;
-  -webkit-touch-callout: none;
-}
-
--> Các thuộc tính khác, đôi khi buộc phải set vì các thư viện nó thay đổi làm nó hỏng:
-img{
-  user-select: none;
-  -webkit-user-drag: none;
-}
-a{
-  text-decoration: none;
-}
-button{
-  text-transform: none;
-  cursor: pointer;
-}
-button:disabled{
-  cursor: not-allowed;
-}
-Thẻ canvas cũng cản bôi đen và drag giống img
-body dùng color-scheme light hay dark tùy
-set thêm transition cho :root là (transition: all 0.5s linear;) vì lúc nào ta cũng muốn có 1 chút transition khi chuyển động
-
--> Có thể custom để quá màn hình thì k có thanh scroll nhưng vẫn có chức năng scroll. Nếu ta cần trong những website ngắn thì user nên scroll thay vì dịch đến vị trí luôn:
-body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-body::-webkit-scrollbar {
-  display: none;
-}
-
--> Nếu muốn chiều dài page chuẩn màn hình hiện tại và hiển thị header và footer đúng. Set thẻ content chính với: minHeight="calc(100vh - chiều cao header - chiều cao footer)"
--> Dùng lib sanitize.css > normalize.css
-
-
-
+//!!!!!!
 # Lazy loading 
 Code splitting: Vào web thì browser tải từng file html css js về. Với React thì bundle lại thành bundle.js mới gửi tới trình duyệt. Nếu dự án lớn sẽ khiến file bundle to ra mà mỗi lần vào tải cả cục rất lâu. Code splitting là kỹ thuật tách ứng dụng 2 phần: chỉ load phần bundle cần thiết để khởi động, các phần khác sẽ load sau khi ứng dụng chạy.
 

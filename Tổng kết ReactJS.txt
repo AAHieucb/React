@@ -1,5 +1,5 @@
 # Basic
-npx create-vite => thay thế hoàn toàn CRA deprecated
+npx create-vite@latest => thay thế hoàn toàn CRA deprecated
 
 -> Compiler sẽ chuyển từ JSX syntax sang JS bằng babel. JSX "label for" đổi sang "label htmlFor" => Tổng hợp: https://reactjs.org/docs/dom-elements.html
 React.isValidElement(<ele>)
