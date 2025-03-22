@@ -13,7 +13,7 @@ const Form = () => {
   // const [filterText, setFilterText] = useState("");
 
   // Dùng useDeferredValue kém hơn vì k có biến isPending nhưng nhiều TH k dùng được startTransition thì phải dùng useDeferredValue. List có tầm 2 ngàn phần tử sẽ thấy input rất lag khi gõ bởi vì khi ta gõ thì cứ mỗi phần tử input, nó lại chạy 1 lần hàm này để render và đặc biệt sẽ gọi hàm map bên dưới chạy qua 2000 phần tử mấy lần liền. Nch là cái hook này dùng khi value được thay đổi 1 cách liên tục và ta chỉ muốn nó dùng value cuối.
-  const filterText = useDeferredValue(searchInput);
+  const filterText = useDeferredValue(searchInput); // có thể truyền tham số 2 là initial value
 
   // Dùng useMemo
   const data = useMemo(() => {

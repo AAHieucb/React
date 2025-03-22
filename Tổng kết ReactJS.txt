@@ -71,7 +71,16 @@ Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông
 Đảm bảo hàm chạy sau khi render thì có thể dùng query selector để lấy thẻ
 
 -> Dùng const ref = useRef(null); rồi cho vào attribute ref của thẻ => bỏ createRef, thay thế forwardRef
-VD: khi thẻ cha có hàm đổi styles của con của thẻ con, truyền ref vào con để refer tới thẻ bên trong con được.
+VD: khi thẻ cha có hàm đổi styles của con của thẻ con, truyền ref vào con như props để refer tới thẻ bên trong con được.
+Chú ý phải đặt đúng tên prop là ref.
+
+--> ref có thể nhận 1 hàm và khi component được mount sẽ trigger hàm này. Hàm này có thể return 1 clean up function chạy khi thẻ đó unmount, hoặc k return gì cả.
+VD: <input ref={current => {
+  // Chạy khi thẻ mount
+  return () => {
+    // Chạy khi thẻ unmount
+  }
+}}
 
 -> Dùng useImperativeHandle: component cha gọi 10 hàm của component con ở nhiều thẻ mà chỉ truyền 1 ref được. 
 URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
@@ -103,6 +112,7 @@ ra-data-json-server dùng riêng cho ReactAdmin cung vào data json
 -> react-intl*: thư viện giúp format số và chữ theo i18n
 --> @replexica/react hỗ trợ i18n bằng AI. Có thể tích hợp vào CI/CD tự động translate, đổi tự dịch lại chỗ đó chứ k dịch lại từ đầu.
 npx lingo.dev@latest show locale targets # Lists available target languages
+Thêm --force nếu muốn force ghi đè từ lại
 Cài 1 phát r tạo i18n.json là cứ thế dùng thôi
 
 -> clsx*: tạo string với điều kiện, thg dùng cho className.
@@ -293,6 +303,7 @@ Có thể dùng kết hợp với ReactContext tạo ra kiểu gần giống v�
 
 -> Dùng React.Context + useContext:
 Chú ý state trong context đổi sẽ kéo mọi wrapped component rerender. Có thể chia nhiều context khác nhau cho từng con.
+const ThemeContext = createContext(""); r dùng <ThemeContext> mà k cần <ThemeContext.Provider>
 
 -> useMemo: hàm nên dùng useCallback, biến và component dùng useMemo => react compiler đã stale hook này.
 Tương tự const Con = React.memo(props => { return <>; }, x); chỉ khi props hay x đổi mới rerender lại Con, chỉ dùng khi Cha có Con phức tạp mà k muốn Con rerender
@@ -312,7 +323,8 @@ Khi code cần xác định phần task nào gây lag cho browser đưa vào sta
 useDeferredValue: tương tự nhưng delay việc update giá trị cho 1 biến. Vd ta gõ input thay đổi biến a và dùng biến a để search list 1000 phần tử. Gõ nhanh thì a đổi ngay và chạy logic. Khi đó ta dùng useDeferredValue để biến a vẫn update realtime nhưng biến aDeferred cho vào hàm search sẽ chỉ update khi k bị lag.
 Việc aDeferred update như nào phụ thuộc vào mức độ bận của main thread, nếu rất bận thì nó càng skip intermediate value nhiều hơn. Tương tự nó k dùng cho callapi mà dùng do lag vì update tuần tự. Chứ call api k lag nhưng ta cần giảm thiểu số lần call tới mức tối thiểu thì dùng debounce tốt hơn.
 
-=> 2 ví dụ đó là 2 usecase tối ưu nhất. useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance, kể cả khi k đổi state. useDeferredValue dùng khi cần chạy 1 hàm nặng do phụ thuộc vào 1 giá trị được update liên tục.
+=> useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance, kể cả khi k đổi state. useDeferredValue dùng khi cần chạy 1 hàm nặng do phụ thuộc vào 1 giá trị được update liên tục.
+=> useTransition có usecase khác là giảm tạo loading state thủ công. Thay vì setLoading true false trước và sau khi call api, thì dùng useTransition có sẵn isPending. optimistics update và pending call api cũng được xử lý với hook useActionState.
 
 -> useOptimistic dùng khi biết khá chắc lệnh call sẽ success, fail tự undo
 URL: https://www.youtube.com/watch?v=VBlSe8tvg4U => useOptimistic khi người dùng update và API chưa thành công đã tắt page, có thể cản lại với window event "beforeunload"
