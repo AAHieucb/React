@@ -173,6 +173,12 @@ VD package A dùng C và B, trong package B lại dùng C và 2 cái C có phiê
 -> Lệnh: npm bin -g => hiện url hiển thị các package global đã cài đặt
 npm run --prefix <path> <script> => run npm ở directory khác từ cmd ở thư mục hiện đại
 
+-> npm run eject => Lệnh 1 chiều k dùng tuỳ tiện, làm cho bundler không còn tự động hóa mọi vấn đề nữa mà sẽ bung toàn bộ config để những dev có thể config lại tuỳ ý. 
+
+-> Lỗi: npm run build dự án react ra file index.html nhưng khi vào chỉ có 1 trang trắng. NN vì webpack config bản production thì build vào path "/" tức absolute tìm trong application chứ kp trong application/build. 
+=> Fix bằng cách thêm vào package json "homepage":"." để chỉ định tải các file static của dự án với url là relative trong thư mục hiện tại là application/build
+VD: custom "homepage": "./test", thì nhét thư mục static vào folder test cùng cấp là lại chạy được
+
 
 
 # Cách clone code frontend của các trang web

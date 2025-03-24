@@ -1,0 +1,89 @@
+# Basic
+Redux là flux đơn giản dựa trên kiến trúc ELM, chính là cách dùng dispatcher, actions, controller, stores để bắt actions và xử lý
+Luồng: thực hiện hành động trên view -> tạo action -> dispatcher dispatch action tới stores -> stores có middeware và reducer, middleware sẽ dispatch actions mới hoặc báo lỗi nếu cần, reducer xử lý actions và cho state đầu ra là copy -> state lưu vào store và trả ra cho view provider -> mapStateToProps chuyển state thành props của component.
+State là immutable nên phải gán = để đổi.
+
+Dùng thủ công thì có react-redux
+Middleware dùng kèm redux-logger
+Nếu chỉ call api thì dùng custom hook useAsync nhận 1 hàm trả ra object có pending, error, data, call. Nó thay thế được redux thunk.
+Nếu chỉ lưu async state thì dùng react-query kết hợp lưu url params or react context.
+
+
+
+
+# Dùng redux saga
+Giống redux thunk nhưng cho xử lý side effect phúc tạp.
+
+Luồng: view -> dispatch actions -> middleware -> reducer -> state mới -> quay về view
+                                      |          /^
+                                      API -> done
+VD: Dispatcher dispatch action sẽ được xử lý đồng thời, 1 phần đưa action vào reducers xử lý loading và show ra, 1 phần được saga ở middleware xử lý call api lâu hơn. Saga xử lý xong thì dispatch 1 action đến reducers xử lý kết quả thành công hay thất bại.
+Saga kiểm soát dispatch action: takeLastest, takeLeading, takeEvery, call, put, all, delay, put, take, select, putResolve, race, fork, spawn
+
+VD dùng redux saga dự án lớn:
+Ở từng file xử lý từng module: dùng yield takeLatest/takeEvery
+index.ts import hết r gom lại: yield all([fork(<hàm import từng file>), fork(...)])
+store.ts: import index.ts sagas làm middleware của stores là xong
+Xử lý loading state: loading là state ở component ban đàu là true, onSuccess và onFailed truyền vào dispatch khi gọi từng actions set lại loading là false là ok
+Có thể gọi yield cancelled(); tuỳ ý
+
+
+
+# Dùng redux-toolkit 
+Có sẵn nanoid sinh số random.
+Case cơ bản chỉ cần dùng createSlice với createAsyncThunk (unwrap và rejectWithValue), extraReducer, createDraftSelector.
+Async state muốn có như react-query thì dùng thêm rtk query mà k cần thư viện ngoài.
+
+-> Dùng createSlice:
+Trong redux thuần thì reducers chia từng module riêng. VD: const context = 'module1'; const 'ACTION_01' = `${context}_ACTION_01`; => Nhìn tên action là biết module nào
+redux-toolkit xử lý điều này với createSlice. Nó tạo ra 1 slice ngắn gọn chứa reducer và action của 1 module. VD trong 1 module counter:
+const counterSlice = createSlice({
+  name: 'counter',
+  reducers: {
+    increment: state => state.count += 1,
+    decrement: state => state.count -= 1
+  }
+}); 
+export const { increment, decrement } = counterSlice.actions; 
+export default counterSlice.reducer;
+=> Sinh ra 2 action có types là counter/increment và counter/decrement và @@INIT mặc định. Export ra action và reducer.
+=> Mỗi module của ứng dụng nên là 1 slice riêng. Nếu reducer muốn bắt action khác module thì phải dùng đến extraReducers
+
+--> Dùng createReducer hay extraReducers bên trong createSlice: 
+C1: { [<action> / <action>.type / <action>.toString()]: (state, action) => ({ <đổi state> }) }
+C2: cung nhiều tính năng hơn: (builder) => builder.addCase(<action>, (state, action) => ({ <đổi state> }))
+Có addMatcher khi nhiều action type chung 1 xử lý. VD:
+const isErrorAction = (action) => action.type.endsWith('FAIL');
+const reducer = createReducer(initState, (builder) => {
+  builder
+    .addMatcher(isErrorAction, (state, action) => { state.errors = action.payload.errors; state.loading = false; })
+    .addDefaultCase((state, action) => {})
+})
+
+-> const store = configureStore({reducer: rootReducer, middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}).concat(customMiddleware)})
+
+-> State của redux là immutable const vì redux sử dụng ss nông với reference để biết có thay đổi không mà render lại. Việc dùng const cũng giúp tránh thay đổi không mong muốn. Do đó khi code phải return ra 1 object mới chứ k được đổi trực tiếp.
+Immer tích hợp sẵn trong redux-toolkit chỉ đơn giản là giúp viết đổi state trực tiếp như bth nhưng sẽ tạo ngầm 1 new object, chỉ để dễ viết thôi.
+
+useSelector lấy state trong component phải dùng kèm ?. mọi lúc vì fetch chưa xong sẽ k có data.
+createSelector giúp tiền xử lý data trước khi trả về cho component. createSelector trong thư viện "reselect" ss reference k tốt, createSelector của redux-toolkit tốt hơn vì ss giá trị, nhưng có thể sai nếu dùng cú pháp immer của redux-toolkit.
+createDraftSafeSelector giống createSelector nhưng đảm bảo dùng immer vẫn ok => luôn dùng thay createSelector
+
+-> VD dùng redux-toolkit:
+TH1: 
+ slice: export const {<hàm>} = slice.actions;
+ component: import { <hàm> } from "...slice"; -> dp(<hàm>)
+TH2:
+ slice: export const selectSlice = (state) => state.slice;
+ component: const <att> = useSelector((state) => selectSlice(state).<att>);
+TH3: 
+ slice: tạo selectSlice như TH2 -> export const selectAtt = createDraftSafeSelector(state => selectSlice(state).<att>, (att) => { <xử lý các att.data> return {..} })
+ component: let {data1, data2} = useSelector((state) => selectAtt(state));
+TH4: tương tự TH3 nhưng xử lý từ nhiều thuộc tính của state
+ slice: export const selectAtt = createDraftSafeSelecto(selectSlice, (slice) => { <xử lý mọi thuộc tính của slice.data> return {}});
+TH5: các hàm fetch dữ liệu
+ slice: export const fetchData = createAsyncThunk("<tên>", async(data, thunkAPI) => { await <gọi hàm bất đồng bộ>; return res; }) -> trong extraReducers xử lý [fetchData.fulfilled/pending/rejected](state,action) {state.data = action.payload.data;}
+ component: import fetchData from "..";
+=> TH5 có thể kết hợp Promise.all([thunkAPI.dispatch(function1(A)), thunkAPI.dispatch(function2(B))]);
+
+

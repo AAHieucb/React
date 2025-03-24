@@ -23,6 +23,9 @@ function handleSubmit() {
 Có sẵn như CRA (REACT_) hay Vite (VITE_), hoặc dùng cross-env, dotenv.
 Cũng có thể custom với webpack bằng lib dotenv-webpack, VD đổi k dùng tên file là .env nữa
 
+-> Responsive: Cách tốt nhất là tạo hook useDevice => thay vì dùng lib react-device-detect
+Kết hợp @media, @container, responsive với grid flex như html thuần. Dùng theo lib UI nếu có.
+
 
 
 # Dùng react compiler:
@@ -345,7 +348,7 @@ Có thể lấy vị trí địa lý, thêm script js CDN được
 --> useStorage giúp subscribe sự thay đổi của localStorage. Browser cũng có sự kiện storage phát ra khi nó đổi giá trị
 
 -> Lib @mantine/hooks, aHooks, usehooks-ts* cung hàng loạt custom hook.
-useMediaQuery useClickOutside useMousePosition useClipboard usePagination
+useMediaQuery useClickOutside useMousePosition useClipboard usePagination useDevice
 useIntersection check xem 1 component có visible toàn bộ trên màn hình không
 useScrollLock khóa và mở khóa thanh scrollbar
 useForm tạo và validate form, thay thế formik

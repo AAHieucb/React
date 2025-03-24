@@ -54,13 +54,12 @@ Vd: sort 500000 phần tử bằng bubble sort trong react sẽ block ui. Mở t
 
 
 
-//!!!!!!
 # Tối ưu render list lớn
 Lag vì render quá nhiều DOM nodes
-C1: Virtualize long list: Dùng react-window* or react-virtualized or react-viewport-list chỉ show phần DOM visible. Kết hợp scroll down to load more với react-infinite-scroller
+C1: Virtualize long list: Dùng react-window* or react-virtualized or react-viewport-list chỉ render phần DOM visible. Thường kết hợp scroll down to load more với react-infinite-scroller
 C2: Dùng phân trang kiểu bấm số chuyển pages: react-paginate
 
--> Vd logic frontend lấy hết data về rồi tự phân trang:
+-> Vd logic frontend lấy hết data về rồi tự phân trang nếu biết trước list data k quá nhiều.
 const dataList;
 const [page, setPage] = useState(1);
 const { itemPerPage, numberOfPage } = useMemo(() => {
@@ -78,50 +77,42 @@ if(!dataList || dataList.length <= 0) return <Empty/>
 dataList.slice((page - 1)*itemPerPage, page*itemPerPage).map((item, idx) => (
   <ItemList key={idx}/>
 ))
-=> Filter search để trên URL params
+=> Lưu biến filter search để trên URL params
 
 -> Vd logic server xử lý phân trang db:
-Request: filter, currentPage, pageSize
+Request: currentPage, pageSize, otherFilter
 Response: datalist, error, totalitem
 => Mất 2 query để lấy count và data 1 page.
 
 Dùng load more thay vì phân trang thường sẽ tối ưu hơn:
-Request: filter, offset, limit
-Response: data (có thể kèm nextlink)
+Request: offset, pageSize, otherFilter
+Response: dataList, error, có thể kèm nextlink
 => frontend check data.length mà nhỏ hơn limit thì k query nữa
 
--> Usecase: Server cần lấy lượng data lớn từ 1 db, và toàn bộ data từ 1 API, filter search cần check trên cả db và API. Tức là k thể phân trang trực tiếp trong 1 query tới 1 database.
-=> Tức cần query tới database đúng tại vị trí lần trước đó query. Server có thể gửi cho client indexitem là vị trí item cuối cùng mà nó lấy từ database, request sau lại gửi kèm cái đó để server lấy từ vị trí đó đổ lên là được. 
-=> Nếu frontend không làm được thì có cách khác là frontend sẽ gửi kèm id của phần tử cuối cùng mà nó nhận được từ request trước đó, server sẽ tự động orderby id (được đánh index) và check nếu id lớn hơn cái đó thì lấy.
+-> Usecase: Server cần lấy lượng data lớn từ 1 db, và toàn bộ data từ 1 API, filter search cần check trên cả db và API r merge lại.
+Giải pháp: cần query tới database đúng tại vị trí lần trước đó query. Server có thể gửi cho client indexitem là vị trí item cuối cùng mà nó lấy từ database, request sau lại gửi kèm cái đó để server lấy từ vị trí đó đổ lên là được.
 
 
 
 # Dùng React portal
-Giúp render UI nằm ngoài component tree. VD modal, tooltip. Các thư viện toàn dùng ReactPortal cho các tính năng đó.
--> react-reverse-portal* giúp tạo các cổng chuyển component tới đủ mọi nơi trong dự án trong component tree.
+Giúp render UI nằm ngoài component tree. VD modal, tooltip. Các thư viện và <dialog> toàn dùng portal cho các tính năng đó.
+React có sẵn hàm createPortal trong react-dom để wrap component cho tính năng đó. Cơ chế là dùng JS append DOM element vào 1 thẻ root thôi.
+Lib react-reverse-portal* giúp tạo các cổng chuyển component tới đủ mọi nơi trong dự án trong component tree.
 
 
 
-# SEO trong React => ref tới "NextJS"
-Để check 1 website dùng CSR hay SSR chỉ cần CTRL+U. 
+# SEO trong React => ref tới "html_css_js"
 Cơ chế: Google bot có 1 crawl queue chứa mọi url cần đánh chỉ mục, lần lượt lấy ra và parse HTML. R phân tích xem có cần exec JS k, nếu có thì nó lại thêm cái URL của JS vào render queue (render queue chưa url js, crawl queue chứa url html). Trình renderer lại exec JS để hiển thị trang. Nó gửi HTML được render ra từ JS trở lại crawl queue. Cứ thế lấy mọi thẻ a xử lý và cho vào crawl queue html. Khi mọi html được xử lý, bot dựa vào các thông tin trích xuất ra để đánh chỉ mục cho nội dung.
 Do exec JS tốn kém nên google bot ưu tiên parse html ngay và chạy JS sau, nếu request lâu thì có thể crawler sẽ k thấy. Tức web lớn và dùng nhiều JS để hiển thị thì bot có thể đọc ít nội dung hơn từ trang đó. Vì CSR cần request API xong mới có nội dung hiển thị, bot đánh giá thời gian tải lâu cũng sẽ xếp hạng thấp hơn
 
-Google Tag Manager: quản lý website, chỉnh thẻ meta, theo dõi các sự kiện trên trang như click chuột, tích hợp Google Analytics đo lường, Google Ads.
+-> Google Tag Manager: quản lý website, chỉnh thẻ meta, theo dõi các sự kiện trên trang như click chuột, tích hợp Google Analytics đo lường, Google Ads.
 Chỉ cần tạo tài khoản rồi nhận được 1 url thì cắm vào index.html, r mở tool của nó để theo dõi thôi.
-
--> Dùng React Helmet update thẻ metadata ở từng router, viết các thẻ metadata có giá trị mặc định ở mọi route trong index.html. Or làm thủ công set meta tag cho document
-Crawler exec code JS có thể thấy metadata đổi được set bởi React Helmet. 
-Vd share web cho telegram thì nó fetch lấy title và ảnh trong html chứ k exec JS nên sẽ thấy giống nhau ở mọi route.
 
 -> Thêm descriptive text với mọi thẻ nếu có thể. Dùng cấu trúc url ngắn và descriptive
 Nên dùng CDN để cung css, js, font chữ để giảm thời gian tải
 Hạn chế lỗi để nội dung ẩn sau form login, kể cả chưa login cũng phải thấy gì đó. 
 
--> File robots.txt: xác định phần nào nên và k nên thu thập dữ liệu, nằm cùng cấp thư mục gốc của dữ liệu => thường để default
-Nếu googlebot k tìm thấy robots.txt vẫn sẽ thu thập dữ liệu bth. robots.txt có thể setup cản crawler
-
--> Giải pháp khác
+-> Giải pháp cải thiện SEO cho react:
 1) Prerendering cho SEO
 Ta có thể dùng proxy kiểu nginx để check:
 $http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|whatsapp"
@@ -144,13 +135,12 @@ location / {
 => Tức nếu request đến từ client bth thì show web react. Nếu đến từ bot crawler thì ta redirect đến 1 cache server trả ra data SSR tối ưu SEO => ít dùng
 Prerendering có nhiều kiểu như sử dụng các dịch vụ SaaS, or thư viện Prerender.io, Prerender.cloud, SEO.js, BromBone
 
-2) Dùng isomorphic (hay universal) với React
-Là dùng component render bởi cả server và client. React có hỗ trợ SSR, ta để server render component, gửi cho client hydrate lại. React có sẵn hàm createServer và hydrate
-VD: React Redux Universal, AfterJS, Goldpage là các framework hỗ trợ, thế thà dùng mẹ nextjs gatsby cho xong.
+2) Dùng isomorphic (hay universal) với React. Tức dùng server component của react thuần có hỗ trợ, thế thà dùng mẹ nextjs or gatsby cho nhanh.
 
--> Ở react 19, dùng các thẻ <title> <link> <meta> dùng ở bất cứ components nào cũng sẽ tự bị chuyển lên <head>. Khai báo metadata thoải mái trong jsx luôn.
-<link> tag có thêm trường precedence "high" "default" chỉ thứ tự xếp các file trong <head> vì case files css rất qtr vị trí thứ tự đặt files. Còn load file thì react 19 đảm bảo 1 component có thẻ link dùng 2 nơi sẽ chỉ load 1 lần, cũng như đảm bảo file load xong hét mới render.
+-> Ở react19, dùng các thẻ <title> <link> <meta> dùng ở bất cứ components nào cũng sẽ tự bị chuyển lên <head>. Khai báo metadata thoải mái trong jsx luôn.
+<link> tag có thêm trường precedence "high" "default" chỉ thứ tự xếp các file trong <head> vì các files css rất qtr vị trí thứ tự đặt files. Còn load file thì react19 đảm bảo 1 component có thẻ link dùng 2 nơi sẽ chỉ load 1 lần, cũng như đảm bảo file link load xong hét mới render.
 Hỗ trợ <script async={true} src="..." /> đặt ở bất cứ đâu (k tự chuyển lên head).
+=> thay thế hoàn toàn react helmet để đổi metadata cho web ở client side, 1 số TH vẫn có lợi cho SEO khi crawler của gg exec code JS. Vd share web cho telegram thì nó fetch lấy title và ảnh trong html chứ k exec JS nên sẽ thấy giống nhau ở mọi route.
 
 -> React19 có preload resource:
 import { prefetchDNS, preconnect, preload, preinit } from 'react-dom'
@@ -176,110 +166,16 @@ function MyComponent() {
 
 
 
-# Dùng webpack
-refer tới "Projects / Setup / setup react thủ công với webpack"
+# Error boundary
+React component ta thường k viết try catch nên có error sẽ hỏng chương trình. Nên hiện component Error thay vì sập web.
+Có thể tạo SuspenseBoundary kết hợp ErrorBoundary chung 1 comp được. NextJS cho phép tạo error từng page và global-error luôn.
 
--> npm run eject => Lệnh 1 chiều k dùng tuỳ tiện, làm cho bundler không còn tự động hóa mọi vấn đề nữa mà sẽ bung toàn bộ config để những dev có thể config lại tuỳ ý. 
-
--> Lỗi: npm run build dự án react ra file index.html nhưng khi vào chỉ có 1 trang trắng. NN vì webpack config bản production thì build vào path "/" tức absolute tìm trong application chứ kp trong application/build. 
-=> Fix bằng cách thêm vào package json "homepage":"." để chỉ định tải các file static của dự án với url là relative trong thư mục hiện tại là application/build
-VD: custom "homepage": "./test", thì nhét thư mục static vào folder test cùng cấp là lại chạy được
+Trong react-router-dom cũng có <Route errorElement={}/> giúp hiển thị error element nếu path bên trong throw mà k bắt
+Có lib react-error-boundary: https://dev.to/edemagbenyo/handle-errors-in-react-components-like-a-pro-l7l
 
 
 
-# Dùng redux
-Redux là flux đơn giản dựa trên kiến trúc ELM, chính là cách dùng dispatcher, actions, controller, stores để bắt actions và xử lý
-Luồng: thực hiện hành động trên view -> tạo action -> dispatcher dispatch action tới stores -> stores có middeware và reducer, middleware sẽ dispatch actions mới hoặc báo lỗi nếu cần, reducer xử lý actions và cho state đầu ra là copy -> state lưu vào store và trả ra cho view provider -> mapStateToProps chuyển state thành props của component
-
--> Dùng redux-logger
-
--> Custom hook useAsync: nhận 1 hàm trả ra object có pending, error, data. Gọi hàm call, khi đang gọi thì pending true, khi gọi xong thì có data, nếu có lỗi thì lấy error
-=> useAsync hay thế được redux thunk. Còn redux saga cung nhiều hàm rất mạnh khác như takeEvery, takeLeading, takeLastest.
-=> Bh nên dùng react-query cho async state. Còn useAsync, saga, thunk chỉ dùng cho global store k cần fetch API
-
--> Redux saga chuyên xử lý side effect cho redux
-Luồng: view -> dispatch actions -> middleware -> reducer -> state mới -> quay về view
-                                      |          /^
-                                      API -> done
-Dispatcher dispatch action sẽ được xử lý đồng thời, 1 phần đưa action vào reducers xử lý loading và show ra, 1 phần được saga ở middleware xử lý call api lâu hơn. Saga xử lý xong thì dispatch 1 action đến reducers xử lý kết quả thành công hay thất bại.
-Kiểm soát dispatch action tùy biến: takeLastest, takeLeading, takeEvery, call, put, all, delay, put, take, select, putResolve, race, fork, spawn
-
---> Dùng redux saga dự án lớn:
-Ở từng file xử lý từng module:
-yield takeLatest/takeEvery
-index.ts import hết r gom lại:
-yield all([fork(<hàm import từng file>), fork(...)])
-store.ts:
-import index.ts sagas làm middleware của stores
-
-Xử lý loading state:
-onSuccess và onFailed là hàm của action truyền vào dispatch mỗi khi gọi: loading là state lưu ở component ban đầu set true, hàm onSuccess và onFail set lại false ok.
-Có thể gọi yield cancelled(); tuỳ ý
-
--> redux-toolkit: có sẵn nanoid sinh số random
-Cách chuẩn nhất là dùng createSlice với createAsyncThunk (unwrap và rejectWithValue), extraReducer, createDraftSelector
-
---> Dùng createSlice:
-Reducers thường được chia từng module riêng. VD redux thuần: const context = 'module1'; const 'ACTION_01' = `${context}_ACTION_01`; => Nhìn tên action là biết module nào
-redux-toolkit xử lý điều này với createSlice. Nó tạo ra 1 slice ngắn gọn chứa luôn reducer và action. VD trong 1 module counter:
-const counterSlice = createSlice({
-  name: 'counter',
-  reducers: {
-    increment: state => state.count += 1,
-    decrement: state => state.count -= 1
-  }
-}); export const { increment, decrement } = counterSlice.actions; export default counterSlice.reducer;
-=> Sinh ra 2 action có types là counter/increment và counter/decrement và @@INIT mặc định. Export ra action và reducer.
-=> Mỗi module của ứng dụng nên là 1 slice riêng. Nếu reducer muốn bắt action khác module thì phải dùng đến extraReducers
-
----> Dùng createReducer hay extraReducers bên trong createSlice có 2 cú pháp: 
-1) { [<action> / <action>.type / <action>.toString()]: (state, action) => ({ <đổi state> }) }
-2) C1 là basic, nếu dùng thêm tính năng thì: (builder) => builder.addCase(<action>, (state, action) => ({ <đổi state> }))
-Dùng addMatcher khi nhiều action type chung 1 xử lý. VD:
-const isErrorAction = (action) => action.type.endsWith('FAIL');
-const reducer = createReducer(initState, (builder) => {
-  builder
-    .addMatcher(isErrorAction, (state, action) => { state.errors = action.payload.errors; state.loading = false; })
-    .addDefaultCase((state, action) => {})
-})
-
---> const store = configureStore({reducer: rootReducer, middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}).concat(customMiddleware)})
-
---> useSelector của react-redux: lấy data từ redux và tiền xử lý. Dùng kèm ?. mọi lúc vì fetch chưa xong sẽ k có data.
-createSelector giống lib "reselect" tối ưu hơn vì check tham số cũ khác tham số mới về giá trị thì mới chạy lại hàm
-createDraftSafeSelector tương tự nhưng đảm bảo dùng immutable trong selector an toàn mà k đổi state redux và k cần copy data. Nó bắt sự thay đổi trực tiếp trong qúa trình. VD trong reducer dùng createSelector không đổi gì, dùng createDraftSafeSelector thì sẽ đổi luôn => luôn dùng thay createSelector
-
---> VD dùng redux-toolkit:
-TH1: 
- slice: export const {<hàm>} = slice.actions;
- component: import { <hàm> } from "...slice"; -> dp(<hàm>)
-TH2:
- slice: export const selectSlice = (state) => state.slice;
- component: const <att> = useSelector((state) => selectSlice(state).<att>);
-TH3: 
- slice: tạo selectSlice như TH2 -> export const selectAtt = createDraftSafeSelector(state => selectSlice(state).<att>, (att) => { <xử lý các att.data> return {..} })
- component: let {data1, data2} = useSelector((state) => selectAtt(state));
-TH4: tương tự TH3 nhưng xử lý từ nhiều thuộc tính của state
- slice: export const selectAtt = createDraftSafeSelecto(selectSlice, (slice) => { <xử lý mọi thuộc tính của slice.data> return {}});
-TH5: các hàm fetch dữ liệu
- slice: export const fetchData = createAsyncThunk("<tên>", async(data, thunkAPI) => { await <gọi hàm bất đồng bộ>; return res; }) -> trong extraReducers xử lý [fetchData.fulfilled/pending/rejected](state,action) {state.data = action.payload.data;}
- component: import fetchData from "..";
-=> TH5 có thể kết hợp Axios và Promise.all([thunkAPI.dispatch(function1(A)), thunkAPI.dispatch(function2(B))]);
-
-
-
-# Dùng responsive
-VD cần ẩn 1 nút bấm nếu là mobile, màn hình to thì show bth => có thể dùng css thuần cho display none thẻ đó or dùng code JSX check if else có render ra hay không
-
--> Dùng @media hoặc cách riêng của thư viện UI
--> Dùng lib react-device-detect
--> Tự tạo 1 hook useDevice trả ra các biến phục vụ lấy kích thước màn hình hiện tại => best practice
--> Dùng container query tốt hơn với @container
--> Dùng grid-templates-columns và các pp css thay thế container query
-=> ref tới "HTML_CSS_JS"
-
-
-
+//!!!!!!!!
 #***Bản chất cách viết chuẩn React 18
 Cả dự án chỉ dùng toàn custom hook cũng được, luôn dùng useCallback, useMemo đảm bảo mọi thứ phụ thuộc.
 
@@ -341,15 +237,5 @@ const debounceCallRefetchData = debounce(() => {
 => Nên dùng C2 vì C1 có hàm đơn giản và k có phụ thuộc gì vào state props, chỉ dùng useCallback khi phụ thuộc vào state props hoặc là dependency của chỗ khác.
 
 -> Dấu hiệu tách riêng component: khi cần tái sử dụng; khi 1 component mà query 2 api hiển thị 2 nơi
-
-
-
-# Error boundary
-React component ta thường k viết try catch nên có error sẽ hỏng chương trình. Thay vì thế ta muốn hỏng đúng component đó và hiển thị lỗi thôi:
-C1: Mọi functional component đều bao với try catch hiện component Error
-C2: Wrap cả ứng dụng trong 1 component ErrorBoundary bắt lỗi thì React chỉ hỗ trợ làm với class Component.
-C3: Muốn wrap bằng ErrorBoundary trong functional component, phải dùng thư viện react-error-boundary bao ngoài => ref tới "Đồ án"
-URL: https://dev.to/edemagbenyo/handle-errors-in-react-components-like-a-pro-l7l
-C3: Trong react-router-dom cũng có <Route errorElement={}/> giúp hiển thị error element nếu path bên trong throw mà k bắt
 
 
