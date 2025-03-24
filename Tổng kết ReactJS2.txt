@@ -175,67 +175,28 @@ Có lib react-error-boundary: https://dev.to/edemagbenyo/handle-errors-in-react-
 
 
 
-//!!!!!!!!
-#***Bản chất cách viết chuẩn React 18
-Cả dự án chỉ dùng toàn custom hook cũng được, luôn dùng useCallback, useMemo đảm bảo mọi thứ phụ thuộc.
+#***Bản chất cách viết chuẩn React
+- Mọi logic trong component xem xét tái sử dụng hết vào custom hook. Nếu gọi nhiều hàm lồng nhau từ base, cứ viết custom hook lồng nhau liên tục cho đến hook base.
 
-Bản chất state của React giải thích case đồng hồ đếm ngược:
+- Bản chất state của React giải thích case đồng hồ đếm ngược useEffect:
 Khi dùng useEffect và định nghĩa 1 hàm bên trong (kể cả là hàm const hay hàm trong setInterval), hàm đó là cố định giống useCallback, các tham số cũng là cố định và chỉ khởi tạo lại khi useEffect chạy lại tức dependencies đổi.
 
-1) useEffect gọi hàm side effect, hàm đó phải nằm trong useCallback và là phụ thuộc của useEffect, vì khai báo const sẽ khởi tạo lại ở mỗi lần render.
-Chú ý useCallback k đủ dependency sẽ dùng với data cũ có thể sai. 1 số ít TH buộc phải thêm // eslint-disable-line => Có cách ép chuẩn rule với useRef. VD:
-const initRef = React.useRef(null);
-const fetchAttempted = React.useRef(false);
-React.useEffect(() => {
-  initRef.current = async () => {
-    if (!fetchAttempted.current) {
-      if (auctionFetchingStatus !== FS.SUCCESS) {
-        fetchAttempted.current = true;
-        await Promise.all([dispatch(fetchAllAuction())]);
-      }
-    } else {
-      await Promise.all([dispatch(fetchAllAuction())]);
-    }
-  };
-}, [auctionFetchingStatus, dispatch]);
-React.useEffect(() => {
-  initRef.current();
-}, [needRefetch]);
-=> auctionFetchingStatus đổi sẽ k gọi lại hàm fetch nhưng vẫn update hàm
+- Mọi hàm gọi trong useEffect đều phải được memoiz và đổi khi các biến trong hàm đổi. React compiler đã làm sẵn và deprecate useCallback. 
 
-Nếu gọi nhiều hàm lồng nhau từ base, cứ viết custom hook lồng nhau liên tục cho đến hook base. Liên tục return các hàm useCallback => ref tới "Projects / Combinator"
-Tương tự useMemo với data cấu thành từ state, nếu tái sử dụng nhiều nơi có thể cùng custom hook ở file riêng. Còn không thì khai báo const trực tiếp trong file như bth ok.
+- 1 pages fetch lại data, cách trigger 1 pages khác ở xa cũng fetch lại data:
+Có thể thiết kế react context or redux cung ra hàm refetchData, mỗi API ta gắn vào 1 type tag. Gọi với tag nào thì api nào stale và component phải rerender. 
+VD: Component A update data cần component B rerender -> component A gọi hàm refetch của react context truyền vào type X -> react context check map type X thì B cần refetch nên đổi tagB -> component B dùng custom hook gọi hàm initB có dependency là tagB sẽ rerender. Cần viết sao cho componentB luôn refetch nếu tagB lật bit.
 
-2) 1 pages fetch lại data, cách trigger 1 pages khác ở xa cũng fetch lại data:
-Dùng ReactContext hoặc redux cung ra hàm refetchData. Nên viết 1 file riêng gọi hàm fetchData với type, type nào thì component pages nào cần rerender. Nên tạo thêm 1 custom hook bên trong gọi hàm fetchData kèm dependency và cung ra hàm đó 
+-*** Khai báo 1 hàm trong component:
+1) Ta có thể khai báo bất cứ loại hàm gì export ở 1 file riêng và sử dụng ở mọi component khác nhau nếu nó k phụ thuộc vào state props, hoặc dùng fetchReduxThunk 
+2) 1 hàm số được khai báo trong component nếu cần dùng state props của component đó:
+Dùng react compiler thì khai báo vói const sẽ đảm bảo hàm tạo lại mỗi khi phụ thuộc của nó đổi.
+K có react compiler thì dùng useCallback. Nếu tái sử dụng ở nhiều nơi thì nhét vào custom hook.
 
-VD: Component A update data cần component B rerender -> component A gọi hàm refetch của react context truyền vào type X -> react context check map type X thì B cần refetch nên đổi refetchB -> component B dùng custom hook gọi hàm initB có dependency là refetchB sẽ rerender. Cần viết sao cho componentB luôn refetch nếu refetchB lật bit.
+Chú ý khi hàm số gọi setCount(count + 1); thì dependencies của nó là [count]. Nếu gọi setCount(v => v+1); thì k còn phụ thuộc vào dependeny count nữa.
 
-Bản chất React ta nghĩ là phụ thuộc vào nhau, ví dụ component A đổi data thì component B refetch thì component B nên có data dependency là A. Nhưng trong blockchain nó éo như v, 1 component xa lắc xa lơ có thể call refetch của nhau nên k được trừ khi tất cả lưu vào redux
-
-3) ***Bản chất***Giả sử ta click 1 button gọi 1 API độc lập, API này k phụ thuộc vào state gì cả thì liệu hàm đó có cần useCallback không? => K cần, có thể tạo file riêng or định nghĩa ngay hàm const trong component 
-- Ta có thể khai báo bất cứ loại hàm gì export ở 1 file riêng và sử dụng ở mọi component khác nhau nếu nó k phụ thuộc vào state props 
-- 1 hàm số được khai báo trong component nếu cần dùng state props của component đó. Khi hàm đơn giản và k phụ thuộc vào hook khác thì khai báo const. Hàm phức tạp k muốn khởi tạo lại nhiều hoặc dùng kết hợp nhiều hook khác thì dùng useCallback sẽ memoize. Hàm mà tái sử dụng ở nhiều nơi thì tách ra custom hook (or dùng các pp khác như hàm fetchReduxThunk).
-
-TH1 hàm phụ thuộc vào hook khác, được gọi trong 1 hook khác thì hook đó phải có hàm là dependency. Hàm đó phải dùng useCallback liệt kê mọi dependency, nếu ta muốn làm kiểu setCounter(counter + 1) thì phải liệt kê counter vào dependency, môi lần gọi thì useCallback sẽ render hàm mới, useEffect có hàm là dependency sẽ chạy tiếp vì đổi counter nên sẽ gọi vô tận hàm => fix với setCounter(val => val + 1); Tức là cứ viết như vậy thì mọi hàm cần gọi hoặc là sẽ gọi đến cuối cùng là 1 hàm không còn dependency nó đổi, hoặc là hàm external klq tới state nữa
-=> Custom hook chỉ là 1 cách chia tái sử dụng, k giúp được gì.
-
-4) Các case khác:
-const [test, setTest] = useState(false); => phụ thuộc vào test thì cần dependency nhưng setTest thì không
-Hàm async hay không async ta đều xử lý như nhau
-
-Với các hàm logic bình thường:
-VD1:   
-const debounceCallRefetchData = useCallback(
-  debounce(() => { setRefetchData(false); }, 11000),
-  []
-);
-VD2:   
-const debounceCallRefetchData = debounce(() => {
-  setRefetchData(false);
-}, 11000);
-=> Nên dùng C2 vì C1 có hàm đơn giản và k có phụ thuộc gì vào state props, chỉ dùng useCallback khi phụ thuộc vào state props hoặc là dependency của chỗ khác.
-
--> Dấu hiệu tách riêng component: khi cần tái sử dụng; khi 1 component mà query 2 api hiển thị 2 nơi
+- VD1: const debounceCallRefetchData = useCallback(debounce(() => { setRefetchData(false); }, 11000), []);
+VD2: const debounceCallRefetchData = debounce(() => { setRefetchData(false); }, 11000);
+=> Dùng C2 hơn vì useCallback chỉ cần khi phụ thuộc state props mà ở đây k có
 
 

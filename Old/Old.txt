@@ -1,3 +1,97 @@
+
+# tailwind.config.js v3:
+module.exports = {
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  theme: {
+    screens: {
+      sm: "480px",
+      md: "768px",
+      lg: "976px",
+      xl: "1100px",
+      xxl: "1300px",
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '6xl': '4rem',
+    },
+    extend: {
+      colors: {
+        gray: {
+          100: '#f7fafc',
+          200: '#edf2f7',
+          300: '#e2e8f0',
+          900: '#1a202c',
+        },
+        pink: "#ff49db",
+        "gray-dark": "#273444",
+      },
+    },
+    keyframes: { // Các khai báo ở đây sẽ vào trực tiếp css, khai báo keyframe
+      "accordion-down": {
+        from: { height: 0 },
+        to: { height: "var(--radix-accordion-content-height)" }
+      },
+      "accordion-up": {
+        from: { height: "var(--radix-accordion-content-height)" },
+        to: { height: 0 },
+      },
+      "fade-in-down": {
+        "0%": {
+          opacity: 0,
+          transform: "translateY(-10px)"
+        },
+        "100%": {
+          opacity: 1,
+          transform: "translateY(0)"
+        }
+      },
+    },
+    animation: { // Khai báo animation theo keyframe 
+      "accordion-down": "accordion-down 0.2s ease-out",
+      "fade-in-down": "fade-in-down 0.2 easep-out"
+    },
+    borderRadius: {
+      lg: "var(--radius)", // rounded-lg tương tự nhiều thuộc tính khác cũng set được
+      md: "calc(var(--radius) - 2px)", // rounded-md
+      sm: "calc(var(--radius) - 4px)", // rounded-sm
+    },
+    container: { // class name là container
+      center: true,
+      padding: "2rem",
+      screens: { // responsive
+        "2xl": 1400px,
+      },
+      padding: {
+        DEFAULT: '1rem',
+        sm: '2rem',
+        lg: '4rem',
+        '2xl': '6rem',
+      },
+    },
+    colors: {
+      black: '#000',
+      foreground: "var(--foreground)",
+      primary: {
+        DEFAULT: "var(--primary)",
+        foreground: "var(--primary-foreground)",
+      },
+      muted: { // accent, card, popover, destructive, 
+        DEFAULT: "var(--muted)",
+        foreground: "var(--primary-muted)",
+      },
+    },
+  },
+  prefix: "", // tiền tố cho vào các class của tailwind sau khi compile để tránh conflict với các thư viện khác nếu dùng.
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography"), require('tailwindcss-motion')],
+};
+
+
+
 # Dùng lib MUI v4
 -> css selector style ở v4
 Dùng makeStyles({<object>}); tạo ra hàm trả ra object các style để dùng với className. 
@@ -215,98 +309,5 @@ Khi cần thống kê thì làm API từ server riêng, server này sẽ tự fe
 - Nếu data cần update theo thời gian thực thì viết subscribe sự kiện, bắt event mất kết nối thì tự kết nối lại
 - Nếu data lớn và ta cần lấy lại tất cả từ block đầu tiên đến hiện tại và tiếp tục bắt thì có thể dùng The Graph hoặc tạo 1 server tương tự
 - Nếu data đơn giản thì gọi trực tiép vàp contract hoặc tìm API bên thứ 3.
-
-
-
-# tailwind.config.js v3:
-module.exports = {
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
-  theme: {
-    screens: {
-      sm: "480px",
-      md: "768px",
-      lg: "976px",
-      xl: "1100px",
-      xxl: "1300px",
-    },
-    fontSize: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
-      '2xl': '1.5rem',
-      '6xl': '4rem',
-    },
-    extend: {
-      colors: {
-        gray: {
-          100: '#f7fafc',
-          200: '#edf2f7',
-          300: '#e2e8f0',
-          900: '#1a202c',
-        },
-        pink: "#ff49db",
-        "gray-dark": "#273444",
-      },
-    },
-    keyframes: { // Các khai báo ở đây sẽ vào trực tiếp css, khai báo keyframe
-      "accordion-down": {
-        from: { height: 0 },
-        to: { height: "var(--radix-accordion-content-height)" }
-      },
-      "accordion-up": {
-        from: { height: "var(--radix-accordion-content-height)" },
-        to: { height: 0 },
-      },
-      "fade-in-down": {
-        "0%": {
-          opacity: 0,
-          transform: "translateY(-10px)"
-        },
-        "100%": {
-          opacity: 1,
-          transform: "translateY(0)"
-        }
-      },
-    },
-    animation: { // Khai báo animation theo keyframe 
-      "accordion-down": "accordion-down 0.2s ease-out",
-      "fade-in-down": "fade-in-down 0.2 easep-out"
-    },
-    borderRadius: {
-      lg: "var(--radius)", // rounded-lg tương tự nhiều thuộc tính khác cũng set được
-      md: "calc(var(--radius) - 2px)", // rounded-md
-      sm: "calc(var(--radius) - 4px)", // rounded-sm
-    },
-    container: { // class name là container
-      center: true,
-      padding: "2rem",
-      screens: { // responsive
-        "2xl": 1400px,
-      },
-      padding: {
-        DEFAULT: '1rem',
-        sm: '2rem',
-        lg: '4rem',
-        '2xl': '6rem',
-      },
-    },
-    colors: {
-      black: '#000',
-      foreground: "var(--foreground)",
-      primary: {
-        DEFAULT: "var(--primary)",
-        foreground: "var(--primary-foreground)",
-      },
-      muted: { // accent, card, popover, destructive, 
-        DEFAULT: "var(--muted)",
-        foreground: "var(--primary-muted)",
-      },
-    },
-  },
-  prefix: "", // tiền tố cho vào các class của tailwind sau khi compile để tránh conflict với các thư viện khác nếu dùng.
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography"), require('tailwindcss-motion')],
-};
 
 
