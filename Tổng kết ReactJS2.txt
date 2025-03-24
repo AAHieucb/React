@@ -26,37 +26,35 @@ Import font file trực tiép vào rồi định nghĩa trong file css với @fo
 
 
 
-//!!!!!!
 # Lazy loading 
-Code splitting: Vào web thì browser tải từng file html css js về. Với React thì bundle lại thành bundle.js mới gửi tới trình duyệt. Nếu dự án lớn sẽ khiến file bundle to ra mà mỗi lần vào tải cả cục rất lâu. Code splitting là kỹ thuật tách ứng dụng 2 phần: chỉ load phần bundle cần thiết để khởi động, các phần khác sẽ load sau khi ứng dụng chạy.
+Code splitting: Vào web thì browser tải từng file html css js về. Với React thì bundle lại thành bundle.js mới gửi tới trình duyệt. Nếu dự án lớn sẽ khiến file bundle to ra mà mỗi lần vào tải cả cục rất lâu. Code splitting là kỹ thuật tách ứng dụng 2 phần: chỉ load phần bundle cần thiết để khởi động, các phần khác sẽ load sau khi ứng dụng chạy. 
 
+2 pp code splitting phổ biến:
 1) Dynamic import: import là 1 promise, khi nào dùng mới tải về. Vd khi render thực sự 1 component ra mới load file bundle chứa component về.
 Bth React optimize mọi module thành các file bundle.js, nhưng khi dùng dynamic import, các phần đó sẽ được React tách riêng ra k cho vào file bundle chung. Hđ với cả CSR SSR
 Browser tự tối ưu n lần dynamic import sẽ chỉ tải 1 lần file js đó. Nếu vừa import bth, vừa dynamic import thì nó import bth xong sẽ k import lại gì nữa.
 2) Lazy loading: y hệt, dùng để load cả 1 file component trong React. Kết hợp Suspense
-=> Code spliting chỉ hiệu quả nếu split được các file lớn nên lazy loading được dùng nhiều. Còn dynamic import ít dùng hơn, VD khi cần import cả 1 thư viện lớn chẳng hạn.
-VD: const Events = React.lazy(() => import('./Events'));
-<Suspense fallback={<div>Loading...</div>}><Events /></Suspense>
+Code spliting chỉ hiệu quả nếu split được các file lớn nên lazy loading được dùng nhiều. Còn dynamic import ít dùng hơn, VD khi cần import cả 1 thư viện lớn chẳng hạn.
+VD: const Events = React.lazy(() => import('./Events')); <Suspense fallback={<div>Loading...</div>}><Events /></Suspense>
 
 -> Prefetching: 
 - Trong NextJS luôn tự prefetch khi dùng tag Link của nó.
-- Trong React có react-router-dom có thể tìm cách prefetch
+- Trong React có react-router-dom có thể tìm cách prefetch 1 route.
 - Trong html thuần: 
-Thẻ a k hỗ trợ prefetch mà chỉ navigation. Mỗi khi navigate sẽ sang 1 trang mới hoàn toàn và tải lại mọi thứ. Do đó các file css, js chung phải link vào mọi page html. 
-
-Nếu muốn k fetch lại mà prefetch từ trước. C1 là dùng SPA tự cache. C2 là fetch nó từ trang trước cho browser cache lại, nếu người dùng k disable cache trong browser thì sẽ ok.
-Dùng <link rel="prefetch" href="./page2.html"> sẽ prefetch page2 vào lúc rảnh, cache trong browser, chỉ dùng được với same site.
-Khác với rel="preload" để ưu tiên tải 1 data trong page trước mọi tài nguyên khác. Vd ảnh hay thumbnail SEO dùng khi share trên tele, twitter.
+Thẻ a k hỗ trợ prefetch mà chỉ navigation. Mỗi khi navigate sẽ sang 1 trang mới hoàn toàn và tải lại mọi thứ. Mỗi page sẽ có nhiều files css js giống nhau
+Có speculationrules giúp prefetch và prerender pages. 
+Dùng <link rel="prefetch" href="./page2.html"> sẽ prefetch page2 vào lúc rảnh, dùng cache trong browser (user phải k disable browser cache), chỉ dùng được với same site. Khác với rel="preload" để ưu tiên tải 1 data trong page trước mọi tài nguyên khác. Vd ảnh hay thumbnail SEO dùng khi share trên tele, twitter.
 
 
 
 # Dùng web worker
 Web worker tận dụng chip đa nhân trên máy client luôn. K nên lạm dụng mà thêm khoảng 2-3 workers là ok => Nên dùng khi xử lý ảnh, canvas drawing, export CSV or excel file lớn
-Dùng lib @shopify/react-web-worker => bỏ lib cũ @koale/useworker 
+Dùng lib @koale/useworker => bỏ @shopify/react-web-worker
 Vd: sort 500000 phần tử bằng bubble sort trong react sẽ block ui. Mở tab performance của browser sẽ thấy CPU 100%, nếu chạy nó trên 1 thread riêng, thời gian vẫn thế nhưng CPU thấp và k bị block
 
 
 
+//!!!!!!
 # Tối ưu render list lớn
 Lag vì render quá nhiều DOM nodes
 C1: Virtualize long list: Dùng react-window* or react-virtualized or react-viewport-list chỉ show phần DOM visible. Kết hợp scroll down to load more với react-infinite-scroller

@@ -189,6 +189,9 @@ Setup: Login Okta -> Application -> Tạo 1 ứng dụng với OpenID Connect v�
 Tạo dự án mẫu với okta-cli: tải okta cli -> okta login có org url là https://dev-xxxxxxx.okta.com, id là client id của app -> "okta create react"
 ISSUER ID là https://dev-xxxxxxx.okta.com
 
+->*** xstate/store: Bth react-query dùng cho server state, form thì dùng react hook forms, useState, tanstack router giúp lưu params trên url khi muốn refresh page vẫn còn.
+Các case còn lại có thể dùng redux or zustand, hoặc xstate/store có nhiều điểm tốt hơn.
+
 
 
 # Pattern tuỳ biến style component
