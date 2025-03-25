@@ -137,8 +137,7 @@ react-content-loader: thư viện tạo skeleton svg nhẹ
 react-hot-toast*
 react-modal 
 react-player*: custom play video
-react-slick và slick-carousel: tạo carousel slider
-react-trend: vẽ đường line
+react-slick: tạo carousel slider
 react-avatar-edit*: cắt ảnh làm avatar
 react-paginate: tạo component phân trang
 react-perfect-scrollbar: thư viện tạo thanh scrollbar, nó cung thêm tính năng khác như bắt sự kiện scroll đến vị trí trục y nào
@@ -157,7 +156,6 @@ React Email cung components cho việc gửi email
 react-text-mask*: custom input hiển thị
 
 -> react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
-react-grid-layout: tạo grid draggable items
 
 -> recharts*: Vẽ đồ thị kiểu học thuật.
 highcharts-react-official highcharts*: tạo graph đẹp, responsive, loading

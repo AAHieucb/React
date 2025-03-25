@@ -201,36 +201,6 @@ React wrap native browser event vào 1 cái wrapper có interface, bên trong cu
 
 
 
-# Lib k dùng
-effect: hỗ trợ code Typescript cực mạnh nên dùng nếu làm dự án Typescript yêu cầu tính chặt chẽ cao. Nó làm mọi thứ dễ dàng và dễ hiểu hơn. 
-shoelace: thư viện hỗ trợ tạo web components, dùng shadow DOM cách ly không conflict với bất cứ code css js nào, tích hợp vào mọi dự án đều tương thích.
-react-markdown: thư viện giúp render từ kiểu markdown ra văn bản đẹp
-google-map-react: hiển thị gg map tương tác. Nó có điểm lợi là dùng google map API và dù k load được google map api nó vẫn có thể hiện map bth
-react-autosuggest*: tạo autosuggest khi gõ input text, custom cực mạnh => nếu có thể hãy dùng autocomplete mặc định
-whatwg-fetch: cung tính năng fetch cho cả trình duyệt cũ
-immer / immutable: clone và thay đổi 1 biến const, so sánh 2 biến immutable bằng giá trị
-screenfull: khiến 1 page hay 1 component nào biến thành fullscreen
-react-infinite-scroll-component: tính năng scroll đến cuối sẽ fetch tiếp data hiển thị tiếp
-@rjsf/core: tạo form dựa trên config json data hiển thị ra giao diện
-webpack-bundle-analyzer: tool show trực quan phần nào của ứng dụng chiếm nhiều dung lượng nhất
-proton-native: tool code React nhưng sinh ra ứng dụng desktop. Ứng dụng được compiled sang native platform code nên thực sự là native
-
--> react-transition-group: giúp tạo css animation dễ hơn
-react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới
-react-awesome-slider: chuyên tạo chuyển full page đẹp dạng slider. Custom các thuộc tính css trong https://caferati.me/demo/react-awesome-slider/fall và thêm vào class tên là awssld.
-
--> fireworks: thư viện tạo pháo hoa. Thg dùng kiểu ấn nút thành công thì bắn pháo hoa
-react-snowfall: hiển thị mưa tuyết, custom thoải mái
-
--> react-moment moment: format hiển thị ngày giờ, nó cũng cung nhiều utils VD hiện ra còn bnh ngày là đến ngày nào chẳng hạn
-Dùng thêm moment-timezone nếu cần thao tác thời gian theo múi giờ khác nhau
-
--> storybook: package giúp tách từng component, hiển thị dạng phân cấp giúp dễ theo dõi component
-react-cosmos: thay thế storybook
-react-styleguidist: Viết docs cho component -> dài éo dùng
-
-
-
 # Xây 1 ứng dụng hỗ trợ hỏi đáp AI, dựa trên tập data từ SQL
 URL: https://www.freecodecamp.org/news/talk-to-databases-using-ai-build-a-sql-query-data-extractor/ 
 Dùng GroqAI cho AI model train với data rồi tương tác qua API bằng CopilotKit, sẽ tự động xử lý NLP và mọi thứ chuyên cho chat.
