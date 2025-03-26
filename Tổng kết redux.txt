@@ -10,7 +10,6 @@ Nếu chỉ lưu async state thì dùng react-query kết hợp lưu url params 
 
 
 
-
 # Dùng redux saga
 Giống redux thunk nhưng cho xử lý side effect phúc tạp.
 
@@ -32,7 +31,7 @@ Có thể gọi yield cancelled(); tuỳ ý
 # Dùng redux-toolkit 
 Có sẵn nanoid sinh số random.
 Case cơ bản chỉ cần dùng createSlice với createAsyncThunk (unwrap và rejectWithValue), extraReducer, createDraftSelector.
-Async state muốn có như react-query thì dùng thêm rtk query mà k cần thư viện ngoài.
+Async state muốn có như react-query thì dùng thêm rtk query mà k cần thư viện ngoài. Nó giúp lưu state sync và async hết r.
 
 -> Dùng createSlice:
 Trong redux thuần thì reducers chia từng module riêng. VD: const context = 'module1'; const 'ACTION_01' = `${context}_ACTION_01`; => Nhìn tên action là biết module nào
