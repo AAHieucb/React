@@ -5,6 +5,7 @@ function App() {
   const [show, setShow] = useState(true);
   const [showCard, setShowCard] = useState(false);
 
+  // Dùng framer motion
   return (
     <>
       {/* Path animation */}
