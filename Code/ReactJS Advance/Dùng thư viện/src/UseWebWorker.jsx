@@ -11,6 +11,7 @@ function infiniteLoop() {
 }
 
 // Test dùng web worker
+// Dùng useWebWorker @koale/useworker
 export default function UseWebWorker() {
 
   React.useEffect(() => {

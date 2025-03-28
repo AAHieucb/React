@@ -1,5 +1,6 @@
 import useMousePosition from './useMousePosition'
 
+// safe triangle
 export const SafeArea = ({ anchor, submenu }) => {
   const { x: mouseX, y: mouseY } = useMousePosition()
 

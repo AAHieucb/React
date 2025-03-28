@@ -116,12 +116,22 @@ export default {
 };
 
 export default defineConfig({ 
-  plugins: [react()],
+  plugins: [react(), linaria()],
   server: {
+    open: true, // Tự động chạy browser khi chạy server
     host: true, // Lắng nghe trên tất cả các địa chỉ IP
     port: 5173, // Đảm bảo chạy trên cổng 5173
     watch: {
       usePolling: true, // Sử dụng polling để theo dõi thay đổi file, VD docker cần có để development stage có live reload.
     }
-  }
+  },
+  resolve: {
+    alias: {
+      src: "/src",
+      components: "/src/components", // Dùng "components/..."; là tự hiểu đổ từ thư mục này
+    }
+  },
+  build: {
+    outDir: 'build', // Thư mục build ra
+  },
 })
