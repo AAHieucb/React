@@ -4,6 +4,8 @@ import 'react-awesome-slider/dist/custom-animations/fall-animation.css';
 import "./slider-custom.css";
 import logo from "./logo.svg";
 
+// Lib này cũ r
+
 const UseReactAwesomeSlider = () => {
   return (
     <>
