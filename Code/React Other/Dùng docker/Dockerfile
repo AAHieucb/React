@@ -15,7 +15,7 @@ RUN npm install
 # Sao chép toàn bộ mã nguồn
 COPY . .
 
-# Expose port 5173
+# Export port 5173
 EXPOSE 5173
 
 # Chạy ứng dụng
