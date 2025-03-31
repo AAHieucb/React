@@ -86,3 +86,128 @@ TH5: các hàm fetch dữ liệu
 => TH5 có thể kết hợp Promise.all([thunkAPI.dispatch(function1(A)), thunkAPI.dispatch(function2(B))]);
 
 
+
+# Config
+-> slice:
+export const fetchAll = createAsyncThunk("slice/fetchData", async (_, thunkAPI) => {
+  await Promise.all([
+    thunkAPI.dispatch(fetchRegistry({ test: 1 }))
+  ]);
+});
+export const fetchRegistry = createAsyncThunk("slice/fetchRegistry", async (params) => {
+  // fetch api
+  return res;
+});
+const testSlice = createSlice({
+  name: "testSlice",
+  initialState: initialState,
+  reducers: {
+    updateNumber: (state, text) => {
+      state.number++;
+      state.text = action.payload.text;
+    },
+  },
+  extraReducers: {
+    [fetchAll.pending](state, _) {
+      state.loading = true;
+    },
+    [fetchAll.fulfilled](state, _) {
+      state.loading = false;
+    },
+    [fetchAll.rejected](state, _) {
+      state.loading = false;
+    },
+    [fetchRegistry.pending](state, action) {
+      state.loading = true;
+    },
+    [fetchRegistry.fulfilled](state, action) {
+      state.text = action.payload.totalDocs;
+      state.loading = false;
+    },
+    [fetchRegistry.rejected](state, error) {
+      state.text = error.error.message;
+      state.loading = false;
+    },
+    [otherAction]: (state, action) => {
+      state.text = action.payload.text;
+    },
+  },
+  extraReducers: (builder) => { // or
+    builder
+      .addCase(otherAction, (state, action) => {
+        console.log("Handle action bên ngoài")
+      })
+      .addDefaultCase((state, action) => {})
+  }
+});
+export default armourySlice.reducer;
+export const { updateNumber } = armourySlice.actions;
+export const selectArmourySlice = state => state.reducerSlice;
+
+-> slice toolkit query:
+export const counterSlice = createAppSlice({
+  name: "counter",
+  initialState,
+  reducers: (create) => ({
+    increment: create.reducer((state) => {
+      state.value += 1;
+    }),
+    decrement: create.reducer((state) => {
+      state.value -= 1;
+    }),
+    incrementByAmount: create.reducer(
+      (state, action: PayloadAction<number>) => { // PayloadAction type để khai báo content của action.payload
+        state.value += action.payload;
+      },
+    ),
+    incrementAsync: create.asyncThunk( // Viết thunk luôn trong slice
+      async (amount: number) => {
+        const response = await fetchCount(amount);
+        return response.data; // giá trị trả về nhét vào tham số action.payload của fullfilled
+      },
+      {
+        pending: (state) => {
+          state.status = "loading";
+        },
+        fulfilled: (state, action) => {
+          state.status = "idle";
+          state.value += action.payload;
+        },
+        rejected: (state) => {
+          state.status = "failed";
+        },
+      },
+    ),
+  }),
+  selectors: { // Viết state ngay trong slice
+    selectCount: (counter) => counter.value,
+    selectStatus: (counter) => counter.status,
+  },
+});
+
+-> api slice toolkit query:
+export const quotesApiSlice = createApi({
+  baseQuery: fetchBaseQuery({ baseUrl: "https://dummyjson.com/quotes" }),
+  reducerPath: "quotesApi",
+  tagTypes: ["Quotes"],
+  endpoints: (build) => ({
+    getQuotes: build.query<QuotesApiResponse, number>({
+      query: (limit = 10) => `?limit=${limit}`,
+      providesTags: (result, error, id) => [{ type: "Quotes", id }], // tag cho cache 
+    }),
+  }),
+});
+
+-> store:
+import logger from "redux-logger";
+const rootReducer = combineSlices(testSlice);
+configureStore({
+  reducer: {
+    redurcer: rootReducer
+  },
+  devTools: process.env.NODE_ENV === "development",
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({thunk: false}) // dùng saga thì nên vô hiệu hóa redux thunk với {thunk: false}
+    .concat(sagaMiddleware).concat([redux-logger]),
+});
+
+

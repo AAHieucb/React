@@ -1,4 +1,3 @@
-//!!!!!!!!!
 // ## Các thứ quan trọng khác / # Dùng các thư viện chức năng
 // Dùng animate.css / Dùng react-intl / Dùng styled-components / Dùng immer / Dùng intl / Dùng compare-versions
 // Dùng lodash / Dùng public-ip / Dùng whatwg-fetch / Dùng invariant / Dùng lucene-query-parser
