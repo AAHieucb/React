@@ -320,8 +320,10 @@ Trong redux toolkit cũng có nanoid sinh id ngẫu nhiên
 -> useSyncExternalStore read và subscribe vào external data source => VD ta subscribe vào localStorage được
 
 -> use(Promise) => k cần dùng nếu dùng react-query
-- Dùng với 1 promise trong 1 component, có thể kẹp trong conditional được. Wrap với ErrorBoundary và Suspense để hiện fallback, component dùng use(Promise) sẽ hiện fallback nếu promise chưa thực hiện xong, k cần dùng await cho nó.
 - Dùng với use(ReactContext) thì như useContext chỉ khác là dùng được trong câu điều kiện
+- Dùng với 1 promise trong 1 component, có thể kẹp trong conditional được. Wrap với ErrorBoundary và Suspense để hiện fallback, component dùng use(Promise) sẽ hiện fallback nếu promise chưa thực hiện xong, k cần dùng await cho nó.
+Chú ý chỉ có 2 case sử dụng, 1 là promise truyền vào từ parent, 2 là promise là hàm import từ bên ngoài. K được dùng trực tiếp fetch trong use vì bị lỗi refetch liên tục k thể fix. Bao với Suspense và ErrorBoundary, sẽ chờ fetch xong => dùng thay thế useEffect khi fetch lần đầu tiên.
+Chú ý phải truyền vào promise, chứ kp call 1 function trả ra promise nó sẽ refetch lại liên tục.
 
 -> useTransition: giảm độ ưu tiên của 1 hàm, chỉ chạy và render trong background khi rảnh để k ảnh hưởng performance và nếu có 1 lệnh tương tự thì chạy câu lệnh mới, dừng lệnh cũ luôn => dùng khi đổi state phải xử lý logic nặng bị lag, mà k dùng được useDebounce.
 Khi code cần xác định phần task nào gây lag cho browser đưa vào startTransition. VD fetch API thực tế k gây lag cho browser thì k cần. VD search 1 chữ r thực hiện filter trên 1000 phần tử r set vào list thì hành động đổi text k cần mà phải dùng startTransition cho hành động filter và setList.
