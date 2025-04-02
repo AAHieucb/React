@@ -1,0 +1,20 @@
+# AbortController
+Dùng huỷ các tác vụ khi k cần thiết nữa như event, timeout, fetch api, stream, cancel request. VD người dùng gõ phím tiếp theo hay ấn cancel thì bỏ mọi tác vụ call api đang chạy
+URL: https://kettanaito.com/blog/dont-sleep-on-abort-controller
+Ez: var x = new AbortController(); x.signal; x.abort(); 
+Dùng react-query hỗ trợ sẵn signal chỉ cần dùng luôn queryFn: ({ signal }) => { ... }
+
+Có thể huỷ đồng thời hàng loạt event listener thay vì remove từng cái.
+Dùng để huỷ sau 1 khoảng thời gian với AbortSignal.timeout, huỷ nếu 1 abort bất cứ 1 signal nào trong list với AbortSignal.any
+Thay vì function cung ra promise, thì cung ra { promise, abort } để bên ngoài sử dụng có thể call abort bất cứ lúc nào cần.
+Biến mọi thứ abortable bằng cách biến thành promise, truyền thêm 1 abortcontroller vào, gọi bắt event "abort" của controller thì reject promise là được
+signal của abort controller có sự kiện "abort" phát ra khi call abort(). Dùng x.abort(<reason>) và lấy với x.signal.reason
+
+Vd: try { fetch(, {abort: AbortSignal.timeout(1000)}) } cache (e) { e.name == "AbortError" / e.name == "TimeoutError" }
+AbortError khi close tab, tắt browser. TimeoutError khi request quá lâu.
+
+
+
+# Dừng
+
+
