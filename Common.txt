@@ -151,7 +151,7 @@ npm cài package vào máy và dùng
 pnpm như npm nhưng tiết kiệm mem hơn
 yarn như npm nhưng cache tốt hơn
 
--> yarn add [package]@[version-or-tag] => Cài version xác định
+-> yarn add [package]@[version-or-tag] / npm i package-name@version => Cài version xác định
 yarn upgrade <package> => Upgrade lên mới nhất
 
 -> 3 cái --dev / --peer / -optional thêm vào cuối nếu specific với 3 loại dev dependencies, peer dependencies and optional dependencies.
