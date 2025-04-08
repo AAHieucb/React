@@ -15,6 +15,7 @@ proton-native: tool code React nhưng sinh ra ứng dụng desktop. Ứng dụng
 react-trend: vẽ đường line
 react-grid-layout: tạo grid draggable items
 slick-carousel: tạo carousel slider
+@ajna/pagination: cung hook chuyên dùng cho phân trang.
 
 -> react-transition-group: giúp tạo css animation dễ hơn
 react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới

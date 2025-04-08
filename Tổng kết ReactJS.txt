@@ -151,6 +151,7 @@ react-qr-reader: quay camera QR
 cmdk: hiển thị menu dạng có thể search
 React Email cung components cho việc gửi email
 @xyflow/react*(bản mới chuẩn của reactflow): thư viện rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
+react-modal-sheet: mobile nên thay thế dialog bằng bottom sheet
 
 -> react-select*: tạo đủ loại component input
 react-text-mask*: custom input hiển thị
