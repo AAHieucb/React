@@ -56,7 +56,7 @@ Vd: sort 500000 phần tử bằng bubble sort trong react sẽ block ui. Mở t
 
 # Tối ưu render list lớn
 Lag vì render quá nhiều DOM nodes
-C1: Virtualize long list: Dùng react-window* or react-virtualized or react-viewport-list chỉ render phần DOM visible. Thường kết hợp scroll down to load more với react-infinite-scroller
+C1: Virtualize long list: Dùng react-window or react-virtualized chỉ render phần DOM visible. Dùng rc-virtual-list* kết hơp được với animation
 C2: Dùng phân trang kiểu bấm số chuyển pages: react-paginate
 
 -> Vd logic frontend lấy hết data về rồi tự phân trang nếu biết trước list data k quá nhiều.

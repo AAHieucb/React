@@ -16,6 +16,9 @@ react-trend: vẽ đường line
 react-grid-layout: tạo grid draggable items
 slick-carousel: tạo carousel slider
 @ajna/pagination: cung hook chuyên dùng cho phân trang.
+react-infinite-scroller: scroll to load more
+react-helmet
+prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi. 
 
 -> react-transition-group: giúp tạo css animation dễ hơn
 react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới

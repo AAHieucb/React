@@ -92,7 +92,7 @@ URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 # Tích hợp thư viện => các thư viện 1-2 năm k update cũng nên bỏ 
 -> Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Grommet, react-foundation, Primereact, Bulma, materialize-css@next, React Suite, Kendo react (component lạ), radix-ui khó dùng
-Chakra UI, Bootstrap, mui* v7, Senmatic UI
+Chakra UI, Bootstrap, mui* v7, Senmatic UI, flowbite
 cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
 Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon* hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
 
@@ -118,8 +118,7 @@ npx lingo.dev@latest show locale targets # Lists available target languages
 Thêm --force nếu muốn force ghi đè từ lại
 Cài 1 phát r tạo i18n.json là cứ thế dùng thôi
 
--> clsx*: tạo string với điều kiện, thg dùng cho className.
-prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi. 
+-> clsx* / classNames: tạo string với điều kiện, thg dùng cho className.
 Date-fns hoặc Luxon => thay thế react-moment, moment-timezone
 lodash*: https://lodash.com/docs/4.17.15 thay thế underscore => Có thể import tree shaking đỡ nặng: npm i lodash.merge
 npm i rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
@@ -132,9 +131,9 @@ Có browser extension, npm package. CDN: <script crossOrigin="anonymous" src="//
 https://loading.io/* => icon loading customize thoải mái, export ra gif hay svg đều được
 react-spinners*: thư viện component loading
 react-content-loader: thư viện tạo skeleton svg nhẹ
+react-loading-skeleton: tạo skeleton
 
--> @tinymce/tinymce-react*: thư viện giúp tạo TinyMCE text editor cực mạnh cho các kiểu input text như gg docs
-react-hot-toast*
+-> @tinymce/tinymce-react*: thư viện giúp tạo TinyMCE rich text WYSIWYG editor cực mạnh cho các kiểu input text như gg docs.
 react-modal 
 react-player*: custom play video
 react-slick: tạo carousel slider
@@ -145,16 +144,22 @@ react-text-transition
 react-color*: color picker
 react-datepicker: date picker
 react-pdf
-sweetalert: hộp thoại alert đẹp
+react-modern-drawer: tạo menu drawer
 react-qr-reader: quay camera QR
 @pqina/flip*: tạo Flip Clock chuẩn
 cmdk: hiển thị menu dạng có thể search
 React Email cung components cho việc gửi email
 @xyflow/react*(bản mới chuẩn của reactflow): thư viện rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
 react-modal-sheet: mobile nên thay thế dialog bằng bottom sheet
+Dùng react-share: chuyên tạo button share link vào trang cá nhân của các nền tảng social media như facebook, twitter
+tiny-invariant: log lỗi dựa trên condition
+yup: validate input cho react, giống joi của nodejs
 
 -> react-select*: tạo đủ loại component input
 react-text-mask*: custom input hiển thị
+
+-> react-toastify*: tạo toast notification đẹp
+react-hot-toast*
 
 -> react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
 
@@ -242,11 +247,13 @@ react-burger-menu: tạo animation cho thanh menu dọc thg khi màn hình nhỏ
 *** reactuseanimations-: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
 https://cursify.vercel.app/components => thư viện animate cursor đỉnh
 ***anime.js dùng với react mượt: https://animejs.com/documentation/getting-started/using-with-react
+react-countup*
 
 --> Animation với scroll: 
 react-awesome-reveal: reveal animation
 react-animated-cursor => thư viện tạo animate cursor mỗi khi rê chuột đi đâu
 react-parallax-mouse => thư viện hiệu ứng parallax bằng cách di chuyển chuột
+aos*: lib animation on scroll
 
 
 
