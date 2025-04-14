@@ -115,6 +115,7 @@ export default {
   base: "/", => set base url của ứng dụng
 };
 
+import { defineConfig, transformWithEsbuild } from 'vite'
 export default defineConfig({ 
   plugins: [react(), linaria()],
   server: {
@@ -134,4 +135,14 @@ export default defineConfig({
   build: {
     outDir: 'build', // Thư mục build ra
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis', // Node.js global to browser globalThis
+      },
+      loader: {
+        '.js': 'jsx',
+      }
+    },
+  }
 })

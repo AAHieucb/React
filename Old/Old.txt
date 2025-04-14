@@ -21,6 +21,7 @@ react-helmet
 prop-types*: giúp typecheking và gán default value cho props của 1 component, check props type lúc runtime giảm thiểu lỗi. 
 @craco/craco và craco-less: override webpack config
 Jest: viết test case bằng JS để test cho FE. Nó tìm file test nằm trong thư mục __test__ or file có đuôi là .test.js
+IntroJS là thư viện giúp tạo intro hướng dẫn sử dụng cực mạnh
 
 -> react-transition-group: giúp tạo css animation dễ hơn
 react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới

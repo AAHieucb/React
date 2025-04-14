@@ -8,6 +8,7 @@ React.isValidElement(<ele>)
 VD: Điểm khác biệt là ta xoá đi ptử thứ 8 trong list thì ptử 9 sẽ mang key là 8, ptu 10 sẽ mang key là 9, dẫn đến in sai.
 
 -> HOC (Higher order component): hàm nhận component làm wrapper cho ra 1 component khác => k dùng mà nên biến thành 1 hook
+Lưu ý { children } trong React sẽ k render lại nếu cha render lại mà state props k đổi
 
 -> Automatic Batching React 18
 VD: setTimeout(() => { 
@@ -72,6 +73,7 @@ experimental: {
 Nếu thẻ đó có sự kiện như onClick thì ta có thể lấy mọi thông tin của thẻ đó luôn. VD event.target.innerText
 Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông qua biến
 Đảm bảo hàm chạy sau khi render thì có thể dùng query selector để lấy thẻ
+React 19 cho phép truyền ref là props rồi
 
 -> Dùng const ref = useRef(null); rồi cho vào attribute ref của thẻ => bỏ createRef, thay thế forwardRef
 VD: khi thẻ cha có hàm đổi styles của con của thẻ con, truyền ref vào con như props để refer tới thẻ bên trong con được.
@@ -91,7 +93,7 @@ URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 
 # Tích hợp thư viện => các thư viện 1-2 năm k update cũng nên bỏ 
--> Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Grommet, react-foundation, Primereact, Bulma, materialize-css@next, React Suite, Kendo react (component lạ), radix-ui khó dùng
+-> Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Grommet, react-foundation, Primereact, Bulma, materialize-css@next, React Suite, Kendo react (component lạ), radix-ui khó dùng, theme-ui
 Chakra UI, Bootstrap, mui* v7, Senmatic UI, flowbite
 cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
 Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon* hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
@@ -154,14 +156,23 @@ react-modal-sheet: mobile nên thay thế dialog bằng bottom sheet
 Dùng react-share: chuyên tạo button share link vào trang cá nhân của các nền tảng social media như facebook, twitter
 tiny-invariant: log lỗi dựa trên condition
 yup: validate input cho react, giống joi của nodejs
+react-circular-progressbar: best lib cho loading số dạng hình tròn
+react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
+
+
+-> "postinstall" là lệnh tự chạy sau khi chạy "npm i". Lưu ý postinstall:xxx sẽ k tự chạy, phải tự gọi nhé
+VD kết hợp với npm-run-all* giúp chạy multiscript:
+"scripts": {
+  "postinstall": "run-s postinstall:*",
+  "postinstall:config": "node scripts/initConfig.js",
+  "postinstall:contracts": "yarn --cwd contracts install"
+}
 
 -> react-select*: tạo đủ loại component input
 react-text-mask*: custom input hiển thị
 
 -> react-toastify*: tạo toast notification đẹp
 react-hot-toast*
-
--> react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
 
 -> recharts*: Vẽ đồ thị kiểu học thuật.
 highcharts-react-official highcharts*: tạo graph đẹp, responsive, loading
@@ -200,6 +211,8 @@ ISSUER ID là https://dev-xxxxxxx.okta.com
 Các case còn lại có thể dùng redux or zustand, hoặc xstate/store có nhiều điểm tốt hơn.
 
 ->*** downshift: lib cho auto suggestion
+
+-> open là package giúp mở 1 ứng dụng khác trong máy. VD mở ảnh bằng image view mặc định trong máy, mở vscode, mở 1 ứng dụng bất kỳ.
 
 
 

@@ -1,6 +1,6 @@
 # Xử lý ảnh
 Ưu tiên dùng svg có thể custom style thay vì ảnh tĩnh. Hạn chế ảnh gif.
-Nên lazy loading image khi cần thiết
+Nên lazy loading image khi cần thiết => react-lazy-load-image-component giúp lazy loading và custom hiệu ứng hiện ảnh
 Dùng placeholder hiện đầu tiên thay vì khoảng trắng khi chưa tải ảnh xong. Placeholder có thể là 1 màu xám hoặc 1 ảnh base64 default. Chú ý khi thuộc tính src không tồn tại thì k hiện gì mà cũng k báo lỗi, thì vẫn hiện placeholder.
 Rồi ảnh blur tải trước đè lên. Rồi ảnh thật đè lên blur. Nếu error thì ảnh error đè lên hết. Xử lý với onError, onLoad.
 
@@ -12,7 +12,15 @@ Rồi ảnh blur tải trước đè lên. Rồi ảnh thật đè lên blur. N�
 -> requestIdleCallback: 1 hàm JS đb giúp thực hiện điều gì khi event loop rảnh k có task.
 react-idle-timer*: lib của react giúp dùng requestIdleCallback trong React. VD có thể load ảnh nặng, defer tải data nặng chưa cần dùng ngay.
 
--> react-lazy-load-image-component: giúp lazy loading và custom hiệu ứng hiện ảnh
+->*** browser-image-compression: nén ảnh ngay tại browser => quá hay vì nó ngốn CPU trên máy ngừoi dùng => luôn dùng
+URL: https://imagekit.io/blog/react-image-optimization/
+Đây là 1 package chất lượng vì nó ngốn CPU trên máy của người dùng để giảm tải ảnh, k tốn tài nguyên server. Cho phép dùng webworker để chạy nhanh hơn với config cực kỳ dễ
+
+-> Hiện Image:
+Ảnh k được dùng trong src là relative path trực tiếp mà phải import object từ relative url và cho vào src của <img>. Hoặc dùng url thì phải là url từ server https cụ thể
+css thì relative url trực tiếp ok { background-image: url(./logo.png); }
+Dùng require của nodejs ok: <img src={require("<relativeURL>").default}/>
+Với svg: import { ReactComponent as Logo } from './logo.svg'; rồi dùng <Logo />
 
 
 
@@ -101,7 +109,18 @@ setSearchParams("test", "testvalue", { replace: true }); => nên dùng tham số
 # Dùng React portal
 Giúp render UI nằm ngoài component tree. VD modal, tooltip. Các thư viện và <dialog> toàn dùng portal cho các tính năng đó.
 React có sẵn hàm createPortal trong react-dom để wrap component cho tính năng đó. Cơ chế là dùng JS append DOM element vào 1 thẻ root thôi.
-Lib react-reverse-portal* giúp tạo các cổng chuyển component tới đủ mọi nơi trong dự án trong component tree.
+react-reverse-portal*: portal bth là đưa component trong react tree ra ngoài, lib này đưa component từ bất cứ đâu vào trong react tree.
+react-mosaic-component*: là thư viện tạo widget resize, move thoải mái
+
+-> Thực tế react tạo 1 website mà component đổi vị trí k dễ vì state của nó bị mất khi react unmount r tạo lại component. Để k reset state thì phải là chính component đó khi di chuyển chứ kp render ra 1 component khác.
+VD: {isAbove && <Counter/>} <span>hi</span> {!isAbove && <Counter/>}
+Các giải pháp: 
+- K dùng react nữa
+- Đổi css transform cho component đó
+- Cho state ra ngoài global thay vì để ở từng component Counter
+- Thêm key unique cho mỗi component thì lại ok nhưng chỉ khi các component đó cùng 1 parent.
+- Dùng react-reverse-portal để thực sự di chuyển component đi khắp nơi.
+VD màn hình chính là 1 thẻ, thanh sidebar là component DOM ảo. Mỗi lần drag component từ sidebar vào màn hình chính thì React Portal render component vào thẻ màn hình chính ở vị trí tương ứng. react-reverse-portal đảm bảo nhét 10 component vào InPortal, di chuyển OutPortal thoải mái thì component sẽ di chuyển mà k rerender lại.
 
 
 

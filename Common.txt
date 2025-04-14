@@ -223,5 +223,3 @@ React19 hỗ trợ ssr trực tiếp nhưng thà dùng nextjs hơn.
 Trong HTML thuần ta dùng được export và import như v thì file export phải được script vào file html dưới dạng module nhưng trong React config hết r nên k cần.
 
 
-
-
