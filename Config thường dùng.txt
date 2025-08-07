@@ -6,6 +6,7 @@ axios.get(<url>, {
     "X-Custom-Header": "CustomValue",
   },
   params: { page: 1, limit: 10 },
+  signal: AbortSignal.timeout(3000),
 });
 axios.post(<url>, <body/formdata>, {
   headers: { 
@@ -59,7 +60,7 @@ URL: https://csp-evaluator.withgoogle.com/ => web test website có CSP an toàn 
 
 ---> upgrade-insecure-requests: Khi browser gửi request, trong response trả về trang html chính thì thêm header CSP với giá trị này thì mọi request sau lấy tài nguyên thì browser sẽ tự đổi http thành https. Mọi trang html mà server gửi cho client đều phải thêm header này
 
----> script-src: chỉ định các trang cho phép chạy script với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. VD Thẻ script trong dự án muốn dùng thì phải có thêm trường nonce và giá trị phải có 'self'.
+---> script-src: chỉ định các trang cho phép chạy script với điều kiện rằng script có nonce (một giá trị duy nhất cho mỗi yêu cầu) để ngăn chặn việc chèn script độc hại. VD Thẻ script muốn dùng trong dự án thì phải có thêm trường nonce
 'unsafe-inline' 'unsafe-eval'; => sẽ cản hàm eval và cản inline script
 VD1: Content-Security-Policy: script-src 'self' https://viblo.asia => Mã JS ở trang của ta và trang viblo.asia có thể tải và chạy trong web của ta. Bất kỳ script nào không đến từ 2 nguồn đó sẽ bị chặn k cho thực thi.
 
@@ -116,6 +117,7 @@ export default {
 };
 
 import { defineConfig, transformWithEsbuild } from 'vite'
+import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 export default defineConfig({ 
   plugins: [react(), linaria()],
   server: {
@@ -140,9 +142,14 @@ export default defineConfig({
       define: {
         global: 'globalThis', // Node.js global to browser globalThis
       },
-      loader: {
+      loader: { // Các file .js sẽ được esbuild xử lý như là file JSX.
         '.js': 'jsx',
-      }
+      },
+      plugins: [
+        NodeGlobalsPolyfillPlugin({ // polifill các biến toàn cục của nodejs như process, Buffer
+          buffer: true
+        })
+      ]
     },
   }
 })

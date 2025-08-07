@@ -22,6 +22,8 @@ css thì relative url trực tiếp ok { background-image: url(./logo.png); }
 Dùng require của nodejs ok: <img src={require("<relativeURL>").default}/>
 Với svg: import { ReactComponent as Logo } from './logo.svg'; rồi dùng <Logo />
 
+-> Tối ưu hoá ảnh ở FE sử dụng canvas + webworker => ref tới "AuctionFE"
+
 
 
 # Dùng font chữ

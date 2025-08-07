@@ -34,6 +34,7 @@ Full docs: https://react.dev/learn/react-compiler
 Nó k render lại con nếu cha đổi props klq tới con, mà k cần useMemo component con => bỏ hoàn toàn useCallback, useMemo, React.memo
 Biến const khai báo trong component sẽ k tạo lại sau mỗi lần render trừ khi nó phụ thuộc bién khác và biến đó bị đổi, mà k cần useMemo.
 
+-> Cài đặt
 npx react-compiler-healthcheck@latest => check dự án hiện tại có tương thích với react compiler không.
 
 eslint-plugin-react-compiler => package giúp eslint báo lỗi nếu dùng thư viện or code k tương thích với compiler. Chỉ cần cài và thêm vào eslint config:
@@ -94,7 +95,7 @@ URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 # Tích hợp thư viện => các thư viện 1-2 năm k update cũng nên bỏ 
 -> Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Grommet, react-foundation, Primereact, Bulma, materialize-css@next, React Suite, Kendo react (component lạ), radix-ui khó dùng, theme-ui
-Chakra UI, Bootstrap, mui* v7, Senmatic UI, flowbite
+Chakra UI, Bootstrap, mui* v7, Senmatic UI, flowbite, metroui.
 cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
 Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon* hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
 
@@ -124,7 +125,6 @@ Cài 1 phát r tạo i18n.json là cứ thế dùng thôi
 Date-fns hoặc Luxon => thay thế react-moment, moment-timezone
 lodash*: https://lodash.com/docs/4.17.15 thay thế underscore => Có thể import tree shaking đỡ nặng: npm i lodash.merge
 npm i rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
-react-router-dom v7 => bỏ tanstack router
 
 -> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. Thay thế @welldone-software/why-did-you-render
 Có browser extension, npm package. CDN: <script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js"></script>
@@ -158,7 +158,10 @@ tiny-invariant: log lỗi dựa trên condition
 yup: validate input cho react, giống joi của nodejs
 react-circular-progressbar: best lib cho loading số dạng hình tròn
 react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
-
+react-intersection-observer*
+react-chrono*: tạo timeline component
+react-error-boundary*
+Tiny base*: thư viện JS dùng cả BE và FE để quản lý dữ liệu dạng table như 1 db local. Có tính reactive. 
 
 -> "postinstall" là lệnh tự chạy sau khi chạy "npm i". Lưu ý postinstall:xxx sẽ k tự chạy, phải tự gọi nhé
 VD kết hợp với npm-run-all* giúp chạy multiscript:
@@ -214,6 +217,9 @@ Các case còn lại có thể dùng redux or zustand, hoặc xstate/store có n
 
 -> open là package giúp mở 1 ứng dụng khác trong máy. VD mở ảnh bằng image view mặc định trong máy, mở vscode, mở 1 ứng dụng bất kỳ.
 
+-> react-router-dom v7 => bỏ tanstack router
+Nó có 3 mode framework, data, declarative: https://reactrouter.com/start/modes
+
 
 
 # Pattern tuỳ biến style component
@@ -250,6 +256,8 @@ useLayoutEffect(() => {
 
 *** Để thẻ luôn hiện ở đó, isOpen=true thì gán thêm class để hiện ra kèm transition là được => best practice phổ biến nhất, thư viện chỉ giúp code như v gọn hơn thôi.
 Nếu ta làm kiểu thẻ bth k tồn tại, khi mở mới mount vào DOM thì cần chú ý nó có thể break layout hiện có. VD gap hay grid flex bị sai. Dialog thì k tính vì dùng portal rồi.
+
+--> requestAnimationFrame là hàm JS để cập nhật giao diện (vẽ lại) trong vòng lặp animation tiếp theo của trình duyệt, giúp vẽ animation mượt hơn, tiết kiệm CPU.
 
 -> Animation library: 
 animate.css*: best animation css lib
@@ -347,14 +355,23 @@ Trong redux toolkit cũng có nanoid sinh id ngẫu nhiên
 Chú ý chỉ có 2 case sử dụng, 1 là promise truyền vào từ parent, 2 là promise là hàm import từ bên ngoài. K được dùng trực tiếp fetch trong use vì bị lỗi refetch liên tục k thể fix. Bao với Suspense và ErrorBoundary, sẽ chờ fetch xong => dùng thay thế useEffect khi fetch lần đầu tiên.
 Chú ý phải truyền vào promise, chứ kp call 1 function trả ra promise nó sẽ refetch lại liên tục.
 
--> useTransition: giảm độ ưu tiên của 1 hàm, chỉ chạy và render trong background khi rảnh để k ảnh hưởng performance và nếu có 1 lệnh tương tự thì chạy câu lệnh mới, dừng lệnh cũ luôn => dùng khi đổi state phải xử lý logic nặng bị lag, mà k dùng được useDebounce.
+-> useTransition: giảm độ ưu tiên của 1 hàm, chỉ chạy trong background khi rảnh để k ảnh hưởng performance. Dùng khi xử lý logic nặng mà k dùng được useDebounce, đảm bảo bên ngoài kbh bị lag do hàm gọi trong startTransition.
 Khi code cần xác định phần task nào gây lag cho browser đưa vào startTransition. VD fetch API thực tế k gây lag cho browser thì k cần. VD search 1 chữ r thực hiện filter trên 1000 phần tử r set vào list thì hành động đổi text k cần mà phải dùng startTransition cho hành động filter và setList.
 
 useDeferredValue: tương tự nhưng delay việc update giá trị cho 1 biến. Vd ta gõ input thay đổi biến a và dùng biến a để search list 1000 phần tử. Gõ nhanh thì a đổi ngay và chạy logic. Khi đó ta dùng useDeferredValue để biến a vẫn update realtime nhưng biến aDeferred cho vào hàm search sẽ chỉ update khi k bị lag.
 Việc aDeferred update như nào phụ thuộc vào mức độ bận của main thread, nếu rất bận thì nó càng skip intermediate value nhiều hơn. Tương tự nó k dùng cho callapi mà dùng do lag vì update tuần tự. Chứ call api k lag nhưng ta cần giảm thiểu số lần call tới mức tối thiểu thì dùng debounce tốt hơn.
 
-=> useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance, kể cả khi k đổi state. useDeferredValue dùng khi cần chạy 1 hàm nặng do phụ thuộc vào 1 giá trị được update liên tục.
-=> useTransition có usecase khác là giảm tạo loading state thủ công. Thay vì setLoading true false trước và sau khi call api, thì dùng useTransition có sẵn isPending. optimistics update và pending call api cũng được xử lý với hook useActionState.
+=> useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance, kể cả khi k đổi state. useDeferredValue dùng khi cần chạy logic phụ thuộc vào 1 giá trị được update liên tục, kể cả hàm k nặng nhưng giá trị update nhanh khiến nó lag. 
+useTransition thực hiện trong background và dùng isPending để quản lý tiến độ của task background đó, k cần tạo loading state thủ công. Thay vì setLoading true false trước và sau khi call api, thì dùng useTransition có sẵn isPending. optimistics update và pending call api cũng được xử lý với hook useActionState.
+Dùng standalone startTransition nếu gọi 1 hàm bất kỳ mà k trong react comp hay hook. 
+startTransition có thể lồng trong startTransition khác, 2 hàm đó đều chạy trong background và k block main thread thôi, chưa hiểu tại sao lại cần.
+URL: https://react.dev/reference/react/useTransition#examples
+
+--> SS để xử lý lỗi react:
+Nếu ta call 10 lần 1 hàm gọi api và update state bằng cách ấn nút. Ấn nhanh nút 10 lần, nó sẽ k đảm bảo state cuối chính là lần cuối ấn. Tệ hơn là state sẽ nhảy loạn xạ mỗi khi 1 lần fetch xong và set giá trị. Tự custom loading vẫn k được.
+Để xử lý ta có thể chơi kiểu ấn 1 lần là loading disable đến khi fetch xong mới cho ấn tiếp. Cách này chưa ok vì delay UI.
+Nếu ta dùng useDebounce, thực tế nó xử lý gần như là ổn. Rất hiếm có case call api có delay giữa các lần mà lần sau vẫn chậm hơn lần trước đó.
+Dùng useTransition thì khác với bth ở chỗ, nó cũng k skip việc chạy nhiều hàm đè nhau nhưng khi render sẽ chỉ render lần cuối cùng, đảm bảo các lệnh call trước đó k bị render nhảy như khi tự custom loading. Chỉ cần check isPending true thì hiện loading là được. Nhưng nó k xử lý case call api sau lại nhanh hơn api call trước vẫn có thể bị sai kết quả.
 
 -> useOptimistic dùng khi biết khá chắc lệnh call sẽ success, fail tự undo
 URL: https://www.youtube.com/watch?v=VBlSe8tvg4U => useOptimistic khi người dùng update và API chưa thành công đã tắt page, có thể cản lại với window event "beforeunload"
@@ -371,7 +388,7 @@ useToggle, useTimeout, useUpdateEffect, useArray, usePrevious, useStateWithHisto
 Có thể lấy vị trí địa lý, thêm script js CDN được
 --> useStorage giúp subscribe sự thay đổi của localStorage. Browser cũng có sự kiện storage phát ra khi nó đổi giá trị
 
--> Lib @mantine/hooks, aHooks, usehooks-ts* cung hàng loạt custom hook.
+-> Lib @mantine/hooks, aHooks, usehooks-ts*, react-use* cung hàng loạt custom hook.
 useMediaQuery useClickOutside useMousePosition useClipboard usePagination useDevice
 useIntersection check xem 1 component có visible toàn bộ trên màn hình không
 useScrollLock khóa và mở khóa thanh scrollbar
@@ -430,4 +447,5 @@ Các component klq đến nhau nên chia ra để state 1 comp đổi sẽ k rer
 VD 2 TH: 1 là <Search> <Hiển thị> tách 2 component; 2 là <Search> chứa <Hiển thị> ở cuối.
 => C1 chia ra component con nhưng muốn dùng data của <Search> trong <Hiển thị> thì phải dùng props truyền từ component cha truyền cho con k tốt. Theo OOP thì <Hiển thị> không nên nằm trong <Search> là đúng
 VD: Ấn 1 button hiện ra dialog thì nên để button đó và dialog cùng là 1 component chứ k tách 2 file riêng
+
 
