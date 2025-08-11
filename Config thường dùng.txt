@@ -1,61 +1,31 @@
--> axios.defaults.withCredentials = true // Phạm vi global
-axios.get(<url>, {
-  withCredentials: true, // axios gửi kèm credentials như cookies, sessions, phải có nếu muốn truy cập. Phạm vi 1 request
-  timeout: 5000, 
-  headers: {
-    "X-Custom-Header": "CustomValue",
-  },
-  params: { page: 1, limit: 10 },
-  signal: AbortSignal.timeout(3000),
-});
-axios.post(<url>, <body/formdata>, {
-  headers: { 
-    "X-Custom-Header": "CustomValue" 
-  }
-})
-const client = axios.create({
-  withCredentials: true, // phạm vi 1 instance
-  baseURL: "https://backend.com",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-    "X-Custom-Header": "CustomValue",
-  },
-  params: { // default query params
-    page: 1
-  },
-});
-
-
-
 -> Server tự set header bảo mật k dùng helmet:
-  req.nonce = crypto.randomBytes(64).toString("base64");
-  res.setHeader('X-UA-Compatible', 'IE=edge,chrome=1'); //* Buộc browser dùng chế độ hiển thị mới nhất, nếu có engine của chrome sẽ ưu tiên dùng hơn IE.
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload'); //*
-  res.setHeader('X-XSS-Protection', '1; mode=block'); //*
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN'); 
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin'); //*
-  res.setHeader('X-CONTENT-TYPE-OPTIONS', 'nosniff'); //*
-  res.setHeader('Permissions-Policy', " midi 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; usb 'none'; wake-lock 'none'; encrypted-media 'none'; display-capture 'none'; battery 'none'; accelerometer 'none'; ambient-light-sensor 'none'");
-  res.setHeader('P3P', 'CP=NOI DSP COR NID ADM DEV PSA OUR IND UNI PUR COM NAV INT STA'); // Chuẩn bảo mật cũ hiện k còn được dùng
-  res.setHeader("X-Download-Options", "noopen"); //* đi kèm với header Content-Disposition: attachment thì khi user tải file về sẽ thiết lập là k mở file luôn
-  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
-  res.setHeader( 'Content-Security-Policy', //*
-    "upgrade-insecure-requests; " +
-    "default-src 'none'; " +
-    "frame-ancestors 'self'; " + 
-    "frame-src 'self' https://www.youtube.com; " + 
-    "base-uri 'none'; " + // Ngăn việc sử dụng thẻ <base> trong tài liệu, giảm thiểu rủi ro từ các cuộc tấn công.
-    "object-src 'none'; " + // Ngăn việc sử dụng thẻ <object>, <embed>, và <applet>, giúp bảo vệ khỏi các lỗ hổng liên quan đến các đối tượng nhúng.
-    "img-src data: 'self' https://* *.aptrinsic.com storage.googleapis.com; " + // Cho phép tải hình ảnh từ cùng một nguồn, từ các miền cụ thể.
-    "form-action 'self' *.online15.net " + // Chỉ định các nguồn mà biểu mẫu có thể gửi dữ liệu đến.
-    "script-src 'self'" + ' \'nonce-' + req.nonce + '\'' + " *.online15.net *.aptrinsic.com; " +
-    "style-src 'self' 'unsafe-inline' fonts.googleapis.com *.aptrinsic.com; " +
-    "font-src data: 'self' *.cdn.office.net fonts.gstatic.com; " +
-    "connect-src *.online15.net *.aptrinsic.com 'self'" // Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
-  );
+req.nonce = crypto.randomBytes(64).toString("base64");
+res.setHeader('X-UA-Compatible', 'IE=edge,chrome=1'); //* Buộc browser dùng chế độ hiển thị mới nhất, nếu có engine của chrome sẽ ưu tiên dùng hơn IE.
+res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload'); //*
+res.setHeader('X-XSS-Protection', '1; mode=block'); //*
+res.setHeader('X-Frame-Options', 'SAMEORIGIN'); 
+res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin'); //*
+res.setHeader('X-CONTENT-TYPE-OPTIONS', 'nosniff'); //*
+res.setHeader('Permissions-Policy', " midi 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; usb 'none'; wake-lock 'none'; encrypted-media 'none'; display-capture 'none'; battery 'none'; accelerometer 'none'; ambient-light-sensor 'none'");
+res.setHeader('P3P', 'CP=NOI DSP COR NID ADM DEV PSA OUR IND UNI PUR COM NAV INT STA'); // Chuẩn bảo mật cũ hiện k còn được dùng
+res.setHeader("X-Download-Options", "noopen"); //* đi kèm với header Content-Disposition: attachment thì khi user tải file về sẽ thiết lập là k mở file luôn
+res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+res.setHeader( 'Content-Security-Policy', //*
+  "upgrade-insecure-requests; " +
+  "default-src 'none'; " +
+  "frame-ancestors 'self'; " + 
+  "frame-src 'self' https://www.youtube.com; " + 
+  "base-uri 'none'; " + // Ngăn việc sử dụng thẻ <base> trong tài liệu, giảm thiểu rủi ro từ các cuộc tấn công.
+  "object-src 'none'; " + // Ngăn việc sử dụng thẻ <object>, <embed>, và <applet>, giúp bảo vệ khỏi các lỗ hổng liên quan đến các đối tượng nhúng.
+  "img-src data: 'self' https://* *.aptrinsic.com storage.googleapis.com; " + // Cho phép tải hình ảnh từ cùng một nguồn, từ các miền cụ thể.
+  "form-action 'self' *.online15.net " + // Chỉ định các nguồn mà biểu mẫu có thể gửi dữ liệu đến.
+  "script-src 'self'" + ' \'nonce-' + req.nonce + '\'' + " *.online15.net *.aptrinsic.com; " +
+  "style-src 'self' 'unsafe-inline' fonts.googleapis.com *.aptrinsic.com; " +
+  "font-src data: 'self' *.cdn.office.net fonts.gstatic.com; " +
+  "connect-src *.online15.net *.aptrinsic.com 'self'" // Chỉ định các nguồn mà trang có thể thực hiện các kết nối (như WebSocket, AJAX).
+);
 
---> Content-Security-Policy(CSP) thay thế rất nhiều header cũ như X-Frame-Options, X-XSS-Protection là 2 cấu hình không được bật theo mặc định. Nó chặn hàng loạt cuộc tấn công bao bằng cách kiểm soát các nguồn tài nguyên mà trang web có thể tải và chạy.
+--> Content-Security-Policy(CSP) thay thế rất nhiều header cũ như X-Frame-Options, X-XSS-Protection là 2 cấu hình không được bật theo mặc định. Nó chặn hàng loạt cuộc tấn công bao bằng cách kiểm soát các nguồn tài nguyên mà trang web có thể tải và chạy. Nếu để mặc định k cấu hình gì, nó cho phép mọi thứ đến từ mọi nguồn.
 URL: https://csp-evaluator.withgoogle.com/ => web test website có CSP an toàn không
 
 ---> upgrade-insecure-requests: Khi browser gửi request, trong response trả về trang html chính thì thêm header CSP với giá trị này thì mọi request sau lấy tài nguyên thì browser sẽ tự đổi http thành https. Mọi trang html mà server gửi cho client đều phải thêm header này
@@ -96,8 +66,38 @@ Nó dùng trong header của response, không phải request. Nếu server bị 
 --> X-Permitted-Cross-Domain-Policies: none => Các header dùng cho cross domain request sẽ bị cấm. Tức là trình duyệt sẽ không thực hiện bất kỳ loại truy cập nào từ các tên miền khác, ngay cả khi chính sách cross-domain policy khác được thiết lập. Điều này cũng ảnh hưởng đến tính tương thích web của ta với các web khác.
 
 --> Referrer-Policy: khi trình duyệt gửi thông tin điều hướng giữa các trang
-same-origin => Khi gửi request đến miền khác, thông tin về nguồn gốc của yêu cầu (referer) sẽ k được gửi kèm để miền khác kb yêu cầu đến từ web của ta.
-strict-origin-when-cross-origin => cùng origin thì gửi đầy đủ url trong referer, khác origin thì chỉ gửi origin moethod + domain + port mà k có đường dẫn chi tiét
+same-origin => same-origin thì gửi full url. Request đến miền khác thì k gửi kèm url origin gì cả.
+strict-origin-when-cross-origin => same-origin thì gửi full url, khác origin thì chỉ gửi origin method + domain + port mà k có đường dẫn chi tiét
+
+
+
+-> axios.defaults.withCredentials = true // Phạm vi global
+axios.get(<url>, {
+  withCredentials: true, // axios gửi kèm credentials như cookies, sessions, phải có nếu muốn truy cập. Phạm vi 1 request
+  timeout: 5000, 
+  headers: {
+    "X-Custom-Header": "CustomValue",
+  },
+  params: { page: 1, limit: 10 },
+  signal: AbortSignal.timeout(3000),
+});
+axios.post(<url>, <body/formdata>, {
+  headers: { 
+    "X-Custom-Header": "CustomValue" 
+  }
+})
+const client = axios.create({
+  withCredentials: true, // phạm vi 1 instance
+  baseURL: "https://backend.com",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+    "X-Custom-Header": "CustomValue",
+  },
+  params: { // default query params
+    page: 1
+  },
+});
 
 
 
