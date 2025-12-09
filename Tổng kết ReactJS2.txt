@@ -1,6 +1,6 @@
 # Xử lý ảnh
 Ưu tiên dùng svg có thể custom style thay vì ảnh tĩnh. Hạn chế ảnh gif.
-Nên lazy loading image khi cần thiết => react-lazy-load-image-component giúp lazy loading và custom hiệu ứng hiện ảnh
+Nên lazy loading image khi cần thiết => react-lazy-load-image-component giúp lazy loading, onError và custom hiệu ứng hiện ảnh
 Dùng placeholder hiện đầu tiên thay vì khoảng trắng khi chưa tải ảnh xong. Placeholder có thể là 1 màu xám hoặc 1 ảnh base64 default. Chú ý khi thuộc tính src không tồn tại thì k hiện gì mà cũng k báo lỗi, thì vẫn hiện placeholder.
 Rồi ảnh blur tải trước đè lên. Rồi ảnh thật đè lên blur. Nếu error thì ảnh error đè lên hết. Xử lý với onError, onLoad.
 
@@ -105,6 +105,18 @@ Giải pháp: cần query tới database đúng tại vị trí lần trước �
 -> Best practice lưu filter search là trên url thay vì react state. react-router cung sẵn useSearchParams dùng rất tiện:
 const [searchParams, setSearchParams] = useSearchParams();
 setSearchParams("test", "testvalue", { replace: true }); => nên dùng tham số 3 giúp đổi url params k lưu thêm vào history stack để tránh khó back lại
+
+-> Vấn đề phân trang list lớn: Nếu data lớn, việc nhảy tới 1 page lớn cụ thể sẽ bị chậm, k có cách xử lý.
+- Nếu biết trước data có thể rất lớn, thiết kế chỉ cho load next page chứ k cho nhảy tới page chỉ định
+- Nếu buộc phải làm thì cần xử lý riêng case này bằng loading và cho background thread riêng chạy job nặng, cache.
+
+Vấn đề dù UI chỉ cho load next page. VD có 1M data, phân trang 100, user cố tình dùng POSTMAN liên tục query DDoS page 10000 khiến db quá tải.
+- Chuyển sang cursor pagination theo primary key. 
+VD: SELECT * FROM table WHERE id > 120 ORDER BY id LIMIT 20; Response trả về last id truyền vào request sau.
+Nó giải quyết luôn vấn đề xử lý batch data, khi filter lấy từng page và update data của trường được filter sẽ bị sai data.
+- Nếu ngừoi dùng kiểm soát orderby thì vẫn dùng được. VD order by name, request trước trả về "nextCursor": { "name": "Steven", "id": 1234 } thì:
+SELECT * FROM users WHERE (name > 'Steven' OR (name = 'Steven' AND id > 1234)) ORDER BY name, id LIMIT 20;
+- Bắt buộc dùng index cho các field cần sort và đảm bảo nó dùng index đó.
 
 
 

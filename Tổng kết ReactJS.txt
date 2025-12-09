@@ -108,6 +108,17 @@ https://syntaxui.com/components
 https://www.hover.dev/components/
 https://animata.design/docs
 
+Lib animated components cực mạnh: 
+Magic UI
+https://ui.aceternity.com/
+https://www.ui-layouts.com/
+https://www.cult-ui.com/
+https://www.eldoraui.site/
+https://syntaxui.com/
+https://www.hover.dev/
+https://animata.design/
+gsap
+
 Bit Cloud: Là lib UI của bit.dev, cài nó thì dùng được thập cẩm component của nhiều thư viện khác nhau, tái sử dụng và chia sẻ giữa các dự án.
 Search component trên bitcloud, ấn từng mục của các thư viện UI khác nhau. Nhưng trước đó phải cài bit trong dự án, nó sẽ import dưới dạng file cả dự án component vào và ta có thể chỉnh sửa tùy ý. Sau khi lấy components về rồi copy vào src/components để dùng.
 react-rainbow-component*: Lib UI component có sẵn nhiều component lạ, nên thường dùng kết hợp bit cloud để tối ưu sức mạnh
@@ -220,6 +231,8 @@ Các case còn lại có thể dùng redux or zustand, hoặc xstate/store có n
 -> react-router-dom v7 => bỏ tanstack router
 Nó có 3 mode framework, data, declarative: https://reactrouter.com/start/modes
 
+-> elementos: thư viện reactive rất mạnh nếu component có quá nhiều state phụ thuộc phức tạp vào nhau thì có thể dùng kèm cho react
+
 
 
 # Pattern tuỳ biến style component
@@ -262,13 +275,15 @@ Nếu ta làm kiểu thẻ bth k tồn tại, khi mở mới mount vào DOM thì
 -> Animation library: 
 animate.css*: best animation css lib
 react-spring*: tạo custom animation dưới dạng react hook. URL: https://www.joshwcomeau.com/react/boop
-framer-motion*: animation được cho cả svg path
+framer-motion*: animation được cho cả svg path. useScroll, useTransform dùng cho parallax basic. URL: https://www.youtube.com/watch?v=29UWA-GdA7k => Full Project react unplash figma framer-motion parallax
 react-burger-menu: tạo animation cho thanh menu dọc thg khi màn hình nhỏ
 @use-gesture: animation mạnh dựa vào tương tác của người dùng.
 *** reactuseanimations-: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
 https://cursify.vercel.app/components => thư viện animate cursor đỉnh
 ***anime.js dùng với react mượt: https://animejs.com/documentation/getting-started/using-with-react
 react-countup*
+@dnd-kit/core tạo drag animation => ref tới trava lending pool
+react-grid-layout: tạo grid draggable extendable items
 
 --> Animation với scroll: 
 react-awesome-reveal: reveal animation
@@ -388,7 +403,7 @@ useToggle, useTimeout, useUpdateEffect, useArray, usePrevious, useStateWithHisto
 Có thể lấy vị trí địa lý, thêm script js CDN được
 --> useStorage giúp subscribe sự thay đổi của localStorage. Browser cũng có sự kiện storage phát ra khi nó đổi giá trị
 
--> Lib @mantine/hooks, aHooks, usehooks-ts*, react-use* cung hàng loạt custom hook.
+-> Lib @mantine/hooks, aHooks, usehooks-ts*, @uidotdev/usehooks* manh nhất, react-use* cung hàng loạt custom hook.
 useMediaQuery useClickOutside useMousePosition useClipboard usePagination useDevice
 useIntersection check xem 1 component có visible toàn bộ trên màn hình không
 useScrollLock khóa và mở khóa thanh scrollbar
@@ -401,6 +416,15 @@ Dùng web worker để: cache offline, push notification, cài web như 1 app tr
 Tuỳ ý custom cache offline cho routing, assets, revalidate.
 URL: https://create-react-app.dev/docs/making-a-progressive-web-app/
 VD có template trên git "cra-template-pwa", mở lên browser 1 lần r tắt mạng đi, refresh trang thấy web vẫn chạy bth, tab application có Cache Storage.
+
+# Progressive enhancement
+Là 1 pp phát triển website bắt đầu cơ bản trước với content thiết yếu. Rồi nâng cấp dần như thêm css, js cho những người sử dụng trình duyệt hiện đại hơn dùng được (nếu hỗ trợ các tính năng đó). Còn những người dùng trình duyệt cũ vẫn đầy đủ tính năng basic.
+Phải ưu tiên dùng HTML và CSS thuần để đảm bảo sự tương thích. JS dược dùng để thêm tính năng nâng cao, nhưng nếu JS k khả dụng or bị tắt thì vẫn k gián đoạn trải nghiệm cơ bản.
+=> Các thư viện có tính chất progressive enhancement phải có các tính chất đó. Nếu không nó có thể không tương thích với một số trình duyệt cũ hoặc khi k hỗ trợ JS.
+
+
+
+
 
 
 

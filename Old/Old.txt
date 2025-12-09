@@ -1,4 +1,3 @@
-
 # Lib k dùng
 effect: hỗ trợ code Typescript cực mạnh nên dùng nếu làm dự án Typescript yêu cầu tính chặt chẽ cao. Nó làm mọi thứ dễ dàng và dễ hiểu hơn. 
 shoelace: thư viện hỗ trợ tạo web components, dùng shadow DOM cách ly không conflict với bất cứ code css js nào, tích hợp vào mọi dự án đều tương thích.
@@ -13,7 +12,6 @@ react-infinite-scroll-component: tính năng scroll đến cuối sẽ fetch ti�
 webpack-bundle-analyzer: tool show trực quan phần nào của ứng dụng chiếm nhiều dung lượng nhất
 proton-native: tool code React nhưng sinh ra ứng dụng desktop. Ứng dụng được compiled sang native platform code nên thực sự là native
 react-trend: vẽ đường line
-react-grid-layout: tạo grid draggable items
 slick-carousel: tạo carousel slider
 @ajna/pagination: cung hook chuyên dùng cho phân trang.
 react-infinite-scroller: scroll to load more
@@ -355,5 +353,20 @@ Khi cần thống kê thì làm API từ server riêng, server này sẽ tự fe
 - Nếu data cần update theo thời gian thực thì viết subscribe sự kiện, bắt event mất kết nối thì tự kết nối lại
 - Nếu data lớn và ta cần lấy lại tất cả từ block đầu tiên đến hiện tại và tiếp tục bắt thì có thể dùng The Graph hoặc tạo 1 server tương tự
 - Nếu data đơn giản thì gọi trực tiép vàp contract hoặc tìm API bên thứ 3.
+
+
+# Other
+-> Lỗi npm node-gyp trong window: Khi cài 1 package sẽ biên dịch package đó. VD cài truffle thì máy phải có python và C mới npm i được và phải cài đúng phiên bản. Điều này rất khó nếu như ta cài thủ công python và C++ không rõ phiên bản nào hỗ trợ chuẩn, xong còn phải thêm environment var.
+=> Fix với powershell quyền admin: npm i -g --production windows-build-tools => Tự cài các tool hỗ trợ mặc định trong window là python và C++, -g để thêm env var luôn
+
+-> Lỗi: This site can’t provide a secure connection. Localhost sent an invalid response => do giao thức HSTS yêu cầu mọi kết nối tới web phải được mã hóa bằng HTTPS.
+=> Fix trên chrome thì vào chrome://net-internals/#hsts => trong Delete domain security policies gõ localhost là xong
+=> Fix trên edge tương tự vào: edge://net-internals/#hsts
+
+-> Lỗi: npm run build dự án react ra file index.html nhưng khi vào chỉ có 1 trang trắng vì config build static file vào path "/"
+=> Fix: chỉ cần đảm bảo index.html và static file cùng folder, thêm vào package json "homepage":"." để có các file static và index.html cùng trong thư mục hiện tại
+VD: custom "homepage": "./test", thì nhét thư mục static vào folder test cùng cấp là lại chạy được
+
+-> ReactDOMServer dùng cho SSR có hàm render biến tất cả component react thành thẻ html dưới dạng string r nhét vào res.write("") gửi cho client, còn có hàm hydrate để dùng trong TH server gửi lại html tĩnh thì client React sẽ hydrate => k dùng mà dùng nextjs
 
 

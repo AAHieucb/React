@@ -1,4 +1,4 @@
--> Server tự set header bảo mật k dùng helmet:
+-> Tự set header bảo mật cho server k dùng helmet:
 req.nonce = crypto.randomBytes(64).toString("base64");
 res.setHeader('X-UA-Compatible', 'IE=edge,chrome=1'); //* Buộc browser dùng chế độ hiển thị mới nhất, nếu có engine của chrome sẽ ưu tiên dùng hơn IE.
 res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload'); //*
@@ -34,7 +34,7 @@ URL: https://csp-evaluator.withgoogle.com/ => web test website có CSP an toàn 
 'unsafe-inline' 'unsafe-eval'; => sẽ cản hàm eval và cản inline script
 VD1: Content-Security-Policy: script-src 'self' https://viblo.asia => Mã JS ở trang của ta và trang viblo.asia có thể tải và chạy trong web của ta. Bất kỳ script nào không đến từ 2 nguồn đó sẽ bị chặn k cho thực thi.
 
----> frame-ancestors: Chỉ định các nguồn mà trang ngày có thể được nhúng vào iframe.
+---> frame-ancestors: Chỉ định các nguồn mà trang này có thể được nhúng vào iframe.
 frame-src: Chỉ định các nguồn mà trang này có thể nhúng các trang nào khác vào.
 Còn có worker-src để kiểm soát nguồn của các loại worker, child-src là cả worker và iframe tức hợp của tất cả.
 
