@@ -1,92 +1,109 @@
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { error: null, errorInfo: null };
+    }
+    
+    componentDidCatch(error, errorInfo) {
+        console.log("Error: ", error);
+        console.log("ErrorInfo: ", errorInfo);
+        this.setState({
+            error: error, 
+            errorInfo: errorInfo
+        })
+    } // componentDidCatch có error throw ra và info là 1 object có 1 key là componentStack chứa thông tin về component phát ra cái error đó
+    
+    render() {
+        if (this.state.errorInfo) {
+            return (
+                <div>
+                    <h2>Something went wrong.</h2>
+                    <details style={{ whiteSpace: 'pre-wrap' }}>
+                        <summary>Mặc định k có summary là Details</summary>
+                        {this.state.error && this.state.error.toString()}
+                        <br />
+                        {this.state.errorInfo.componentStack}
+                    </details>
+                </div>
+            );
+        }
+        return this.props.children;
+    }  
+}
+
 class ComponentLifeCycle extends React.Component {
     constructor(props) {
         super(props);
-        this.now = new Date();
-        // Muốn dùng this trong các hàm thì phải bind
         this.state = {
-            count: 1 + this.props.step,
-            hasError: false,
-            currentTime: this.now
+            count: this.props.step,
         };
-        console.log(`Constructor: state ${this.state} and props ${this.props}`);
-        console.log(this.state); console.log(this.props);
     };
 
-    static getDerivedStateFromProps = (nextprops, prevstate) => {
-        console.log(`getDerivedStateFromProps: nextProps ${nextprops} and prevState ${prevstate}`);
-        console.log(nextprops); console.log(prevstate);
-        console.log(this);
-        // Hàm nàyk truy cập đc this và k bind đc nên ta k dùng this để lấy state đc mà chỉ dùng đc đối sô nó truyền vào
+    static getDerivedStateFromProps(nextprops, prevstate){
+        console.log("getDerivedStateFromProps");
         let max = 10;
         if(nextprops.step < max)
-            console.log("Hello");
+            console.log("Props: ", nextprops, " ;State: ", prevstate);
     }
 
-    countFnc = () => {
-        console.log("CountFunc");
-        this.setState({
-            count: this.state.count + 1,
-        });
-    };
     componentDidMount() {
         console.log("componentDidMount");
-        this.counterID = setInterval(() => this.countFnc(), 1000);
-        console.log(this);
     };
 
-    shouldComponentUpdate(nextProps, nextState) { // Truy cập đc vào this
-        console.log(`shouldComponentUpdate: nextProps ${nextProps} and nextState ${nextState}`);
-        console.log(nextProps); console.log(nextState);
-        console.log(this);
+    shouldComponentUpdate(nextProps, nextState) {
+        console.log("shouldComponentUpdate");
         return true;
     }
 
-    // Tại thời điểm này ta nhìn thấy trên giao diện r nhưng mô hình DOM bên trong chưa cập nhập
     getSnapshotBeforeUpdate(prevProps, prevState){
-        console.log(`getSnapBeforeUpdate: prevProps ${prevProps} and prevState ${prevState}`);
-        console.log(prevProps);console.log(prevState);
-        console.log(this);
+        console.log("getSnapBeforeUpdate");
+        console.log("prevProps: ", prevProps, " ;prevState: ", prevState);
     }
 
-    // Mô hình DOM đã cập nhập
     componentDidUpdate(prevProps, prevState) {
-        console.log(`componentDidUpdate: prevProps ${prevProps} and prevState ${prevState}`);
-        console.log(prevProps);console.log(prevState);
-        console.log("After is this: ", this.props, ": ", this.state)
-        if (this.state.count === 5) {
-            ReactDOM.unmountComponentAtNode(document.getElementById('LifeCycleWithError'));
-        }
-        if(this.state.count === 10)
-        {
-            this.setState({
-                count: this.state.count + 1,
-                hasError: true
-            })
-        }
-        if(this.state.hasError){
-            clearInterval(this.counterID);
+        console.log("componentDidUpdate");
+        console.log("Prev: ", prevProps, ": ", prevState)
+        console.log("After: ", this.props, ": ", this.state)
+        if (this.state.count === 10) {
+            ReactDOM.unmountComponentAtNode(document.getElementById('componentLifeCycle'));
         }
     };
     
-    componentWillUnmount() { // Truy cập đc vào this
+    componentWillUnmount() {
         console.log("componentWillUnmount");
-        clearInterval(this.counterID);
-        console.log(this);
     };
 
+    handleClick = () => {
+        this.setState({
+            count: this.state.count + 1
+        })
+    }
+
     render() {
-        console.log("Render: ", this.state.count)
-        if(this.state.hasError)
-            return (
-                <h1>Something wrong</h1>
-            )
-        else
-            return (
-                <h2>{this.state.count}</h2>
-        )
+        if(this.state.count === 5){
+            throw new Error('Crash!');
+        }
+        return <h1 onClick={this.handleClick}>{this.state.count}</h1>;
     };
 };
 ComponentLifeCycle.defaultProps = {
     step: 2
 }
-ReactDOM.render( <ComponentLifeCycle />, document.getElementById('LifeCycleWithError') );
+
+function App() {
+    return (
+        <div>
+            <ErrorBoundary>
+                <p>These two counters are inside the same error boundary. If one crashes, the error boundary will replace both of them.</p>
+                <ComponentLifeCycle />
+                <ComponentLifeCycle />
+            </ErrorBoundary>
+            <hr />
+            <p>These two counters are each inside of their own error boundary. So if one crashes, the other is not affected.</p>
+            <ErrorBoundary><ComponentLifeCycle /></ErrorBoundary>
+            <ErrorBoundary><ComponentLifeCycle /></ErrorBoundary>
+        </div>
+    );
+}
+
+ReactDOM.render( <App />, document.getElementById('LifeCycleWithError') );

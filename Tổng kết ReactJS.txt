@@ -1,40 +1,27 @@
-# Basic
-npx create-vite@latest => thay thế hoàn toàn CRA deprecated
-
--> Compiler sẽ chuyển từ JSX syntax sang JS bằng babel. JSX "label for" đổi sang "label htmlFor" => Tổng hợp: https://reactjs.org/docs/dom-elements.html
-React.isValidElement(<ele>)
-
--> Dùng list buộc phải có key unique, nếu k khi thay đổi phần tử sẽ bị sai. Nếu k đổi thì dùng index làm key cũng được.
-VD: Điểm khác biệt là ta xoá đi ptử thứ 8 trong list thì ptử 9 sẽ mang key là 8, ptu 10 sẽ mang key là 9, dẫn đến in sai.
-
--> HOC (Higher order component): hàm nhận component làm wrapper cho ra 1 component khác => k dùng mà nên biến thành 1 hook
-Lưu ý { children } trong React sẽ k render lại nếu cha render lại mà state props k đổi
-
--> Automatic Batching React 18
-VD: setTimeout(() => { 
-  setSize((oldSize) => oldSize + 1); setOpen((oldOpen) => !oldOpen); // state đổi liên tiếp sẽ tối ưu gom lại và render 1 lần thôi
-}, 1000);
-=> Đề phòng người dùng k muốn batching, nó sinh ra hàm flushSync để xem có update DOM hay k
-function handleSubmit() {
-  flushSync(() => { setSize((oldSize) => oldSize + 1); }); // React has updated the DOM by now
-  flushSync(() => { setOpen((oldOpen) => !oldOpen); }); // React has updated the DOM by now
-}
-
--> Dùng biến môi trường: có thể chia file .env, .env.production, .env.staging cho từng loại môi trường khác nhau
-Có sẵn như CRA (REACT_) hay Vite (VITE_), hoặc dùng cross-env, dotenv.
-Cũng có thể custom với webpack bằng lib dotenv-webpack, VD đổi k dùng tên file là .env nữa
-
--> Responsive: Cách tốt nhất là tạo hook useDevice => thay vì dùng lib react-device-detect
-Kết hợp @media, @container, responsive với grid flex như html thuần. Dùng theo lib UI nếu có.
+# ReactJS
+npx create-vite@latest
 
 
 
-# Dùng react compiler:
+# Dùng biến môi trường
+Vite hỗ trợ sẵn biến có tiền tố VITE_, biến k là secret và bị lộ ở FE.
+Có thể kèm cross-env để dùng biến môi trường trong command chạy ở mọi OS.
+
+-> .env dùng chung mọi mode
+.env.local y hệt nhưng ưu tiên hơn .env
+.env.[mode] như .env.development, .env.production chỉ load khi ở mode tương ứng => VD vite --mode production, vite default là development
+.env.[mode].local y hệt nhưng ưu tiên hơn .env.[mode]
+
+
+
+# React compiler
 Full docs: https://react.dev/learn/react-compiler
 Nó k render lại con nếu cha đổi props klq tới con, mà k cần useMemo component con => bỏ hoàn toàn useCallback, useMemo, React.memo
 Biến const khai báo trong component sẽ k tạo lại sau mỗi lần render trừ khi nó phụ thuộc bién khác và biến đó bị đổi, mà k cần useMemo.
 
--> Cài đặt
+-> Cài đặt: 
+create-vite@latest có sẵn react compiler rồi, check file config sẽ có option babel-plugin-react-compiler
+
 npx react-compiler-healthcheck@latest => check dự án hiện tại có tương thích với react compiler không.
 
 eslint-plugin-react-compiler => package giúp eslint báo lỗi nếu dùng thư viện or code k tương thích với compiler. Chỉ cần cài và thêm vào eslint config:
@@ -50,7 +37,7 @@ export default [
   },
 ]
 
-Nếu dùng vite phải thêm babel-plugin-react-compiler@beta và thêm vào vite config:
+Option trong file config của vite:
 plugins: [
   react({
     babel: {
@@ -61,7 +48,7 @@ plugins: [
   })
 ]
 K được dùng swc version của react trong vite mà phải dùng normal version.
---> { compilationMode: "annotation" } chỉ có tác dụng với các component sử dụng "use memo" bên trong, k có thì áp dụng mọi component
+{ compilationMode: "annotation" } chỉ có tác dụng với các component sử dụng "use memo" bên trong, k có thì áp dụng mọi component
 
 Trong nextjs, cài babel-plugin-react-compiler và thêm vào next config: 
 experimental: {
@@ -70,17 +57,347 @@ experimental: {
 
 
 
+# Dùng font chữ
+Cài font lẻ: yarn add @fontsource/roboto; import "@fontsource/roboto"; => dùng với font-family: "Roboto"
+
+Thêm google font API CDN trong public/index.html, font tĩnh phải link cả các font-size và font-weight mới set được. 
+VD: <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;300;400;600&display=swap" rel="stylesheet"> => Set được font-weight: 200, 300, 400, 600. Các size khác sẽ k có tác dụng, hoặc đổi qua variable font.
+
+Import font file trực tiép vào rồi định nghĩa trong file css với @font-face
+
+
+
+#*** Bản chất code React chuẩn
+- Mọi xử lý logic trong component tái sử dụng hết vào custom hook. Nếu gọi nhiều hàm logic lồng nhau từ base, cứ viết custom hook lồng nhau liên tục cho đến hook base.
+
+- Bản chất state của React với case đồng hồ đếm ngược useEffect:
+Khi dùng useEffect và định nghĩa 1 hàm bên trong (kể cả là hàm const hay hàm trong setInterval), hàm đó là cố định giống useCallback, các tham số cũng là cố định và chỉ khởi tạo lại khi useEffect chạy lại tức dependencies đổi.
+
+- Mọi hàm gọi trong useEffect đều phải được memoiz và đổi khi các biến trong hàm đổi. React compiler đã làm sẵn và deprecate useCallback, k cần viết dependecy hàm trong useEffect nữa.
+
+- 1 pages fetch lại data, cách trigger 1 pages khác ở xa cũng fetch lại data:
+Có thể thiết kế react context or redux cung ra hàm refetchData, mỗi API ta gắn vào 1 type tag. Gọi API với tag nào thì api nào stale và component phải rerender. 
+VD: Component A update data cần component B rerender -> component A gọi hàm refetch của react context truyền vào type X -> react context check map type X thì B cần refetch nên đổi tagB -> component B dùng custom hook gọi hàm initB có dependency là tagB sẽ rerender. Cần viết sao cho componentB luôn refetch nếu tagB lật bit.
+
+-*** Khai báo 1 hàm trong component:
+1) Ta có thể khai báo bất cứ loại hàm gì export ở 1 file riêng và sử dụng ở mọi component khác nhau nếu nó k phụ thuộc vào state props, hoặc dùng fetchReduxThunk từ redux
+2) 1 hàm được khai báo trong component nếu cần dùng state props của component đó:
+Dùng react compiler thì khai báo vói const sẽ đảm bảo hàm chỉ tạo lại mỗi khi phụ thuộc của nó đổi.
+K có react compiler thì dùng useCallback. Nếu tái sử dụng ở nhiều nơi thì nhét vào custom hook.
+
+Chú ý khi hàm số gọi setCount(count + 1); thì dependencies của nó là [count]. Nếu gọi setCount(v => v+1); thì k còn phụ thuộc vào dependeny count nữa.
+
+- VD1: const debounceCallRefetchData = useCallback(debounce(() => { setRefetchData(false); }, 11000), []);
+VD2: const debounceCallRefetchData = debounce(() => { setRefetchData(false); }, 11000);
+=> Dùng C2 hơn vì useCallback chỉ cần khi phụ thuộc state props mà ở đây k có, ở đây hàm k phụ thuộc gì cả
+
+
+
+# Pattern loading fetch API
+Trong mọi trường hợp, dùng react-query thì mọi thứ perfect, loading chuẩn, hiển thị giá trị mặc định, fetch xong tự nhảy thành giá trị mới, cache.
+Nếu dùng lib component nên dùng loading sẵn của nó như highchart. Nên loading skeleton từng component hiển thị.
+Khi ngừoi dùng update data mới, nên fetch lại cho chính xác, dùng optimistics nếu có thể
+
+-> Update component A ảnh hưởng component B, nếu cần update realtime:
+- Nếu case đơn giản thì gọi hàm fetch data của B ở cuối hàm update của A luôn. Khó mở rộng.
+- Dùng react-query, ta có thể invalidate query bất cứ đâu dễ dàng
+- 1 cách khác là vào page dùng data nào thì luôn fetch lại data đó để luôn đảm bảo realtime. Phần data lớn thì cache xử lý riêng.
+- Tự custom xây biến needToUpdate cho từng component lưu vào redux, update biến của 1 component khi cần refetch component đó. Component refetch dựa vào dependencies needToUpdate là được => chẳng khác nào đang implement lại react-query invalidate cả.
+
+-> Request API luôn có try catch + async await
+Có thể dùng proxy trong package.json cho base url sẵn.
+
+--> Nên dùng axios:
+Có axios.create để set baseURL
+Hay ở chỗ hàm .get thì params là undefined sẽ tự không cho vào params, tự động xử lý array.
+Có axios.interceptors.request.use() để gửi token và gán config.headers['X-Token']=<token>, có axios.interceptors.response() xử lý lỗi token expired thì code luôn việc request lại accessToken cho người dùng
+
+
+
+# Code splitting 
+Vào web thì browser tải từng file html css js về. Với React thì bundle lại thành bundle.js rồi. Nếu dự án lớn sẽ khiến file bundle to, mỗi lần vào tải cả cục rất lâu. Code splitting là kỹ thuật tách ứng dụng 2 phần: chỉ bundle 1 phần, các phần khác sẽ load sau khi ứng dụng chạy. 
+
+2 pp code splitting phổ biến:
+1) Dynamic import: import là 1 promise, khi nào dùng mới tải về. Vd khi thực sự render 1 component ra mới load file bundle chứa component về.
+Bth React optimize mọi module thành các file bundle.js, nhưng khi dùng dynamic import, các phần đó sẽ được React tách riêng ra k cho vào file bundle chung. Hđ với cả CSR SSR
+Browser tự tối ưu n lần dynamic import sẽ chỉ tải 1 lần file js đó. Nếu vừa import bth, vừa dynamic import thì cũng chỉ import 1 lần.
+2) Lazy loading: dynamic import là của JS, import gì cũng được. Còn lazy loading là của React để load 1 file component, kết hợp Suspense
+VD: const Events = React.lazy(() => import('./Events')); <Suspense fallback={<div>Loading...</div>}><Events /></Suspense>
+Code spliting chỉ hiệu quả nếu split được các file lớn nên lazy loading được dùng nhiều. Còn dynamic import ít dùng hơn, VD khi cần import cả 1 thư viện lớn chẳng hạn.
+
+-> Prefetching: 
+- Trong NextJS luôn tự prefetch khi dùng tag Link của nó.
+- Trong React có react-router-dom có thể tuỳ biến tự prefetch 1 route. VD hover vào thì gọi import.
+- Trong html thuần: 
+Thẻ a k hỗ trợ prefetch mà chỉ navigation. Mỗi khi navigate sẽ sang 1 trang mới hoàn toàn và tải lại mọi thứ. Mỗi page có thể có nhiều files css js giống nhau
+Có speculationrules giúp prefetch và prerender pages cho MPA.
+Dùng <link rel="prefetch" href="./page2.html"> sẽ prefetch file page2 vào lúc rảnh, dùng cache trong browser (user phải k disable browser cache), chỉ dùng được với same site. Khác với rel="preload" để ưu tiên tải 1 data trong page trước mọi tài nguyên khác, VD ảnh hay thumbnail SEO dùng khi share trên tele, twitter.
+
+-> Nhanh:
+Dùng lazy loading cho component to kèm Suspense, dynamic import cho các thứ nặng khác
+React k thể prefetch nhưng có thể tự custom
+
+
+
+# ErrorBoundary
+React component thường k viết try catch nên có error sẽ hỏng chương trình. Nên hiện component Error thay vì sập web.
+Có thể tự tạo SuspenseBoundary kết hợp ErrorBoundary chung 1 comp được. 
+
+React có lib react-error-boundary: https://dev.to/edemagbenyo/handle-errors-in-react-components-like-a-pro-l7l
+Trong react-router-dom có <Route errorElement={}/> giúp hiển thị error element nếu path bên trong throw mà k bắt
+Có thể tự tạo ErrorBoundary phải là class component:
+import React from "react";
+export default class ErrorBoundary extends React.Component {
+  state = { hasError: false }
+  static getDerivedStateFromError(error) { return { hasError: true } }
+  componentDidCatch(error, info) { console.log(error, info) }
+  render() {
+    if (this.state.hasError) return this.props.fallback
+    return this.props.children
+  }
+}
+
+NextJS cho phép tạo error từng page và global-error theo cách riêng.
+
+
+
+# SEO
+Tương tự các tag như HTML
+Cơ chế: Google bot có 1 crawl queue chứa mọi url cần đánh chỉ mục, lần lượt lấy ra và parse HTML. R phân tích xem có cần exec JS k, nếu có thì thêm cái URL của JS vào render queue (render queue chứa url js, crawl queue chứa url html). Trình renderer lại exec JS để hiển thị trang. Nó gửi HTML được render ra từ JS trở lại crawl queue. Tương tự cũng lấy mọi thẻ a xử lý và cho vào crawl queue html. Khi mọi html được xử lý, bot dựa vào các thông tin trích xuất ra để đánh chỉ mục cho nội dung.
+Do exec JS tốn kém nên google bot ưu tiên parse html ngay và chạy JS sau, nếu request lâu thì có thể crawler sẽ k thấy. Tức web lớn và dùng nhiều JS để hiển thị thì bot có thể đọc ít nội dung hơn từ trang đó. Bot đánh giá thời gian tải lâu cũng sẽ xếp hạng thấp hơn.
+
+-> Google Tag Manager: quản lý website, chỉnh thẻ meta, theo dõi các sự kiện trên trang như click chuột, tích hợp Google Analytics, Google Ads.
+Chỉ cần tạo tài khoản rồi nhận được 1 url thì cắm vào index.html, r mở tool của nó để theo dõi thôi.
+
+-> Tối ưu SEO cơ bản:
+Thêm descriptive text với mọi thẻ nếu có thể. Dùng cấu trúc url ngắn và descriptive
+Nên dùng CDN để cung css, js, font chữ để giảm thời gian tải
+Hạn chế lỗi để nội dung ẩn sau form login, kể cả chưa login cũng phải thấy gì đó. 
+
+-> Giải pháp cải thiện SEO cho react:
+1) Prerendering cho SEO
+Ta có thể dùng proxy kiểu nginx để check:
+$http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|whatsapp"
+or
+map $http_user_agent $limit_bots {
+     default 0;
+     ~*(google|bing|yandex|msnbot) 1;
+     ~*(AltaVista|Googlebot|Slurp|BlackWidow|Bot|ChinaClaw|Custo|DISCo|Download|Demon|eCatch|EirGrabber|EmailSiphon|EmailWolf|SuperHTTP|Surfbot|WebWhacker) 1;
+     ~*(Express|WebPictures|ExtractorPro|EyeNetIE|FlashGet|GetRight|GetWeb!|Go!Zilla|Go-Ahead-Got-It|GrabNet|Grafula|HMView|Go!Zilla|Go-Ahead-Got-It) 1;
+     ~*(rafula|HMView|HTTrack|Stripper|Sucker|Indy|InterGET|Ninja|JetCar|Spider|larbin|LeechFTP|Downloader|tool|Navroad|NearSite|NetAnts|tAkeOut|WWWOFFLE) 1;
+     ~*(GrabNet|NetSpider|Vampire|NetZIP|Octopus|Offline|PageGrabber|Foto|pavuk|pcBrowser|RealDownload|ReGet|SiteSnagger|SmartDownload|SuperBot|WebSpider) 1;
+     ~*(Teleport|VoidEYE|Collector|WebAuto|WebCopier|WebFetch|WebGo|WebLeacher|WebReaper|WebSauger|eXtractor|Quester|WebStripper|WebZIP|Wget|Widow|Zeus) 1;
+     ~*(Twengabot|htmlparser|libwww|Python|perl|urllib|scan|Curl|email|PycURL|Pyth|PyQ|WebCollector|WebCopy|webcraw) 1;
+ } 
+location / {
+  if ($limit_bots = 1) {
+    return 301 $scheme://domain.com$request_uri;
+  }
+}
+=> Tức nếu request đến từ client thì show web react. Nếu đến từ bot crawler thì ta redirect đến 1 cache server trả ra data SSR tối ưu SEO => ít dùng
+Prerendering có nhiều kiểu như sử dụng các dịch vụ SaaS, or thư viện Prerender.io, Prerender.cloud, SEO.js, BromBone
+2) Dùng isomorphic (hay universal) với React. Tức dùng server component của react thuần, thế thà dùng mẹ nextjs or gatsby cho nhanh.
+
+-> React19:
+- Dùng các thẻ <title> <link> <meta> ở bất cứ components nào cũng tự bị chuyển lên <head>. Khai báo metadata thoải mái trong jsx luôn.
+- <link> tag có thêm trường precedence "high" "default" chỉ thứ tự xếp các file trong <head> vì các files css rất qtr thứ tự đặt files. Còn load file thì React19 đảm bảo 1 component có thẻ link dùng 2 nơi sẽ chỉ load 1 lần, cũng như đảm bảo file link load xong hét mới render.
+- Hỗ trợ <script async={true} src="..." /> đặt ở bất cứ đâu (k tự chuyển lên head).
+=> thay thế hoàn toàn React Helmet để đổi metadata cho web ở client side, dù SEO của CSR k có ích gì nhưng 1 số TH vẫn có lợi cho SEO khi crawler của gg exec code JS. VD share web cho telegram thì nó fetch lấy title và ảnh trong html chứ k exec JS nên thấy giống nhau ở mọi route.
+- Có preload resource:
+import { prefetchDNS, preconnect, preload, preinit } from 'react-dom'
+function MyComponent() {
+  preinit('https://.../path/to/some/script.js', {as: 'script' }) // loads and executes this script eagerly, preinit 1 cái gì đó sẽ tải và dùng ngay file đó sớm nhất có thể
+  preload('https://.../path/to/font.woff', { as: 'font' }) // preloads this font => tải sớm luôn
+  preload('https://.../path/to/stylesheet.css', { as: 'style' }) // preloads this stylesheet
+  prefetchDNS('https://...') // when you may not actually request anything from this host => Browser sẽ DNS lookup sớm nhưng k tạo kết nối TLS và k gửi request. Rút ngắn thời gian khi request thực sự xảy ra về sau query từ host CDN này. 
+  preconnect('https://...') // when you will request something but aren't sure what => Browser sẽ DNS lookup và connect TLS luôn, dùng khi chắc chắn sẽ query gì đó
+}
+Được convert thành:
+<html>
+  <head>
+    <link rel="prefetch-dns" href="https://...">
+    <link rel="preconnect" href="https://...">
+    <link rel="preload" as="font" href="https://.../path/to/font.woff">
+    <link rel="preload" as="style" href="https://.../path/to/stylesheet.css">
+    <script async="" src="https://.../path/to/some/script.js"></script>
+  </head>
+  <body>
+  </body>
+</html>
+
+
+
+# Progressive web app (PWA) 
+Là các tính năng dùng service worker để cache vào web offline, push notification, cài web như 1 app trên mobile.
+URL: https://create-react-app.dev/docs/making-a-progressive-web-app/
+Service worker hỗ trợ cache offline cho routing, assets, revalidate. Data lưu trong Cache Storage tab Application. Có template trên git pwa.
+
+-> Progressive enhancement: là 1 pp phát triển website bắt đầu từ cơ bản với code có tương thích cao. Rồi nâng cấp dần như thêm css, js cho những người sử dụng trình duyệt hiện đại hơn mới dùng được. Còn những người dùng trình duyệt cũ vẫn đầy đủ tính năng basic. Về sau có thể xoá bỏ hoàn toàn phần code deprecated.
+Phải ưu tiên dùng HTML và CSS thuần để đảm bảo sự tương thích. JS dược dùng để thêm tính năng nâng cao, nhưng nếu JS k khả dụng or bị tắt thì vẫn k gián đoạn trải nghiệm cơ bản
+
+
+
+# Debug trong React
+Extenstion browser -> tab components -> settings -> highlight updates => giúp tìm các components render thừa, tương tự react scan
+
+- Debug bằng browser: Gõ debugger vào code React hoặc search code browser và đặt breakpoint -> mở browser sẽ dừng lại chỗ đó
+- Debug trên VSC: https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
+Tab Debug -> Run and Debug -> tạo file .vscode/launch.json, chú ý url là url web VD http://localhost:3000, và webRoot là thư mục làm việc chứa index.js
+
+
+
+# React hook
+React hook k dùng trong câu điều kiện hay loop, các logic đó phải nhét vào trong hook. Nó chỉ để gom logic trong component tái sử dụn. 
+React hook vẫn chạy lại mỗi khi rerender nhưng biến const sẽ k khởi tạo lại nếu giá trị k đổi (react compiler) như bth, nếu k là const sẽ tạo lại liên tục khi rerender.
+URL tổng hợp hook: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/ => useDebugValue, useEffectEvent* fix dependency error của useEffect.
+
+-> useState: có thể tách mỗi biến 1 useState hoặc gộp trong 1 object useState
+setState(state + 1) tương đương setState(state => state + 1) nhưng cách truyền hàm đúng hơn vì state trong hàm luôn mang giá trị mới nhất ở future, vì có lúc biến state truyền vào nó không phải giá trị mới nhất mà bị giữ lại như khi "Tạo đồng hồ đếm ngược".
+setState(state => state + 1) cũng có điểm lợi là nó k phụ thuộc dependency state => luôn dùng
+
+-> useEffect: 
+Cơ chế chạy component từ trên xuống, gặp useEffect sẽ lưu lại chờ return DOM cập nhập xong sẽ thực hiện.
+Dependency đổi làm useEffect chạy lại thì sẽ gọi return của useEffect cũ rồi mới thực hiện useEffect mới, return function cũng gọi khi unmount.
+Cơ chế các loại hook có dependencies sẽ lưu trong cache cho đến khi dependencies thay đổi thì xóa khỏi cache và thêm cái mới vào cache tiếp thôi.
+Hàm gọi trong useEffect thường lưu lại bằng useCallback và xác định đủ dependencies => k cần nữa với react compiler.
+Component A chứa component B, cả 2 cùng useEffect dependencies [x], nếu biến x đổi thì useEffect của cha sẽ thực hiện trước r đến dần các useEffect của con.
+Khi setState trong useEffect xong thì state vẫn mang giá trị cũ, nhưng bên ngoài sẽ render lại liên tục để hiển thị với giá trị mới nhất. VD setLoading(true) trong useEffect thì trong useEffect vẫn thấy loading là false nhưng bên ngoài render hiển thị là true rồi.
+VD case lỗi: function Test ({ url }) { 
+  function onConnected() { console.log(url); }
+  useEffect(() => onConnected(), [url]);
+} => Xong đổi url thật nhanh 2 lần liên tiếp, useEffect sẽ trigger 2 lần gọi onConnected. onConnected là hàm tạo lại liên tục với url mới nhất nên sẽ có lúc trigger 2 lần hiện cùng 1 url mới nhất. Do đó phải thêm useCallback và dependencies đầy đủ. Với react compiler nó ngầm dùng useCallback cho onConnected thì k cần viết.
+
+--> Thứ tự react render: chạy useInsertionEffect (k lấy được DOM tree) -> React render component -> Update DOM -> Chạy useLayoutEffect (access được DOM tree) -> Vẽ giao diện -> Vẽ xong thì chạy useEffect, nếu đổi state sẽ lặp vòng mới
+- Điểm đb là useEffect thực hiện asynchronous, còn useLayoutEffect thực hiện synchronous. Nên dùng useLayoutEffect khi cần đổi nhanh style lên DOM, k nên update phức tạp vì sẽ delay vẽ lên UI. Nếu dùng useEffect đổi style DOM sẽ bị giật do bước vẽ giao diện đã qua, phải chờ lần render tiếp mới vẽ style mới lên.
+- useInsertionEffect được gọi synchronous, chỉ dùng với lib css-in-js. Nó k access và ref, k update state. Chỉ dùng kiểu update document.head hay thêm thẻ <style> bằng code JS
+
+-> useReducer: giống useState nhưng có thể custom hàm setState thành 1 hàm riêng đặt ở ngoài component, dispatch action để trigger hàm return state mới.
+Có thể dùng kết hợp với ReactContext tạo ra kiểu gần giống với redux.
+
+-> React.Context + useContext: có thể chia nhiều context khác nhau cho từng con. 
+State trong context đổi sẽ khiến mọi wrapped component rerender.
+
+-> useMemo: hàm thì nên dùng useCallback, biến và component dùng useMemo => react compiler đã stale hook này.
+Nếu 1 component đổi props và rerender, nhưng có component con nằm trong nó không phụ thuộc vào props, thì component con vẫn rerender cùng luôn, trừ khi memo => với react compiler, k cần memo thì component con vẫn tự không render lại nếu phần phụ thuộc của nó k đổi.
+
+-> useId: sinh id unique trong phạm vi app hiện tại. VD 1 component có trường id mà được tái sử dụng render ở nhiều nơi, dùng useId cho nó sẽ đảm bảo duy nhất.
+Redux toolkit cũng có nanoid sinh id ngẫu nhiên
+
+-> useSyncExternalStore read và subscribe vào external data source => VD ta subscribe vào localStorage được
+
+-> use(Promise) => k cần dùng nếu dùng react-query
+- Dùng với use(ReactContext) thì như useContext chỉ khác là dùng được trong câu điều kiện => luôn dùng
+- Dùng với 1 promise trong 1 component, có thể kẹp trong conditional. Wrap với ErrorBoundary và Suspense để hiện fallback, component dùng use(Promise) sẽ hiện fallback nếu promise chưa thực hiện xong, k cần dùng await cho nó.
+Chú ý chỉ có 2 case sử dụng, 1 là promise truyền vào từ parent, 2 là promise là hàm import từ bên ngoài. K được dùng trực tiếp fetch trong use hay 1 function trả ra promise vì bị lỗi refetch liên tục k thể fix => thường chỉ dùng trong server component nextjs để chờ fetch lần đầu tiên xong mà k cần await.
+
+-> useTransition:
+- Giảm độ ưu tiên của 1 hàm, chỉ chạy trong background khi rảnh để k ảnh hưởng performance, đảm bảo bên ngoài kbh bị lag do hàm gọi trong startTransition.
+Khi code cần xác định phần nào gây lag cho browser đưa vào startTransition. VD search 1 chữ r thực hiện filter trên 1000 phần tử show ra thì (chắc là) phần update chữ nên dùng startTransition, hành động filter update state dựa trên chữ đó sẽ tự thành non-urgent. VD fetch api và update state dù fetch API k nặng nhưng có thể cho cả vào startTransition
+- Giải quyết 1 vấn đề nữa là update state nhảy loạn xạ do có delay chứ kp ấn phát update ngay, thì dùng isPending của useTransition đảm bảo loading đến khi gọi xong hết
+startTransition có thể lồng trong startTransition khác, 2 hàm đó đều chạy trong background và k block main thread thôi => ít dùng
+URL: https://react.dev/reference/react/useTransition#examples
+
+useDeferredValue: tương tự nhưng delay việc update giá trị cho 1 biến. Vd ta gõ input thay đổi biến a và dùng biến a để search list 1000 phần tử. Gõ nhanh thì a đổi ngay và chạy logic. Khi đó ta dùng useDeferredValue để biến a vẫn update realtime nhưng biến aDeferred cho vào hàm search sẽ chỉ update khi k bị lag.
+Việc aDeferred update như nào phụ thuộc vào mức độ bận của main thread, nếu rất bận thì nó càng skip intermediate value nhiều hơn. Tương tự nó k dùng cho callapi mà dùng do lag vì update tuần tự. Chứ call api k lag nhưng ta cần giảm thiểu số lần call tới mức tối thiểu thì dùng debounce tốt hơn.
+
+=> Pb: 
+- useDebounce: delay action tránh trigger liên tục bị lag, nếu cứ trigger liên tục mãi, hàm có thể kbh chạy. Nếu useDebounce rồi mà update nặng thì vẫn lag như thường, vì nó k giảm độ urgent của task như useTransition.
+- useTransition: đánh dấu task là non-urgent, hàm sẽ chạy ngay nhưng k gây lag, k như useDebounce phải chờ delay. K giảm số lần call hay tự dừng lệnh call cũ như useDebounce, nên k đảm bảo thứ tự khi lần call trước trả kết quả chậm hơn lần call sau. Có isPending cho loading cho đến khi gọi xong hết. startTransition standalone có thể dùng cho hàm bất kỳ k trong react comp hay hook.
+- useDeferredValue y hệt useTransition nhưng dành cho 1 value state. Các thay đổi logic nặng sẽ theo deferred value để k lag. VD useTransition chứa hàm call api và update state, thì useDeferredValue chỉ thay phần update state gây lag thành dùng deferred state.
+- useOptimistics: dùng khi khá chắc lệnh call api thành công, state trả về k gây update nặng, dùng sẽ hiển thị ngay kết quả mới nhất => nên dùng useDebounce tự custom thêm optimisitics
+
+--> Xử lý lỗi ordering khi call api liên tục, VD ấn nhanh 10 lần thì k đảm bảo state cuối chính là cần cuối ấn, vì lần call api trước lại kết thúc sau rồi mới update state, dùng useTransition hay useDebounce đều gặp trường hợp này:
+- Với các usecase riêng, react có useActionState, <form> actions, server function xử lý sẵn vấn đề về ordering
+- Tự implement logic order riêng
+VD cũng có thể thay bằng useRef:
+function SearchComponent({ searchTerm }) {
+  const [stateA, setStateA] = useState([]); // list sau khi lọc
+  useEffect(() => {
+    let isCurrent = true; // Cờ báo hiệu request này còn hợp lệ 
+    const fetchData = async () => {
+      const response = await apiCall(searchTerm); 
+      if (isCurrent) { // Cờ còn hợp lệ, tức là request là mới nhất
+        setStateA(response.data); 
+      }
+    };
+    fetchData();
+    return () => {
+      isCurrent = false; // useEffect mới mà chạy thì bỏ useEffect cũ, có thể dùng AbortController
+    };
+  }, [searchTerm]);
+  return (
+    <ChildComponent stateA={stateA} />
+  );
+}
+
+-> useOptimistic: https://www.youtube.com/watch?v=VBlSe8tvg4U
+Dùng khi biết khá chắc lệnh call sẽ success, fail tự undo
+Nếu useOptimistic khi người dùng update và API chưa thành công đã tắt page, có thể cản lại với window event "beforeunload"
+=> Ít dùng, thường dùng useDebounce và kết hợp tự implement failed undo cho useDebounce hơn
+
+-> useActionState
+- Tối ưu thường dùng cho form
+VD: const [data, submitAction, isPending] = useActionState(
+  async (prevState, queryData) => {
+    const itemID = queryData.get("itemID"); return { itemID };
+  },
+  { itemID: "" }
+)
+<form action={submitAction}>
+  <input type="text" name="itemID" />
+  <button type="submit" disabled={isPending}>Update</button>
+</form>
+<Data>{data}</Data>
+Note: 
+_ Phải dùng trong component chứa form để còn truyền vào form
+_ K cần useState lưu state của input mà useActionState như 1 store luôn, tự tối ưu khi gõ vào form k render lại cả form.
+_ Khi submit sẽ tự reset các trường của form, custom điều này với trường defaultValue, có thể custom để return data lần cuối submit để k đổi.
+Tham số 3 kbh dùng: https://www.youtube.com/watch?v=-aBKrvK5Vn8
+_ async (previousState: FormField, formData: FormData): Promise<FormField> vì previousState và return field phải giống nhau
+
+- Hook này xử lý sẵn vấn đề về ordering call api nhiều lần mà lần trước finish chậm hơn lần sau:
+const [
+  quantity, // giá trị trả về của hàm bên trogn ở lần call cuối, dùng luôn, k cần useState vì này là lưu sẵn rồi
+  updateQuantityAction, // gọi hàm là trigger hàm bên trong
+  isPending // tính lần call cuối
+] = useActionState(
+  async (
+    prevState, // data return của lần gọi func trước đó
+    payload // tham số truyền vào updateQuantityAction
+  ) => {
+    const savedQuantity = await updateQuantity(payload);
+    return savedQuantity;
+  },
+  1 // Initial quantity
+);
+Gọi với startTransition(() => { updateQuantityAction(xyz) });
+
+
+
+# Custom hook
+Custom hook là 1 function có mục đích nhận đầu vào và cho đầu ra tự động biến đối theo đầu vào, return giá trị or hàm chứ kp component.
+Mỗi lần function chạy đến custom hook sẽ thực hiện lại mọi thứ bên trong. Cần đảm bảo các biến bên trong không khởi tạo lại nếu k đổi state liên quan. React compiler xử lý gấn hết, có thể thủ công dùng useCallback, useMemo.
+
+-> URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
+useToggle, useTimeout, useUpdateEffect, useArray, usePrevious, useStateWithHistory, useFetch, useScript, useDeepCompareEffect, useEventListener, useOnScreen, useGeolocation, useStateWithValidation, useSize, useEffectOnce, useDarkMode, useCookie, useTranslation, useOnlineStatus, useRenderCount, useDebugInformation, useHover, useLongPress
+useStorage giúp subscribe sự thay đổi của localStorage, dựa trên sự kiện "storage" browser phát ra khi localStorage đổi giá trị.
+
+-> Lib cực mạnh: @mantine/hooks, aHooks, usehooks-ts* dùng typescript, @uidotdev/usehooks và react-use* old rồi
+useMediaQuery useClickOutside useMousePosition useClipboard usePagination useDevice
+useIntersection check xem 1 component có visible toàn bộ trên màn hình không
+useScrollLock khóa và mở khóa thanh scrollbar
+useForm tạo và validate form, thay thế formik
+
+
+
 # Cách ref tới 1 thẻ
-Nếu thẻ đó có sự kiện như onClick thì ta có thể lấy mọi thông tin của thẻ đó luôn. VD event.target.innerText
-Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông qua biến
-Đảm bảo hàm chạy sau khi render thì có thể dùng query selector để lấy thẻ
-React 19 cho phép truyền ref là props rồi
+- Nếu thẻ đó có sự kiện như onClick thì ta có thể lấy mọi thông tin của thẻ đó luôn. VD event.target.innerText
+- Dùng biến lưu thẻ thì có thể truy cập mọi thứ của thẻ thông qua biến
+- Đảm bảo hàm chạy sau khi render thì có thể dùng query selector để lấy thẻ
+- Dùng useRef để ref tới 1 thẻ bất kỳ. React 19 cho phép truyền ref là props pass tiếp xuống con mà k cần forwardRef, bỏ createRef
+Chỉ cần const ref = useRef(null); rồi cho vào attribute ref của thẻ, đặt tên prop đúng là "ref". VD thẻ cha có hàm đổi style của con của thẻ con, cứ pass ref tới thẻ đó là được
 
--> Dùng const ref = useRef(null); rồi cho vào attribute ref của thẻ => bỏ createRef, thay thế forwardRef
-VD: khi thẻ cha có hàm đổi styles của con của thẻ con, truyền ref vào con như props để refer tới thẻ bên trong con được.
-Chú ý phải đặt đúng tên prop là ref.
-
---> ref có thể nhận 1 hàm và khi component được mount sẽ trigger hàm này. Hàm này có thể return 1 clean up function chạy khi thẻ đó unmount, hoặc k return gì cả.
+-> ref có thể nhận 1 hàm và khi component được mount sẽ trigger hàm này. Hàm này có thể return 1 clean up function chạy khi thẻ đó unmount, hoặc k return gì cả.
 VD: <input ref={current => {
   // Chạy khi thẻ mount
   return () => {
@@ -93,13 +410,13 @@ URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
 
 
 
-# Tích hợp thư viện => các thư viện 1-2 năm k update cũng nên bỏ 
--> Ant Design, Blueprint UI, Rebass, Fluent UI, Evergreen UI, Grommet, react-foundation, Primereact, Bulma, materialize-css@next, React Suite, Kendo react (component lạ), radix-ui khó dùng, theme-ui
-Chakra UI, Bootstrap, mui* v7, Senmatic UI, flowbite, metroui.
-cuicui: thư viện ui sẵn component chỉ cần copy paste, rất nhiều component lạ
-Có nhiều hệ thống thiết kế đi kèm thư viện UI như IBM Carbon* hay Twilio Paste, nó chứa guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
+# Tổng hợp thư viện
+-> Lib UI: Ant Design, Blueprint UI, Fluent UI, Grommet, Primereact, Bulma, rsuite, radix-ui, theme-ui, Chakra UI, Bootstrap, MUI v7, flowbite.
+cuicui: thư viện ui từ tailwind có sẵn component chỉ cần copy paste, copy từ docs k cài lib riêng
 
-Lib component kèm animation rất mạnh:
+Có hệ thống thiết kế đi kèm lib UI như IBM Carbon* hay hay Twilio Paste, gồm guidline và các component chỉ dẫn cách để tạo 1 hệ thống UI có design nhất quán
+
+Lib animated component rất mạnh:
 https://ui.aceternity.com/components 
 https://www.ui-layout.com/components
 https://www.cult-ui.com/docs/components/
@@ -107,8 +424,6 @@ https://www.eldoraui.site/components
 https://syntaxui.com/components
 https://www.hover.dev/components/
 https://animata.design/docs
-
-Lib animated components cực mạnh: 
 Magic UI
 https://ui.aceternity.com/
 https://www.ui-layouts.com/
@@ -119,81 +434,54 @@ https://www.hover.dev/
 https://animata.design/
 gsap
 
-Bit Cloud: Là lib UI của bit.dev, cài nó thì dùng được thập cẩm component của nhiều thư viện khác nhau, tái sử dụng và chia sẻ giữa các dự án.
-Search component trên bitcloud, ấn từng mục của các thư viện UI khác nhau. Nhưng trước đó phải cài bit trong dự án, nó sẽ import dưới dạng file cả dự án component vào và ta có thể chỉnh sửa tùy ý. Sau khi lấy components về rồi copy vào src/components để dùng.
-react-rainbow-component*: Lib UI component có sẵn nhiều component lạ, nên thường dùng kết hợp bit cloud để tối ưu sức mạnh
+Bit Cloud: lib UI của bit.dev, cài nó thì dùng được thập cẩm component của nhiều thư viện khác nhau, tái sử dụng và chia sẻ giữa các dự án.
+Search component trên bitcloud từ mọi thư viện. Cài bit trong dự án sẽ import dưới dạng file component rồi chỉnh sửa tùy ý. Lấy components về copy vào src/components để dùng.
 
--> ReactAdmin*: Thư viện giúp tạo trang admin cho các ứng dụng React dễ dàng.
+-> ReactAdmin: giúp tạo trang admin cho các ứng dụng React dễ dàng.
 ra-data-json-server dùng riêng cho ReactAdmin cung vào data json
 
--> react-intl*: thư viện giúp format số và chữ theo i18n
---> @replexica/react hỗ trợ i18n bằng AI. Có thể tích hợp vào CI/CD tự động translate, đổi tự dịch lại chỗ đó chứ k dịch lại từ đầu.
+-> react-intl: thư viện giúp format số và chữ theo i18n
+-> @replexica/react* hỗ trợ i18n bằng AI. Có thể tích hợp vào CI/CD tự động translate, khi sửa đổi sẽ tự dịch lại chỗ đó chứ k dịch lại từ đầu.
 npx lingo.dev@latest show locale targets # Lists available target languages
 Thêm --force nếu muốn force ghi đè từ lại
 Cài 1 phát r tạo i18n.json là cứ thế dùng thôi
 
--> clsx* / classNames: tạo string với điều kiện, thg dùng cho className.
-Date-fns hoặc Luxon => thay thế react-moment, moment-timezone
-lodash*: https://lodash.com/docs/4.17.15 thay thế underscore => Có thể import tree shaking đỡ nặng: npm i lodash.merge
-npm i rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
-
--> react-scan => best lib giúp phát hiện vấn đề về performance, debug rerender luôn. Thay thế @welldone-software/why-did-you-render
+-> react-scan: best lib giúp phát hiện vấn đề về performance, debug rerender luôn.
 Có browser extension, npm package. CDN: <script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js"></script>
 
 -> react-cssfx-loading*. Bản html thuần: https://cssfx.netlify.app/
 https://loading.io/* => icon loading customize thoải mái, export ra gif hay svg đều được
-react-spinners*: thư viện component loading
-react-content-loader: thư viện tạo skeleton svg nhẹ
-react-loading-skeleton: tạo skeleton
+react-spinners*: thưlib component loading
+react-content-loader: lib tạo skeleton svg nhẹ
 
--> @tinymce/tinymce-react*: thư viện giúp tạo TinyMCE rich text WYSIWYG editor cực mạnh cho các kiểu input text như gg docs.
-react-modal 
+-> @tinymce/tinymce-react*: lib giúp tạo TinyMCE rich text WYSIWYG editor cực mạnh cho các kiểu input text như gg docs.
 react-player*: custom play video
 react-slick: tạo carousel slider
-react-avatar-edit*: cắt ảnh làm avatar
 react-paginate: tạo component phân trang
-react-perfect-scrollbar: thư viện tạo thanh scrollbar, nó cung thêm tính năng khác như bắt sự kiện scroll đến vị trí trục y nào
-react-text-transition
-react-color*: color picker
 react-datepicker: date picker
 react-pdf
-react-modern-drawer: tạo menu drawer
-react-qr-reader: quay camera QR
-@pqina/flip*: tạo Flip Clock chuẩn
 cmdk: hiển thị menu dạng có thể search
-React Email cung components cho việc gửi email
-@xyflow/react*(bản mới chuẩn của reactflow): thư viện rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
+React Email: cung components cho việc gửi email
+@xyflow/react* (bản chuẩn của reactflow): lib rất mạnh để vẽ interactive graphs and node-based editors, tạo ra như kiểu draw.io ấy
 react-modal-sheet: mobile nên thay thế dialog bằng bottom sheet
-Dùng react-share: chuyên tạo button share link vào trang cá nhân của các nền tảng social media như facebook, twitter
-tiny-invariant: log lỗi dựa trên condition
+react-share: tạo button share link vào trang cá nhân của các nền tảng social media như facebook, twitter
 yup: validate input cho react, giống joi của nodejs
 react-circular-progressbar: best lib cho loading số dạng hình tròn
-react-dnd*: thư viện drag drop của React cực mạnh, mỗi tội dùng redux phiên bản cũ nên xung đột
 react-intersection-observer*
 react-chrono*: tạo timeline component
 react-error-boundary*
-Tiny base*: thư viện JS dùng cả BE và FE để quản lý dữ liệu dạng table như 1 db local. Có tính reactive. 
-
--> "postinstall" là lệnh tự chạy sau khi chạy "npm i". Lưu ý postinstall:xxx sẽ k tự chạy, phải tự gọi nhé
-VD kết hợp với npm-run-all* giúp chạy multiscript:
-"scripts": {
-  "postinstall": "run-s postinstall:*",
-  "postinstall:config": "node scripts/initConfig.js",
-  "postinstall:contracts": "yarn --cwd contracts install"
-}
-
--> react-select*: tạo đủ loại component input
-react-text-mask*: custom input hiển thị
+Tiny base*: lib JS dùng cả BE và FE để quản lý dữ liệu dạng table như 1 db local có tính reactive. 
+Luxon => thay thế moment-timezone
+rimraf -> tạo command: "build:clean": "rimraf ./build", là xong
+react-select*: tạo đủ loại component input
+downshift***: lib cho auto suggestion
+open: lib giúp mở 1 ứng dụng khác trong máy. VD mở ảnh bằng image view mặc định trong máy, mở vscode, mở 1 ứng dụng bất kỳ.
 
 -> react-toastify*: tạo toast notification đẹp
 react-hot-toast*
 
 -> recharts*: Vẽ đồ thị kiểu học thuật.
 highcharts-react-official highcharts*: tạo graph đẹp, responsive, loading
-Victory thư viện vẽ biểu đồ cho data. Tremor cũng thế nhưng đẹp hơn. React Diagrams cho user vẽ biểu đồ có thể drag customize như draw io
-D3 thư viện chuyên data visualization đủ loại phức tạp
-
--> Refine giúp cho việc xây ứng dụng react CRUD dễ dàng hơn. Nó cung copmonents, state management, hook.
 
 -> Icon lib: react-icons*
 https://ionic.io/ionicons => đơn giản mà đẹp
@@ -221,38 +509,37 @@ Setup: Login Okta -> Application -> Tạo 1 ứng dụng với OpenID Connect v�
 Tạo dự án mẫu với okta-cli: tải okta cli -> okta login có org url là https://dev-xxxxxxx.okta.com, id là client id của app -> "okta create react"
 ISSUER ID là https://dev-xxxxxxx.okta.com
 
-->*** xstate/store: Bth react-query dùng cho server state, form thì dùng react hook forms, useState, tanstack router giúp lưu params trên url khi muốn refresh page vẫn còn.
-Các case còn lại có thể dùng redux or zustand, hoặc xstate/store có nhiều điểm tốt hơn.
+->*** xstate/store: Data store giống redux, zustand nhưng có nhiều điểm tốt hơn
+react-query
 
-->*** downshift: lib cho auto suggestion
+-> react-router-dom v7: chú ý có 3 mode framework, data, declarative: https://reactrouter.com/start/modes
+@tanstack/react-router giống react-router-dom nhưng có typesafe typescript mạnh
 
--> open là package giúp mở 1 ứng dụng khác trong máy. VD mở ảnh bằng image view mặc định trong máy, mở vscode, mở 1 ứng dụng bất kỳ.
+-> "postinstall" là lệnh tự chạy sau khi chạy "npm i". Lưu ý postinstall:xxx sẽ k tự chạy mà phải tự gọi
+VD kết hợp với npm-run-all* giúp chạy multiscript:
+"scripts": {
+  "postinstall": "run-s postinstall:*",
+  "postinstall:config": "node scripts/initConfig.js",
+  "postinstall:contracts": "yarn --cwd contracts install"
+}
 
--> react-router-dom v7 => bỏ tanstack router
-Nó có 3 mode framework, data, declarative: https://reactrouter.com/start/modes
-
--> elementos: thư viện reactive rất mạnh nếu component có quá nhiều state phụ thuộc phức tạp vào nhau thì có thể dùng kèm cho react
-
-
-
-# Pattern tuỳ biến style component
-Khi dùng các component có sẵn từ nhiều nơi or các thư viện UI, nó thường cung API ở 1 mức độ nhất định thôi. 
-=> Ta có thể ép style theo ý ta bằng CSS Selector, viết 1 thẻ bao ngoài và mang 1 class rồi cứ dùng css selector để style cho các con bên trong tùy ý. 
+-> @tanstack AI library: https://www.youtube.com/watch?v=quoNVa88XfE
+Có thể tạo ra server và client component tương tác hay hỏi đáp với app dùng AI.
+Client dùng hook có sẵn của lib post tới url server, server cắm API KEY và dùng function cung sẵn để call API tới nền tảng AI lấy message, chỉ định các function AI có thể gọi để tương tác db.
 
 
 
 # React animation
--> Các kiểu tạo animation trong react: 
+-> Các kiểu animation react
 Animation css cơ bản: transition, @starting-style, dialog, details-content, interpolate-size allow-keywords, allow-discrete, :hover
 Animation css keyframe
-Lib có sẵn component animation hoặc tạo animation dễ hơn: MUI, @pqina/flip, react-text-transition, framer-motion, react-spring.
+Lib có sẵn component animation hoặc tạo animation dễ hơn: MUI, framer-motion, react-spring.
 Nâng cao hơn nữa thì có threeJS là thư viện animation 3D cho react 
 
-Kết hợp sự kiện JS: onMouseLeave onMouseOver thì đổi biến or setInterval useEffect đổi biến, r thuộc tính css gán theo biến
-VD Tạo số chạy khi số liệu thay đổi hoặc component hiện ra lần đầu => ref tới "Projects Leaderboard HighChart / AnimatedNumber". 
-Cơ chế: số là 1 biến state được đổi giá trị nhanh liên tục để rerender
+Có thể dùng event JS tạo animation với onMouseLeave onMouseOver thì đổi thuộc tính và gán thuộc tính css theo biến. 
+VD ref tới "Projects Leaderboard HighChart / AnimatedNumber". 
 
-Kết hợp dùng JS sửa css như html thuần với useLayoutEffect + useRef + requestAnimationFrame
+Có thể dùng JS sửa css trực tiép với useLayoutEffect + useRef + requestAnimationFrame
 useLayoutEffect(() => {
   const content = contentRef.current;
   if (isVisible) {
@@ -265,211 +552,168 @@ useLayoutEffect(() => {
     });
   }
 }, [isVisible]);
-=> useTransition chỉ khi xử lý logic nặng bằng js thôi, vd search nhanh lag. Còn đổi JS liên quan đến animation nên dùng requestAnimationFrame, nó đảm bảo frame sau sẽ gom đổi tất cả. setInterval setTimeout vẫn thực hiện tiép khi tab browser bị ẩn or k focus, nhưng requestAnimationFrame sẽ dừng lại giúp tiết kiệm tài nguyên
+useTransition chỉ khi xử lý logic js nặng, vd search tập data lớn render ra. Đổi JS liên quan đến animation nên dùng requestAnimationFrame đảm bảo frame sau sẽ gom đổi tất cả, vẽ animation mượt hơn, tiết kiệm CPU. Khi tab k hiện or k focus thì requestAnimationFrame sẽ dừng animation giúp tiếp kiệm tài nguyên, tốt hơn setTimeout, setInterval.
 
-*** Để thẻ luôn hiện ở đó, isOpen=true thì gán thêm class để hiện ra kèm transition là được => best practice phổ biến nhất, thư viện chỉ giúp code như v gọn hơn thôi.
-Nếu ta làm kiểu thẻ bth k tồn tại, khi mở mới mount vào DOM thì cần chú ý nó có thể break layout hiện có. VD gap hay grid flex bị sai. Dialog thì k tính vì dùng portal rồi.
-
---> requestAnimationFrame là hàm JS để cập nhật giao diện (vẽ lại) trong vòng lặp animation tiếp theo của trình duyệt, giúp vẽ animation mượt hơn, tiết kiệm CPU.
+Khi tạo animation hiện ra, nên để thẻ hiện sẵn ở đó rồi thêm isOpen thì gán thêm class css hiện ra kèm transition => best practice các thư viện cũng dùng.
+K nên làm kiểu thẻ k tồn tại rồi mount vào DOM vì dễ break layout hiện có, gap grid flex dễ bị sai, state bị mất khi unmount => dùng <Activity> của react
 
 -> Animation library: 
-animate.css*: best animation css lib
+animate.css
 react-spring*: tạo custom animation dưới dạng react hook. URL: https://www.joshwcomeau.com/react/boop
-framer-motion*: animation được cho cả svg path. useScroll, useTransform dùng cho parallax basic. URL: https://www.youtube.com/watch?v=29UWA-GdA7k => Full Project react unplash figma framer-motion parallax
-react-burger-menu: tạo animation cho thanh menu dọc thg khi màn hình nhỏ
-@use-gesture: animation mạnh dựa vào tương tác của người dùng.
-*** reactuseanimations-: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
-https://cursify.vercel.app/components => thư viện animate cursor đỉnh
-***anime.js dùng với react mượt: https://animejs.com/documentation/getting-started/using-with-react
-react-countup*
-@dnd-kit/core tạo drag animation => ref tới trava lending pool
+framer-motion*: animation được cho cả svg path. Có useScroll, useTransform dùng cho parallax basic. URL: https://www.youtube.com/watch?v=29UWA-GdA7k => Full Project react unplash figma framer-motion parallax
+https://cursify.vercel.app/components => thư viện animate cursor từ tailwind đỉnh
+anime.js dùng với react*: https://animejs.com/documentation/getting-started/using-with-react
 react-grid-layout: tạo grid draggable extendable items
-
---> Animation với scroll: 
-react-awesome-reveal: reveal animation
-react-animated-cursor => thư viện tạo animate cursor mỗi khi rê chuột đi đâu
-react-parallax-mouse => thư viện hiệu ứng parallax bằng cách di chuyển chuột
-aos*: lib animation on scroll
 
 
 
 # Thao tác với form
-Nên gom mọi trường vào 1 biến useState object với setState({ ...state, [e.target.name]: e.target.value }); cho gọn.
 ***Khi dùng form, hãy luôn đặt thuộc tính autofocus vào ô đầu tiên mà người dùng cần nhập.
 
 return false trong hàm xử lý sự kiện sẽ ngăn chặn chuyển trang, hoặc dùng e.preventDefault() tương tự.
-Nó có thể áp dụng trong form hoặc bất cứ component nào gây chuyển trang. Vd thẻ a có href có thể xử lý điều này trong onClick của nó
+Có thể áp dụng trong form hoặc bất cứ component nào gây chuyển trang. Vd thẻ a có href có thể xử lý điều này trong onClick của nó
 
-Để submit form thông qua phím enter, nên giữ onSubmit của form và button có type submit là được.
-Cách khác là custom khi form được focus thì bắt sự kiện onKeyDown bấm phím Enter.
+Để submit form thông qua phím enter, luôn giữ onSubmit của form và button có type submit là được.
+Nếu không sẽ phải custom khi form được focus thì bắt sự kiện onKeyDown là bấm Enter.
 
--> react-hook-form*: lib tương tự formik. Nó còn có tool generate code luôn.
-
--> Lib formik*: điều đb là nó tự xử lý tối ưu khi có thay đổi chứ k render lại cả form. 
+-> Dùng lib:
+--> react-hook-form*: lib tương tự formik. Nó còn có tool generate code luôn.
+--> formik*: tự xử lý tối ưu khi có thay đổi chứ k render lại cả form. 
 C1: Dùng component có sẵn Formik, FastField, Form, ErrorMessage => Cách này vẫn mang các điểm lợi của formik như render độc lập nhưng ít dùng.
-C2: Cách dùng hook useFormik. 
+C2: Dùng hook useFormik. 
 Khởi tạo initialValues, validate, onSubmit. 
-Hàm validate được gọi mỗi khi data của formik được update, return biến errors, biến này có thể truy xuất với formik.errors làm error helper text. Còn có formik.touched để truy cập xem trường nào đã từng được thao tác lần đầu chưa. VD: Để làm kiểu ấn vào trường a r ấn ra ngoài, bth nó sẽ chạy vào validate và set errors cho cả 2 trường a và b vì chưa có gì, nhưng ta chỉ muốn error trường đã tương tác thôi thì check formik.touched để đảm bảo 1 input chỉ báo lỗi 1 trường nếu đã tương tác và giá trị bị sai.
-Có thể truy xuất giá trị bất cứ đâu với formik.values, còn formik.isValid trả ra true nếu hàm validate return ra object error rỗng, thực tế giá trị này rất hay ở chỗ nó formik.isValid ban đầu vào nó luôn trả ra true nếu ta chưa set gì cả, từ đó lợi dụng để ban đầu vào thì button submit enabled, khi ấn vào mới hiện ra các trường required cần dùng
-Để update có hàm formik.setFieldValue("<field>", <value>) hoặc trong onChange có thể dùng formik.handleChange nhận vào biến e là input, cũng nên bắt cả onBlur={formik.handleBlur}. Mọi hàm khi gọi từ formik như change với blur đều chạy vào validate kiểm tra lỗi hết. setFieldValues hay handleChange k dùng async await vì sẽ bị lag khi nhập.
-handleChange sẽ update bất đồng bộ nên ở phía dưới ta sẽ k thể sử dụng ngay formik.values mà chỉ có thể thao tác với e.target.value. Nên kết hợp debounce.
-Submit form với formik.submitForm(e) và reset form với formik.resetForm()
+Hàm validate được gọi mỗi khi data formik được update, return errors, truy xuất với formik.errors làm helper text. 
+formik.touched xem trường nào đã từng được thao tác lần đầu chưa. VD: Để làm kiểu ấn vào trường a r ấn ra ngoài, bth nó sẽ chạy vào validate và set errors cho cả 2 trường a và b vì chưa có gì, nhưng ta chỉ muốn error trường đã tương tác thôi thì check formik.touched để đảm bảo 1 input chỉ báo lỗi 1 trường nếu đã tương tác và giá trị bị sai.
+formik.values truy xuất giá trị. formik.isValid return true nếu hàm validate return ra object error rỗng, nếu chưa set gì thì formik.isValid luôn trả true, dùng để ban đầu vào thì button submit enabled, khi ấn vào mới hiện ra các trường required cần dùng
+formik.setFieldValue("<field>", <value>) để update hoặc trong onChange dùng formik.handleChange nhậ biến e là input. Có onBlur={formik.handleBlur}. Mọi hàm khi gọi từ formik như change với blur đều chạy vào validate kiểm tra lỗi hết. 
+setFieldValues hay handleChange k dùng async await vì sẽ bị lag khi nhập. handleChange sẽ update bất đồng bộ nên k thể sử dụng formik.values ở dưới mà chỉ có thể thao tác với e.target.value.
+formik.submitForm(e) để submit form và formik.resetForm() để reset form
+
+-> Các hook nên dùng:
+- Nếu dùng useState lưu state, nên gom mọi trường vào 1 object với setState({ ...state, [e.target.name]: e.target.value }); cho gọn.
+- useFormStatus cung status của last form submission: https://react.dev/reference/react-dom/hooks/useFormStatus
+Dùng trong 1 client component sẽ tự detect component hiện tại ở trong form nào và cung status của form đó: const { pending, data, method, action } = useFormStatus();
+- useActionState => luôn dùng, thay thế hoàn toàn useFormState
 
 
 
-# React hook
-1 react hook bắt đầu bằng use, chỉ dùng hook ở top level, k dùng trong câu đk, hàm con, loop, nếu ta muốn dùng điều kiện thì phải nhét logic đó vào trong hook.
-hook chạy lại mỗi khi rerender nhưng biến const sẽ k khởi tạo lại nếu giá trị k đổi (react compiler)
+# Xử lý ảnh
+Ưu tiên dùng svg có thể custom style thay vì ảnh tĩnh. Hạn chế ảnh gif.
+Ảnh nên lazy loading nếu được, custom onError, onLoad.
+Luôn dùng placeholder cho ảnh là 1 màu xám or 1 anhr default base64. Có thể cho ảnh blur đè placeholder, ảnh thật đè ảnh blur. Nếu có error thì ảnh error đè hết.
 
-URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
-Có useDebugValue; useEffectEvent** fix dependency error của useEffect.
+Hiện Image:
+- src của <img> phải là full url từ 1 server hoặc import object từ relative url, k được dùng relative path trực tiếp cho src.
+- css thì dùng relative url trực tiếp được như { background-image: url(./logo.png); }
+- Dùng require của nodejs ok: <img src={require("<relativeURL>").default}/>
+- Với svg: import { ReactComponent as Logo } from './logo.svg'; rồi dùng <Logo />
 
--> Thứ tự react render:
-Chạy useInsertionEffect (k lấy được DOM tree) -> React render component -> Update DOM -> Chạy useLayoutEffect (access được DOM tree) -> Vẽ giao diện -> Vẽ xong thì chạy useEffect, nếu đổi state sẽ lặp vòng mới
-- Điểm đb là useEffect thực hiện asynchronous, còn useLayoutEffect thực hiện synchronous. Nên dùng useLayoutEffect khi cần đổi nhanh style lên DOM, update phức tạp k dùng vì sẽ delay vẽ lên UI, nếu dùng useEffect sẽ bị giật do chạy song song với render nên phải chờ lần render tiếp mới vẽ style mới lên.
-- useInsertionEffect được gọi synchronous. Chỉ dùng khi dùng lib css-in-js. Nó k access và ref, k update state. Chỉ dùng kiểu update document.head hay thêm thẻ <style> bằng code JS.
+-> User input ảnh, kích thước có thể cực lớn.
+- Nếu ảnh kiểu avatar có thể giới hạn kích thước cho họ cut ảnh. 
+- Server lưu ảnh cũng nên nén chỉ hiển thị vừa khung nhỏ. Xoá ảnh cũ mỗi khi POST ảnh mới hoặc xoá bằng cronjob.
+- Nếu FE cần render ảnh nặng thì nên dùng web worker vẽ lại lên canvas tránh lag => ref tới "AuctionFE"
+Cách khác dùng browser-image-compression
 
--> Dùng useState: Có thể tách mỗi biến 1 useState hoặc gộp trong 1 object useState
-setState(state + 1) tương đương setState(state => state + 1) nhưng cách truyền hàm đúng hơn vì state trong hàm luôn mang giá trị mới nhất ở future. Có lúc biến state truyền vào nó không phải giá trị mới nhất mà bị giữ lại như khi "Tạo đồng hồ đếm ngược".
+-> Lib browser-image-compression*** giúp nén ảnh ngay tại browser => luôn dùng
+URL: https://imagekit.io/blog/react-image-optimization/
+Đây là 1 package chất lượng vì nó ngốn CPU trên máy của người dùng để giảm tải ảnh, k tốn tài nguyên server. Cho phép dùng webworker để chạy nhanh hơn với config cực kỳ dễ
 
--> Dùng useEffect: có thể cản chạy lần đầu tiên khi data chưa có gì bằng cách check data k có gì thì bỏ qua.
-Component khi chạy từ trên xuống, gặp useEffect sẽ lưu lại chờ return DOM cập nhập xong sẽ thực hiện. Nếu lại thay đổi state sẽ render lại tiếp.
-Dùng return là 1 function. Khi 1 hàm useEffect được gọi, nó sẽ gọi vào return của useEffect cũ rồi mới thực hiện useEffect mới, cũng gọi khi unmount.
-Bản chất các loại hook có dependencies, nó lưu trong cache cho đến khi dependencies thay đổi thì xóa khỏi cache và thêm cái mới vào cache tiếp thôi.
-Hàm gọi trong useEffect thường lưu lại bằng useCallback và xđ đủ dependencies.
-Component A chứa component B, cả 2 cùng useEffect dependencies đến biến x, nếu biến x đổi thì useEffect của cha sẽ thực hiện trước r đến dần các useEffect của con.
-Nhiều thư viện npm tạo ra kp để dùng cho React mà HTML JS thuần, nhưng vẫn ép dùng trong React được 1 số TH với useEffect như ThreeJS
-Trong useEffect mặc định setState xong vẫn mang giá trị cũ, nhưng bên ngoài sẽ render lại liên tục để hiển thị với giá trị mới khi chạy qua useState. VD: setLoading(true) trong useEffect thì hàm trong useEffect vẫn thực hiện tiếp với loading là false nhưng bên ngoài được render lại ngay với giá trị loading là true nhé.
-
-VD case lỗi: 
-function Test ({ url }) {
-  function onConnected() { console.log(url); }
-  useEffect(() => onConnected(), [url]);
-} 
-=> Ta đổi url thật nhanh 2 lần liên tiếp, useEffect sẽ trigger 2 lần gọi onConnected. Mà url là props, onConnected sẽ thao tác với data là url mới nhất. Sẽ có lúc nó trigger 2 lần với cùng 1 data mới nhất. Do đó phải thêm useCallback và dependencies [onConnected] cho useEffect.
-=> Với react compiler, nó ngầm dùng useCallback cho onConnected thì k cần viết
-
--> useReducer: giống useState nhưng có thể custom hàm setState thành 1 hàm riêng đặt ở ngoài component, dispatch action sẽ trigger hàm return state mới.
-Có thể dùng kết hợp với ReactContext tạo ra kiểu gần giống với redux.
-
--> Dùng React.Context + useContext:
-Chú ý state trong context đổi sẽ kéo mọi wrapped component rerender. Có thể chia nhiều context khác nhau cho từng con.
-const ThemeContext = createContext(""); r dùng <ThemeContext> mà k cần <ThemeContext.Provider>
-
--> useMemo: hàm nên dùng useCallback, biến và component dùng useMemo => react compiler đã stale hook này.
-Tương tự const Con = React.memo(props => { return <>; }, x); chỉ khi props hay x đổi mới rerender lại Con, chỉ dùng khi Cha có Con phức tạp mà k muốn Con rerender
-
--> useId: sinh id unique trong phạm vi app hiện tại. VD 1 component có trường id mà tái sử dụng render ở nhiều nơi, dùng useId cho nó sẽ đảm bảo duy nhất.
-Trong redux toolkit cũng có nanoid sinh id ngẫu nhiên
-
--> useSyncExternalStore read và subscribe vào external data source => VD ta subscribe vào localStorage được
-
--> use(Promise) => k cần dùng nếu dùng react-query
-- Dùng với use(ReactContext) thì như useContext chỉ khác là dùng được trong câu điều kiện
-- Dùng với 1 promise trong 1 component, có thể kẹp trong conditional được. Wrap với ErrorBoundary và Suspense để hiện fallback, component dùng use(Promise) sẽ hiện fallback nếu promise chưa thực hiện xong, k cần dùng await cho nó.
-Chú ý chỉ có 2 case sử dụng, 1 là promise truyền vào từ parent, 2 là promise là hàm import từ bên ngoài. K được dùng trực tiếp fetch trong use vì bị lỗi refetch liên tục k thể fix. Bao với Suspense và ErrorBoundary, sẽ chờ fetch xong => dùng thay thế useEffect khi fetch lần đầu tiên.
-Chú ý phải truyền vào promise, chứ kp call 1 function trả ra promise nó sẽ refetch lại liên tục.
-
--> useTransition: giảm độ ưu tiên của 1 hàm, chỉ chạy trong background khi rảnh để k ảnh hưởng performance. Dùng khi xử lý logic nặng mà k dùng được useDebounce, đảm bảo bên ngoài kbh bị lag do hàm gọi trong startTransition.
-Khi code cần xác định phần task nào gây lag cho browser đưa vào startTransition. VD fetch API thực tế k gây lag cho browser thì k cần. VD search 1 chữ r thực hiện filter trên 1000 phần tử r set vào list thì hành động đổi text k cần mà phải dùng startTransition cho hành động filter và setList.
-
-useDeferredValue: tương tự nhưng delay việc update giá trị cho 1 biến. Vd ta gõ input thay đổi biến a và dùng biến a để search list 1000 phần tử. Gõ nhanh thì a đổi ngay và chạy logic. Khi đó ta dùng useDeferredValue để biến a vẫn update realtime nhưng biến aDeferred cho vào hàm search sẽ chỉ update khi k bị lag.
-Việc aDeferred update như nào phụ thuộc vào mức độ bận của main thread, nếu rất bận thì nó càng skip intermediate value nhiều hơn. Tương tự nó k dùng cho callapi mà dùng do lag vì update tuần tự. Chứ call api k lag nhưng ta cần giảm thiểu số lần call tới mức tối thiểu thì dùng debounce tốt hơn.
-
-=> useTransition dùng khi cần chạy 1 hàm nặng ảnh hưởng tới performance, kể cả khi k đổi state. useDeferredValue dùng khi cần chạy logic phụ thuộc vào 1 giá trị được update liên tục, kể cả hàm k nặng nhưng giá trị update nhanh khiến nó lag. 
-useTransition thực hiện trong background và dùng isPending để quản lý tiến độ của task background đó, k cần tạo loading state thủ công. Thay vì setLoading true false trước và sau khi call api, thì dùng useTransition có sẵn isPending. optimistics update và pending call api cũng được xử lý với hook useActionState.
-Dùng standalone startTransition nếu gọi 1 hàm bất kỳ mà k trong react comp hay hook. 
-startTransition có thể lồng trong startTransition khác, 2 hàm đó đều chạy trong background và k block main thread thôi, chưa hiểu tại sao lại cần.
-URL: https://react.dev/reference/react/useTransition#examples
-
---> SS để xử lý lỗi react:
-Nếu ta call 10 lần 1 hàm gọi api và update state bằng cách ấn nút. Ấn nhanh nút 10 lần, nó sẽ k đảm bảo state cuối chính là lần cuối ấn. Tệ hơn là state sẽ nhảy loạn xạ mỗi khi 1 lần fetch xong và set giá trị. Tự custom loading vẫn k được.
-Để xử lý ta có thể chơi kiểu ấn 1 lần là loading disable đến khi fetch xong mới cho ấn tiếp. Cách này chưa ok vì delay UI.
-Nếu ta dùng useDebounce, thực tế nó xử lý gần như là ổn. Rất hiếm có case call api có delay giữa các lần mà lần sau vẫn chậm hơn lần trước đó.
-Dùng useTransition thì khác với bth ở chỗ, nó cũng k skip việc chạy nhiều hàm đè nhau nhưng khi render sẽ chỉ render lần cuối cùng, đảm bảo các lệnh call trước đó k bị render nhảy như khi tự custom loading. Chỉ cần check isPending true thì hiện loading là được. Nhưng nó k xử lý case call api sau lại nhanh hơn api call trước vẫn có thể bị sai kết quả.
-
--> useOptimistic dùng khi biết khá chắc lệnh call sẽ success, fail tự undo
-URL: https://www.youtube.com/watch?v=VBlSe8tvg4U => useOptimistic khi người dùng update và API chưa thành công đã tắt page, có thể cản lại với window event "beforeunload"
-=> Chốt là ít dùng mà thường dùng useDebounce hơn và kết hợp tự implement failed undo cho useDebounce
+-> requestIdleCallback: 1 hàm JS đb giúp thực hiện điều gì khi event loop rảnh k có task.
+URL: https://medium.com/%40buildsbyaditya/stop-wasting-resources-smart-idle-detection-in-react-with-react-watchman-270ee5a87709 => thay thế react-idle-timer
+1 số lib có hook useIdle or tự tạo hook để dùng requestIdleCallback trong React => detect khi browser rảnh để làm bất cứ thứ gì như load ảnh nặng, tải data nặng chưa dùng ngay
 
 
 
-# Custom hook
-Custom hook là 1 function có mục đích nhận đầu vào và cho đầu ra tự động biến đối theo đầu vào, return giá trị or hàm, chứ kp component. Nó chỉ là gom logic trong 1 FC vào 1 hàm để tái sử dụng thôi
-Mỗi lần function chạy đến custom hook sẽ thực hiện lại mọi thứ bên trong. Cần đảm bảo các biến bên trong cũng là hook để không khởi tạo lại mỗi lần chạy. Hoặc return useCallback, useMemo để không chạy lại nếu k cần.
+# Web worker
+Web worker tận dụng chip đa nhân trên máy client. 1 web nên có 2-3 workers k nên lạm dụng. 
+Nên dùng với task nặng như xử lý ảnh, canvas drawing, export CSV trên UI, xử lý file excel lớn.
+VD sort 1M phần tử bằng bubble sort sẽ block ui. Tab performance của browser thấy CPU 100%, nếu chạy nó trên 1 thread riêng, thời gian vẫn thế nhưng CPU thấp và k bị block.
 
--> URL: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/
-useToggle, useTimeout, useUpdateEffect, useArray, usePrevious, useStateWithHistory, useFetch, useScript, useDeepCompareEffect, useEventListener, useOnScreen, useGeolocation, useStateWithValidation, useSize, useEffectOnce, useDarkMode, useCookie, useTranslation, useOnlineStatus, useRenderCount, useDebugInformation, useHover, useLongPress
-Có thể lấy vị trí địa lý, thêm script js CDN được
---> useStorage giúp subscribe sự thay đổi của localStorage. Browser cũng có sự kiện storage phát ra khi nó đổi giá trị
-
--> Lib @mantine/hooks, aHooks, usehooks-ts*, @uidotdev/usehooks* manh nhất, react-use* cung hàng loạt custom hook.
-useMediaQuery useClickOutside useMousePosition useClipboard usePagination useDevice
-useIntersection check xem 1 component có visible toàn bộ trên màn hình không
-useScrollLock khóa và mở khóa thanh scrollbar
-useForm tạo và validate form, thay thế formik
+-> Có lib workerpool => thay thế @koale/useworker, comlink, @shopify/react-web-worker stale hết r
+1 lib cung hook useWorker or tự tạo hook để dùng được.
 
 
 
-# Progressive web app (PWA) 
-Dùng web worker để: cache offline, push notification, cài web như 1 app trên mobile
-Tuỳ ý custom cache offline cho routing, assets, revalidate.
-URL: https://create-react-app.dev/docs/making-a-progressive-web-app/
-VD có template trên git "cra-template-pwa", mở lên browser 1 lần r tắt mạng đi, refresh trang thấy web vẫn chạy bth, tab application có Cache Storage.
+# Tối ưu render list lớn
+Dùng list buộc phải có key unique, nếu k khi thay đổi phần tử sẽ bị sai. Còn nếu phần tử k đổi thì dùng index làm key cũng được.
+VD khi key trùng, xoá ptử thứ 8 trong list thì ptử 9 sẽ mang key là 8, ptu 10 sẽ mang key là 9, dẫn đến in sai.
 
-# Progressive enhancement
-Là 1 pp phát triển website bắt đầu cơ bản trước với content thiết yếu. Rồi nâng cấp dần như thêm css, js cho những người sử dụng trình duyệt hiện đại hơn dùng được (nếu hỗ trợ các tính năng đó). Còn những người dùng trình duyệt cũ vẫn đầy đủ tính năng basic.
-Phải ưu tiên dùng HTML và CSS thuần để đảm bảo sự tương thích. JS dược dùng để thêm tính năng nâng cao, nhưng nếu JS k khả dụng or bị tắt thì vẫn k gián đoạn trải nghiệm cơ bản.
-=> Các thư viện có tính chất progressive enhancement phải có các tính chất đó. Nếu không nó có thể không tương thích với một số trình duyệt cũ hoặc khi k hỗ trợ JS.
+Để bth sẽ lag vì render quá nhiều DOM nodes
+C1: dùng phân trang kiểu bấm số chuyển page với react-paginate
+C2: chỉ render DOM phần visible scroll tới với react-window, react-virtualized, rc-virtual-list kết hợp được với animation. Nhược điểm là tính năng CTRL+F của browser bị sai, khi đó phải tự implement search riêng cho table đó
+C3: Nếu biết trước list data k quá nhiều, kp vô hạn thì FE có thể lấy hết về rồi tự phân trang.
+FE nên lưu biến filter search trên URL params, react-router-dom cung sẵn useSearchParams. Nếu k thì lưu trong react state và khi cần có thể dùng sessionStorage.
+
+-> Phân trang trên server: 
+C1: dùng kiểu phân trang số từng page, performance chậm nếu big data và cần nhảy tới 1 page lớn, DB phải duyệt hết mọi phần tử. 
+Có thể làm giống google search, cho query 1 lượng page xung quanh page hiện tại và k biết có bao nhiêu page, tránh nhảy vọt tới 1 page cực lớn => vẫn k nên dùng với big data
+Có thể dùng nếu biết trước số lượng phần tử không nhiều và có giới hạn.
+
+C2: dùng load more chuẩn hơn trong đa số trường hợp. Nếu cần lấy total count thì cần thêm 1 query riêng.
+--> Vấn đề UI chỉ cho load next page vì có bigdata là 1M data, phân trang 100, hacker cố tình dùng POSTMAN liên tục query DDoS page 10000 khiến db quá tải.
+- Chặn trước theo user behavior. VD có 10K page, k đời nào user scroll xuống 10K lần, server check nếu page 200 thì báo lỗi luôn.
+User view thì chặn trước, nhưng internal job nhiều lúc vẫn cần duyệt hết data theo page.
+- Server lấy list toàn bộ id cho vào main mem, rồi tự query phân trang từ list id đó. Do chỉ lấy list id nên bộ nhớ tốn ít hơn, lấy tiếp data từ list id sẽ có tốc độ cao.
+- Chuyển sang cursor pagination theo primary key. VD: SELECT * FROM table WHERE id > @lastId ORDER BY id LIMIT 100; và response trả về last id truyền vào request sau.
+Request đầu tiên bỏ WHERE đi. Nếu id là kiểu guid cũng chả sao vì ta k quan tâm thứ tự orderby trong internal job, chỉ cần duyệt hết.
+Cách này vẫn dùng được khi user view trên table kiểm soát orderby. VD user query orderby name, request trước trả về "nextCursor": { "name": "Steven", "id": 1234 } thì dùng:
+SELECT * FROM users WHERE (name > 'Steven' OR (name = 'Steven' AND id > 1234)) ORDER BY name, id LIMIT 20; => phải đánh index trường nam kèm id
+=> Cả 2 cách giải quyết vấn đề khi lấy theo filter rồi thực hiện update data ảnh hưởng tới trường của filter khiến data bị sai.
+
+-> Usecase: server cần query data từ 2 nguồn là db và 1 api riêng, kèm filter từ cả 2.
+- Chắc chắn 2 nguồn là từ 2 table khác nhau, nên tìm cách query join SQL 2 table là tốt nhất. 
+- Nếu không thể thì buộc phải query trên cả 2 rồi merge kết quả lại:
+C1: Để đảm bảo k sai thì query trên db trước theo filter trên DB, lấy ra list id lại query API kèm filter trên API, chưa đủ data thì tiếp tục query db và lặp lại cho đến khi đủ. Nó có tốc độ chậm nếu big data mà filter API chỉ có vài data thoả mãn. Có thể orderby các cột trên DB.
+C2: Check trước xem filter nào thì API hay DB có ít data hơn thì ưu tiên call tới đó trước, rồi vẫn query nguồn còn lại và merge kết quả. Tốc độ nhanh hơn nhưng tính năng orderby chỉ dùng được cho các cột có chung ở cả DB và API. Server lưu indexDB và indexAPI để check vị trí cuối cùng của từng nguồn mà query tiếp.
 
 
 
+# Dùng React portal
+Giúp render UI ngoài component tree. VD modal, tooltip, dialog.
+React có sẵn createPortal trong react-dom dùng wrap component cho tính năng đó. Cơ chế là dùng JS append DOM element vào thẻ root.
+react-reverse-portal*: portal bth là đưa component trong react tree ra ngoài, lib này đưa component từ bất cứ đâu vào chỗ nào của react tree.
+
+-> React tạo 1 website mà component đổi vị trí gặp vấn đề vì state của nó bị mất khi react unmount r mount lại. Để k reset state thì phải là chính component đó khi di chuyển chứ kp render ra 1 component khác. VD: {isAbove && <Counter/>} <span>hi</span> {!isAbove && <Counter/>}
+Các giải pháp: 
+- K dùng react nữa
+- Chỉ đổi css transform cho component đó, k unmount
+- Cho state ra ngoài global thay vì để ở từng component Counter
+- Thêm key unique cho mỗi component thì lại ok nhưng chỉ khi các component đó cùng 1 parent.
+- Dùng react-reverse-portal để thực sự di chuyển component đi khắp nơi.
+VD màn hình chính là 1 thẻ, thanh sidebar là component DOM ảo. Mỗi lần drag component từ sidebar vào màn hình chính thì React Portal render component vào tag màn hình chính. react-reverse-portal đảm bảo nhét 10 component vào InPortal, di chuyển ra OutPortal thoải mái thì component mà k rerender lại.
 
 
 
-
-# Request API
-Luôn có try catch + async await
-
--> Setup proxy prefix: nếu chỉ connect 1 server, có thể viết trong package.json FE trường proxy là base url. Mọi request API ở FE sẽ dùng base url đó
-VD bth ta dùng: axios.get('http://localhost:4000/api/new') thì bh chỉ cần axios.get('/api/new') nếu dùng "proxy": "http://localhost:4000" trong package.json
-Có thể dùng trong hàm axios.create để set baseURL.
-
--> Dùng axios: điểm thích nhất là .get thì params là undefined sẽ tự động k cho vào param, tự động xử lý array
-
---> Khi gửi token đi có thể dùng axios.interceptors.request.use() và gán config.headers['X-Token']=<token>
-Khi nhận về dùng axios.interceptors.response() để lấy lỗi trả về là expired thì code luôn việc request lại accessToken cho người dùng
-
-
-
-# Pattern loading fetch API
-Component bao ngoài dùng useEffect fetch API với dependencies [] và Promise.all, bên trong fetch data cơ bản chung. 
-Dùng react-query thì mọi thứ perfect, xử lý loading đầy đủ, hiển thị giá trị hiện tại mặc định, khi nào fetch xong thì tự nhảy thành giá trị mới, cache.
-Loading nên dùng skeleton từng phần tử. Lib như highchart có sẵn loading thì dùng của nó hơn.
-
-Khi người dùng update data mới, ta update realtime bằng cách:
-- Fetch lại data, nếu data thường xuyên thay đổi, hoặc cần độ chính xác cao.
-- Update data thủ công trong FE như optimistics, dùng khi data đơn giản và thường thành công.
-
--> Update component A ảnh hưởng component B, cần đảm bảo có qtr cần update realtime không. Nếu cần: 
-- Vào page dùng data nào thì fetch lại data đó luôn để đảm bảo realtime. Data lớn fetch lâu, ít đổi thì lưu cache.
-- Dùng react-query, ta có thể invalidate query dễ dàng
-- Nếu case đơn giản thì ta gọi hàm fetch data của B ở cuối hàm update của A luôn, dù làm v sẽ khó mở rộng trong tương lai.
-- Xây biến needToUpdate cho từng component lưu vào redux, update biến này khi cần refetch component nào, component refetch dựa vào dependencies needToUpdate là được => chẳng khác nào ta đang implement lại react-query invalidate cả.
+# Dùng <Activity>
+<Activity mode={isVisible ? "visible" : "hidden"}>...</Activity> giúp ẩn hiện nhưng k mất state, cần animation thì phải tự viết => thay thế hoàn toàn if else component
+Component mode hidden thực tế vẫn chạy như thường, chỉ là k render ra. Tức là load data lần đầu tiên trong useEffect hay react-query vẫn tự chạy dù giúp tạo kiểu preload data.
+Component wrap trong <Activity> mode visible k được ưu tiên trong quá trình hydrate. Các phần khác được hydrate trước và block page cho đến khi hiện ra. Còn component trong <Activity> sẽ k block page mà được hydrated sau đó cơ => nếu có component nặng mà k cần ưu tiên hiện trên page, cứ cho vào <Activity> default là visible để tận dụng tính năng.
+Tương tự video player cũng sẽ dừng ở vị trí xem trước đó khi hidden sang visible
 
 
 
 # Other
--> Cách debug trong React
-Mở tab components -> settings -> highlight updates => Tool này giúp tìm các components render thừa
-1) Debug bằng browser: Gõ debugger vào code React hoặc search code browser và đặt breakpoint -> mở browser sẽ dừng lại chỗ đó
-2) Debug trên VSC: Vào dự án react trên VSC -> Tab Debug -> Run and Debug -> Phải tạo file .vscode/launch.json, chú ý url là url web VD http://localhost:3000, và webRoot là thư mục làm việc chứa index.js VD ${workspaceFolder}/src. 
-URL: https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
-
 -> Pattern tổ chức components
 Các component klq đến nhau nên chia ra để state 1 comp đổi sẽ k rerender lại component k dùng state đó. 
 VD 2 TH: 1 là <Search> <Hiển thị> tách 2 component; 2 là <Search> chứa <Hiển thị> ở cuối.
-=> C1 chia ra component con nhưng muốn dùng data của <Search> trong <Hiển thị> thì phải dùng props truyền từ component cha truyền cho con k tốt. Theo OOP thì <Hiển thị> không nên nằm trong <Search> là đúng
+=> Theo OOP thì <Hiển thị> không nằm trong <Search> là đúng, nên dùng dù <Hiển thị> muốn dùng data của <Search> sẽ phải truyền từ component cha chung sang từng con.
 VD: Ấn 1 button hiện ra dialog thì nên để button đó và dialog cùng là 1 component chứ k tách 2 file riêng
 
+-> Compiler chuyển từ JSX syntax sang JS. VD JSX "label for" đổi sang "label htmlFor". URL: https://reactjs.org/docs/dom-elements.html
+React.isValidElement(<ele>)
+
+-> HOC (Higher order component): hàm nhận component trả về component mới dùng nó làm gì đó => thay thế bằng react hook
+Lưu ý { children } props sẽ k render lại nếu state liên quan k đổi 
+
+-> Automatic Batching React 18
+VD: setTimeout(() => { 
+  setSize((oldSize) => oldSize + 1); setOpen((oldOpen) => !oldOpen); // state đổi liên tiếp sẽ tối ưu gom lại và render 1 lần thôi
+}, 1000);
+=> Đề phòng người dùng k muốn batching, nó sinh ra hàm flushSync để xem có update DOM hay k
+function handleSubmit() {
+  flushSync(() => { setSize((oldSize) => oldSize + 1); }); // React has updated the DOM by now
+  flushSync(() => { setOpen((oldOpen) => !oldOpen); }); // React has updated the DOM by now
+}
+
+-> PP tuỳ biến style component: Khi dùng các component có sẵn or UI lib thường cung API sửa style ở 1 mức độ nhất định => Có thể ép style tuỳ ý bằng CSS selector, viết 1 thẻ bao ngoài rồi style thẻ con tuỳ ý
 

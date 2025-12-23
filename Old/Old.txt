@@ -20,6 +20,44 @@ prop-types*: giúp typecheking và gán default value cho props của 1 componen
 @craco/craco và craco-less: override webpack config
 Jest: viết test case bằng JS để test cho FE. Nó tìm file test nằm trong thư mục __test__ or file có đuôi là .test.js
 IntroJS là thư viện giúp tạo intro hướng dẫn sử dụng cực mạnh
+clsx* / classNames: tạo string với điều kiện, thg dùng cho className.
+Date-fns: có thể thay thế react-moment
+react-moment => thay thế bằng luxon
+lodash*: https://lodash.com/docs/4.17.15 thay thế underscore. Có thể import tree shaking đỡ nặng "npm i lodash.merge" => k cần dùng nữa
+@welldone-software/why-did-you-render => thay thế bằng react-scan
+react-loading-skeleton: tạo skeleton loading
+react-modal 
+react-avatar-edit*: cắt ảnh làm avatar
+react-perfect-scrollbar: lib tạo thanh scrollbar, nó cung thêm tính năng khác như bắt sự kiện scroll đến vị trí trục y nào
+react-text-transition
+react-color*: color picker
+react-modern-drawer: tạo menu drawer
+react-qr-reader: quay camera QR
+@pqina/flip*: tạo Flip Clock chuẩn
+tiny-invariant: log lỗi dựa trên condition
+react-dnd*: thư viện drag drop của React cực mạnh
+react-text-mask*: custom input hiển thị
+Refine giúp cho việc xây ứng dụng react CRUD dễ dàng hơn. Nó cung copmonents, state management, hook.
+elementos: thư viện reactive rất mạnh nếu component có quá nhiều state phụ thuộc phức tạp vào nhau. React lo render UI, Elementos lo reactive state phức tạp.
+react-lazy-load-image-component giúp lazy loading, onError và custom hiệu ứng hiện ảnh
+react-mosaic-component* là thư viện tạo widget resize, move thoải mái
+react-device-detect cung hook detect kích thước màn hình
+
+-> Animation lib
+react-burger-menu: tạo animation cho thanh menu dọc thg khi màn hình nhỏ
+@use-gesture: animation mạnh dựa vào tương tác của người dùng.
+react-useanimations*: lib giúp tạo microInteraction, là animation các thứ nhỏ nhặt khi hover và click, càng đơn giản càng đẹp
+react-countup* animation số chạy
+@dnd-kit/core tạo drag animation => ref tới trava lending pool
+
+-> Lib animation với scroll:
+react-awesome-reveal: reveal animation
+react-animated-cursor => thư viện tạo animate cursor mỗi khi rê chuột đi đâu
+react-parallax-mouse => thư viện hiệu ứng parallax bằng cách di chuyển chuột
+aos*: lib animation on scroll
+
+-> Victory vẽ biểu đồ cho data. Tremor cũng thế nhưng đẹp hơn. React Diagrams cho user vẽ biểu đồ có thể drag customize như draw.io => thay thế bằng highchart
+D3 thư viện chuyên data visualization đủ loại phức tạp
 
 -> react-transition-group: giúp tạo css animation dễ hơn
 react-animation-on-scroll: animation xuất hiện chỉ khi scroll tới
@@ -34,6 +72,9 @@ Dùng thêm moment-timezone nếu cần thao tác thời gian theo múi giờ kh
 -> storybook: package giúp tách từng component, hiển thị dạng phân cấp giúp dễ theo dõi component
 react-cosmos: thay thế storybook
 react-styleguidist: Viết docs cho component -> dài éo dùng
+
+-> Lib UI:
+Rebass, Evergreen UI, react-foundation, materialize-css, Senmatic UI, metroui, react-rainbow-component.
 
 -> Ít dùng:
 compare-versions
