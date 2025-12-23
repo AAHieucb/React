@@ -255,6 +255,12 @@ URL tổng hợp hook: https://courses.webdevsimplified.com/view/courses/react-h
 setState(state + 1) tương đương setState(state => state + 1) nhưng cách truyền hàm đúng hơn vì state trong hàm luôn mang giá trị mới nhất ở future, vì có lúc biến state truyền vào nó không phải giá trị mới nhất mà bị giữ lại như khi "Tạo đồng hồ đếm ngược".
 setState(state => state + 1) cũng có điểm lợi là nó k phụ thuộc dependency state => luôn dùng
 
+Vì state thay đổi khiến cả component rerender, nên phải chia nhỏ component nào dùng state nào của chỉ riêng component đó.
+Thay vì tạo ra hàng loạt state và cho chúng thay đổi phụ thuộc vào nhau với useEffect, nên chia kiểu:
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const displayName = `${firstName} {lastName}`; => thì displayName tự tính lại sau mỗi lần render mà k cần useEffect.
+
 -> useEffect: 
 Cơ chế chạy component từ trên xuống, gặp useEffect sẽ lưu lại chờ return DOM cập nhập xong sẽ thực hiện.
 Dependency đổi làm useEffect chạy lại thì sẽ gọi return của useEffect cũ rồi mới thực hiện useEffect mới, return function cũng gọi khi unmount.
