@@ -238,11 +238,17 @@ Phải ưu tiên dùng HTML và CSS thuần để đảm bảo sự tương thí
 
 
 # Debug trong React
-Extenstion browser -> tab components -> settings -> highlight updates => giúp tìm các components render thừa, tương tự react scan
-
-- Debug bằng browser: Gõ debugger vào code React hoặc search code browser và đặt breakpoint -> mở browser sẽ dừng lại chỗ đó
-- Debug trên VSC: https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
-Tab Debug -> Run and Debug -> tạo file .vscode/launch.json, chú ý url là url web VD http://localhost:3000, và webRoot là thư mục làm việc chứa index.js
+URL: https://www.youtube.com/watch?v=l8knG0BPr-o
+- React Developer Tools extension -> tab Components chỉnh state props trực tiếp, tab Profiler đo performance component và check vì sao rerender
+Toggle Suspense/ErrorBoundary component
+Settings -> highlight updates => giúp tìm các components render thừa, tương tự react scan
+Settings -> hide logs during second render in strict mode
+- Search code trong browser và đặt breakpoint -> mở browser sẽ dừng chỗ đó
+- VSC Debug tab -> Run and Debug -> Chrome -> sửa url thành url của web đang chạy, webRoot mặc định là thư mục làm việc chứa file index.js
+Gõ debugger vào code React, browser sẽ chạy dừng đúng chỗ đó.
+URL: https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
+Đặt breakpoint ngay trong VSC được, set hàm số cho Hit Count VD % 2 là bắt mỗi 2 lần hit
+- NextJS thì có tut file launch sẵn chỉ cần ốp vào VSC tương tự là debug được cả server và client side.
 
 
 
@@ -251,15 +257,19 @@ React hook k dùng trong câu điều kiện hay loop, các logic đó phải nh
 React hook vẫn chạy lại mỗi khi rerender nhưng biến const sẽ k khởi tạo lại nếu giá trị k đổi (react compiler) như bth, nếu k là const sẽ tạo lại liên tục khi rerender.
 URL tổng hợp hook: https://courses.webdevsimplified.com/view/courses/react-hooks-simplified/ => useDebugValue, useEffectEvent* fix dependency error của useEffect.
 
--> useState: có thể tách mỗi biến 1 useState hoặc gộp trong 1 object useState
-setState(state + 1) tương đương setState(state => state + 1) nhưng cách truyền hàm đúng hơn vì state trong hàm luôn mang giá trị mới nhất ở future, vì có lúc biến state truyền vào nó không phải giá trị mới nhất mà bị giữ lại như khi "Tạo đồng hồ đếm ngược".
-setState(state => state + 1) cũng có điểm lợi là nó k phụ thuộc dependency state => luôn dùng
-
+-> useState: có thể tách mỗi biến 1 useState hoặc gộp trong 1 object useState.
 Vì state thay đổi khiến cả component rerender, nên phải chia nhỏ component nào dùng state nào của chỉ riêng component đó.
-Thay vì tạo ra hàng loạt state và cho chúng thay đổi phụ thuộc vào nhau với useEffect, nên chia kiểu:
-const [firstName, setFirstName] = useState("");
+Kbh tạo ra hàng loạt useState cho từng object và dùng useEffect quản lý sự phụ thuộc, nên thay thế bằng biến trực tiếp or useReducer để gom lại cung ra hàm và biến gọn.
+VD: const [firstName, setFirstName] = useState("");
 const [lastName, setLastName] = useState("");
 const displayName = `${firstName} {lastName}`; => thì displayName tự tính lại sau mỗi lần render mà k cần useEffect.
+=> nên thay thế bằng useLocalStorage. or useQueryState (lưu trong url params) nếu có thể vì refresh sẽ k mất, useActionState nếu state dùng cho form
+=> nên thay thế bằng useRef nếu k cần show trên UI hoặc có show UI nhưng k cần rerender mỗi khi state thay đổi.
+VD: const [name, setName] = useState(""); <input onChange={(e) => setName(e.target.value)}/>
+thay bằng: const nameRef = useRef(); <input ref={nameRef}/> và khi cần lấy giá trị thì nameRef.current.value
+
+setState(state + 1) tương đương setState(state => state + 1) nhưng cách truyền hàm đúng hơn vì state trong hàm luôn mang giá trị mới nhất ở future, vì có lúc biến state truyền vào nó không phải giá trị mới nhất mà bị giữ lại như khi "Tạo đồng hồ đếm ngược".
+setState(state => state + 1) cũng có điểm lợi là nó k phụ thuộc dependency state => luôn dùng
 
 -> useEffect: 
 Cơ chế chạy component từ trên xuống, gặp useEffect sẽ lưu lại chờ return DOM cập nhập xong sẽ thực hiện.

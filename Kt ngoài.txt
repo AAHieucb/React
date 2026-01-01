@@ -142,19 +142,20 @@ Lệnh install và update của npm
 
 # AbortController
 URL: https://kettanaito.com/blog/dont-sleep-on-abort-controller
-Dùng huỷ các tác vụ khi k cần thiết nữa như event, timeout, fetch api, stream. VD người dùng gõ tiếp khi search hay ấn cancel thì bỏ tác vụ call api đang chạy.
 Thực tế khi tắt browser hay close tab cũng tự abort api rồi.
-
-Ez: var x = new AbortController(); x.signal; x.abort(); 
-VD abort khi request quá lâu: try { fetch(<>, {abort: AbortSignal.timeout(1000)}) } catch (e) { e.name == "AbortError" / e.name == "TimeoutError" }
-react-query hỗ trợ sẵn signal chỉ cần dùng luôn queryFn: ({ signal }) => { ... }
-
-Dùng huỷ đồng thời hàng loạt event listener thay vì remove từng cái.
+Dùng huỷ đồng thời hàng loạt event listener thay vì remove từng cái, huỷ các tác vụ khi k cần thiết nữa như event, timeout, fetch api, stream
 Dùng huỷ nếu abort bất cứ 1 signal nào trong list với AbortSignal.any
 Thay vì tạo function cung ra promise, nên tạo function cung ra { promise, abort } để bên ngoài sử dụng có thể call abort bất cứ lúc nào cần.
 signal của abort controller có sự kiện "abort" phát ra khi call x.abort(<reason>) và lấy với x.signal.reason
 Cơ chế biến mọi thứ abortable bằng cách biến thành promise là truyền thêm 1 abortcontroller vào, gọi bắt event "abort" của controller thì reject promise là được 
 Chú ý khi dùng AbortController để abort thì reject promise, nó vẫn thực hiện nốt phần code dưới đấy. Khi đó cần phải return or tx.rollback để thực sự abort.
+
+Ez: var x = new AbortController(); x.signal; x.abort(); 
+VD abort khi request quá lâu: try { fetch(<>, {abort: AbortSignal.timeout(1000)}) } catch (e) { e.name == "AbortError" / e.name == "TimeoutError" }
+react-query hỗ trợ sẵn signal chỉ cần dùng luôn queryFn: ({ signal }) => { ... }
+
+-> AbortController giúp giải quyết vấn đề về order khi fetch api liên tục rồi update state dựa vào response trong react.
+Nếu ngừoi dùng cancel request, hoặc người dùng tạo request mới thì lần call api trước có thể trả response sau lần call api sau đó khiến state update sai. AbortController giúp cancel request thì các lệnh update state sau lần call api trước sẽ huỷ k chạy nữa 
 
 
 
@@ -223,4 +224,8 @@ Nếu cần SSR + SEO mạnh → chọn Qwik / NextJS
 
 -> Tư duy abstract service: coi 1 tính năng là 1 service nhận vào gì và cung ra những gì thì viết riêng ra. Mọi chỉnh sửa sau này gói gọn trong service viết riêng đó.
 Khi code cũng tư duy tạo nhiều hàm để hàm lõi tái sử dụng nhiều nơi, thì các condition check phụ sẽ viết ở hàm ngoài, hàm trong chỉ xử lý logic lõi.
-Dùng third party thì luôn viết 1 service abstract nó cung ra cái gì để tái sử dụng.
+Dùng third party thì luôn viết 1 service abstract nó cung ra cái gì để tái sử dụng, kể cả khi chỉ import và gọi 1 hàm cơ bản, vì khi API đổi chỉ cần sửa 1 nơi.
+
+-> Web component: https://www.youtube.com/watch?v=2I7uX8m0Ta0
+
+
