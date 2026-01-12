@@ -224,7 +224,8 @@ Nếu cần SSR + SEO mạnh → chọn Qwik / NextJS
 
 -> Tư duy abstract service: coi 1 tính năng là 1 service nhận vào gì và cung ra những gì thì viết riêng ra. Mọi chỉnh sửa sau này gói gọn trong service viết riêng đó.
 Khi code cũng tư duy tạo nhiều hàm để hàm lõi tái sử dụng nhiều nơi, thì các condition check phụ sẽ viết ở hàm ngoài, hàm trong chỉ xử lý logic lõi.
-Dùng third party thì luôn viết 1 service abstract nó cung ra cái gì để tái sử dụng, kể cả khi chỉ import và gọi 1 hàm cơ bản, vì khi API đổi chỉ cần sửa 1 nơi.
+Dùng third party nên viết 1 service abstract nó cung ra cái gì để tái sử dụng, kể cả khi chỉ import và gọi 1 hàm cơ bản, vì khi API đổi chỉ cần sửa 1 nơi, nên làm khi dùng service nhiều nơi. Gom code của service third party vào 1 folder duy nhất và chỉ sửa trong phạm vi đó.
+Chỉ gom nếu nó thực sự có ý nghĩa chung OOP, nếu 2 object khác nhau hoàn toàn về ngữ nghĩa nhưng chỉ có chung 1 thuộc tính thì k nên gom làm chi
 
 -> Web component: https://www.youtube.com/watch?v=2I7uX8m0Ta0
 
